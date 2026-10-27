@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<link rel="icon" type="image/svg+xml" href="/wp-content/uploads/gcm-games/13/b20261020095223-d4iuqs/favicon.svg">
+<title>Sudoku - 35 Levels</title>
+<link rel="stylesheet" href="/wp-content/uploads/gcm-games/13/b20261020095223-d4iuqs/style.css">
+<!-- Icons as SVG (same look on every phone): see icons.css -->
+<link rel="stylesheet" href="/wp-content/uploads/gcm-games/13/b20261020095223-d4iuqs/icons.css">
+</head>
+<body>
+  <!-- ============ HOME SCREEN ============ -->
+  <section id="home-screen" class="screen active pacman-matched-home">
+    <div class="home-card pacman-menu-card">
+      <div class="screen-top-bar home-card-top-bar">
+        <div class="coin-pill" id="coin-badge-home" title="Your coins"><span class="coin-icon">🪙</span><span id="coin-count-home">0</span></div>
+        <button id="sound-toggle-home" class="menu-mute-btn" aria-label="Toggle sound" aria-pressed="false"></button>
+      </div>
+
+      <img class="logo pacman-style-logo" src="/wp-content/uploads/gcm-games/13/b20261020095223-d4iuqs/logo.png" alt="Sudoku Logo">
+      <h1 class="title">Sudoku</h1>
+      <p class="subtitle">35 Levels • Solve • Beat the Clock</p>
+
+      <div class="menu-buttons">
+        <button id="play-btn" class="menu-btn primary">▶ Play</button>
+        <button id="levels-btn" class="menu-btn">
+          <span class="menu-btn-icon"><svg viewbox="0 0 24 24" width="1em" height="1em" fill="none" aria-hidden="true"><path d="M7.5 10.2V7.6a4.5 4.5 0 0 1 9 0v2.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path><rect x="4.5" y="10.2" width="15" height="11" rx="3" fill="currentColor"></rect><circle cx="12" cy="14.9" r="1.6" fill="#fff"></circle><rect x="11.15" y="14.9" width="1.7" height="3.2" rx="0.6" fill="#fff"></rect></svg></span>
+          <span class="menu-btn-label">Select Level</span>
+        </button>
+        <button id="shop-btn" class="menu-btn">
+          <span class="menu-btn-icon"><svg viewbox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8h12l-1.2 12.4a2 2 0 0 1-2 1.6H9.2a2 2 0 0 1-2-1.6L6 8Z"></path><path d="M9 8V6a3 3 0 0 1 6 0v2"></path></svg></span>
+          <span class="menu-btn-label">Shop</span>
+        </button>
+        <button id="howto-btn" class="menu-btn">
+          <span class="menu-btn-icon">❓</span><span class="menu-btn-label">How to Play</span>
+        </button>
+      </div>
+      <p class="start-caption">35 levels · unlock the next as you clear each one</p>
+    </div>
+  </section>
+
+
+  <!-- ============ LEVEL SELECT SCREEN ============ -->
+  <section id="levels-screen" class="screen">
+    <div class="levels-card">
+      <header class="levels-header">
+        <button class="icon-btn back-btn" data-target="home-screen" aria-label="Back">‹</button>
+        <h2>Select Level</h2>
+        <div class="levels-header-actions">
+          <button id="howto-btn-levels" class="icon-btn" aria-label="How to play">?</button>
+        </div>
+      </header>
+      <p id="levels-progress-line" class="level-progress-line"></p>
+      <div class="levels-scroll">
+        <div id="levels-grid" class="levels-grid"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ GAME SCREEN ============ -->
+  <section id="game-screen" class="screen" data-bar="xl">
+    <!-- LEADER_BOARD 970x90 — shown ABOVE the board only on narrow windows
+         with no side gutter for the two 300x600 cards (phones, narrow
+         portrait), same role this placement plays in Pac-Man. Rotates
+         through the 'leaderboard' catalogue entries every 5s via
+         startImageAdRotation() in script.js. -->
+    <aside class="ad-leaderboard" id="ad-leaderboard" aria-hidden="true">
+      <img class="ad-leaderboard-img" src="/wp-content/uploads/gcm-games/13/b20261020095223-d4iuqs/ad-creditkey-leaderboard.png" width="970" height="90" alt="Advertisement">
+    </aside>
+
+    <!-- Static side ad: VERTICAL_BANNER 300x600, one whole-unit creative per
+         gutter. These are real flex items now (not fixed-position cards), so
+         the board simply gets the space that is left — which is what lets
+         them keep showing on tablet and phone instead of being switched off
+         below a desktop width. -->
+    <aside class="side-ad side-ad--left" id="side-ad-left" aria-hidden="true">
+      <img class="ad-unit-img" src="/wp-content/uploads/gcm-games/13/b20261020095223-d4iuqs/ad-creditkey-banner.png" width="300" height="600" alt="Advertisement">
+    </aside>
+
+    <div class="game-column" id="game-column">
+    <header class="topbar game-topbar">
+      <button class="icon-btn back-btn" data-target="levels-screen" aria-label="Back">
+        <svg viewbox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </button>
+      <div class="game-info">
+        <span id="level-label">Lvl 1</span>
+        <span id="difficulty-label" class="diff-chip diff-easy">Easy</span>
+      </div>
+      <div class="stats-inline">
+      <div class="stat-pill">
+        <svg viewbox="0 0 24 24" class="stat-icon"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"></circle><path d="M12 7v5l3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
+        <span id="timer">00:00</span>
+      </div>
+      <div class="stat-pill">
+        <svg viewbox="0 0 24 24" class="stat-icon"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0112 6a5.5 5.5 0 019.5 6c-2.5 4.5-9.5 9-9.5 9z" fill="none" stroke="currentColor" stroke-width="2"></path></svg>
+        <span id="mistakes">0/5</span>
+      </div>
+      <div class="stat-pill">
+        <svg viewbox="0 0 24 24" class="stat-icon"><circle cx="12" cy="12" r="9" fill="#F5B942" stroke="#D9971F" stroke-width="1.4"></circle><text x="12" y="16.5" text-anchor="middle" font-size="11" font-weight="700" fill="#8A5A0E">₵</text></svg>
+        <span id="coin-count-game">0</span>
+      </div>
+      </div>
+      <div class="topbar-actions">
+        <button id="sound-toggle-game" class="sound-toggle small" aria-label="Toggle sound">
+          <svg class="icon-on" viewbox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"></path><path d="M16.5 8.5a5 5 0 010 7M19 6a9 9 0 010 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg>
+          <svg class="icon-off" viewbox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"></path><path d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg>
+        </button>
+      </div>
+    </header>
+
+
+<!-- The board comes first and the pad sits directly UNDER it, so the
+         thing you look at is at eye level and the thing you reach for is
+         nearest your thumbs. -->
+    <div id="sudoku-board" class="sudoku-board"></div>
+
+    <div class="numpad" id="numpad">
+      <button class="num-btn" data-num="1">1</button>
+      <button class="num-btn" data-num="2">2</button>
+      <button class="num-btn" data-num="3">3</button>
+      <button class="num-btn" data-num="4">4</button>
+      <button class="num-btn" data-num="5">5</button>
+      <button class="num-btn" data-num="6">6</button>
+      <button class="num-btn" data-num="7">7</button>
+      <button class="num-btn" data-num="8">8</button>
+      <button class="num-btn" data-num="9">9</button>
+      <button class="num-btn erase-btn" id="erase-btn" aria-label="Clear cell">
+        <svg viewbox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path></svg>
+      </button>
+    </div>
+    </div><!-- /.game-column -->
+
+    <!-- Bottom bar. The stats (left) and the six buttons (right) are
+         Pac-Man's own markup — .bar-left / .header-title-group / .scoreboard
+         and .game-controls / .ctrl-btn with icon + label spans — with every
+         Pac-Man class under a "pm-" prefix, so Pac-Man's rules can be copied
+         across verbatim (see "PAC-MAN STANDARD: STATS, PAUSE, GAME OVER" at
+         the end of style.css) without colliding with Sudoku's own names.
+         Slot for slot: Level = Pac-Man's Level, Time = Score, Mistakes =
+         Lives, Coins = Coins. -->
+    <div class="pacman-gamebar pm-header" id="pacman-gamebar">
+      <div class="pm-bar-left">
+        <div class="pm-header-title-group">
+          <span class="pm-brand-tag-sm">Sudoku</span>
+          <h1 class="pm-title" id="levelTitle"><span class="pm-lvl-word">Level</span><span class="pm-lvl-num" id="bottom-level-num">1</span></h1>
+        </div>
+        <div class="pm-scoreboard">
+          <div class="pm-score-label pm-time-label" title="Time">
+            <span class="pm-stat-word">Time:</span>
+            <span id="bottom-timer">00:00</span>
+          </div>
+          <div class="pm-lives-label pm-mistakes-label" title="Mistakes">
+            <span class="pm-stat-word">Mistakes:</span>
+            <span id="bottom-mistakes">0/5</span>
+          </div>
+          <div class="pm-coin-pill pm-game-coin-pill" title="Your coins">
+            <span class="pm-coin-icon">🪙</span><span id="bottom-coins">0</span>
+          </div>
+        </div>
+      </div>
+      <div class="pacman-bar-controls pm-game-controls">
+        <button id="bottom-pause" class="pm-ctrl-btn pm-pause-btn" type="button" aria-pressed="false" title="Pause"><span class="pm-ico">⏸</span><span class="pm-lbl">Pause</span></button>
+        <button id="bottom-sound" class="pm-ctrl-btn pm-mute-btn pm-icon-only" type="button" aria-pressed="false" title="Sound on/off" aria-label="Sound on/off">🔊</button>
+        <button id="bottom-prev" class="pm-ctrl-btn" type="button" title="Previous level"><span class="pm-ico">⬅</span><span class="pm-lbl">Prev</span></button>
+        <button id="bottom-restart" class="pm-ctrl-btn" type="button" title="Restart"><span class="pm-lbl">Restart</span><span class="pm-ico">🔁</span></button>
+        <button id="bottom-next" class="pm-ctrl-btn" type="button" title="Next level"><span class="pm-lbl">Next</span><span class="pm-ico">➡</span></button>
+        <button id="bottom-exit" class="pm-ctrl-btn pm-exit-btn" type="button" title="Exit"><span class="pm-lbl">Exit</span><span class="pm-ico">✖</span></button>
+      </div>
+    </div>
+
+    <aside class="side-ad side-ad--right" id="side-ad-right" aria-hidden="true">
+      <img class="ad-unit-img" src="/wp-content/uploads/gcm-games/13/b20261020095223-d4iuqs/ad-creditkey-banner-2.png" width="300" height="600" alt="Advertisement">
+    </aside>
+  </section>
+
+  <!-- ============ HOW TO PLAY SCREEN ============ -->
+  <section id="howto-screen" class="screen">
+    <div class="howto-card">
+      <header class="levels-header">
+        <h2>How to Play</h2>
+        <button class="icon-btn" id="howto-close-btn" aria-label="Close">
+          <svg viewbox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"></path></svg>
+        </button>
+      </header>
+      <div class="howto-scroll">
+        <ul class="howto-list">
+          <li>The board is divided into 9x9 cells, grouped into 3x3 smaller boxes.</li>
+          <li>Each row, each column, and each 3x3 box must contain every number from 1 to 9 exactly once.</li>
+          <li>Tap an empty cell, then choose a number from the pad below.</li>
+          <li>Entering a wrong number will highlight the cell in red and count as a mistake.</li>
+          <li>After 5 mistakes it's Game Over: retry the level, or watch a short ad to continue the same board with your mistakes reset.</li>
+          <li>Use the cross (X) button to clear the number in the selected cell.</li>
+          <li>Fill the entire board correctly to complete the level and unlock the next one.</li>
+          <li>Difficulty increases with each level (Easy → Medium → Hard → Very Hard → Expert) as the number of clues decreases.</li>
+          <li>Use the speaker icon to turn sound on or off.</li>
+          <li>Earn coins for every level you finish and spend them in the Shop on themes, number styles and backgrounds.</li>
+        </ul>
+      </div>
+      <button class="btn btn-primary modal-ok" id="howto-gotit-btn">✔ Got it</button>
+    </div>
+  </section>
+
+  <!-- ============ SHOP SCREEN ============ -->
+  <section id="shop-screen" class="screen">
+    <div class="shop-card">
+      <header class="levels-header">
+        <button class="icon-btn back-btn" data-target="home-screen" aria-label="Back">‹</button>
+        <h2>Shop</h2>
+        <div class="levels-header-actions">
+          <div class="coin-badge shop-coin-badge">
+            <span class="coin-icon">🪙</span><span id="coin-count-shop">0</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="shop-tabs" id="shop-tabs">
+        <button class="shop-tab active" data-cat="themes">Themes</button>
+        <button class="shop-tab" data-cat="numstyles">Number Styles</button>
+        <button class="shop-tab" data-cat="backgrounds">Backgrounds</button>
+      </div>
+
+      <div class="shop-scroll">
+        <div class="shop-body">
+          <div class="shop-section" id="shop-cat-themes">
+            <div class="shop-grid" id="shop-themes"></div>
+          </div>
+          <div class="shop-section" id="shop-cat-numstyles" hidden>
+            <div class="shop-grid" id="shop-numstyles"></div>
+          </div>
+          <div class="shop-section" id="shop-cat-backgrounds" hidden>
+            <div class="shop-grid" id="shop-backgrounds"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ GAME OVER / CONGRATULATIONS ============
+       Pac-Man's #overlay .modal — ONE popup reused for both results, exactly
+       as in Pac-Man — element for element (same ids, same order,
+       Pac-Man's classes with a "pm-" prefix): close ×, title, message, then
+       Watch Ad & Continue / Retry Level / Level Select, then the
+       once-per-attempt note. Styled by Pac-Man's own rules at the end of
+       style.css; driven by handleGameOver() in script.js. -->
+  <div id="overlay" class="pm-overlay hidden">
+    <div class="pm-modal">
+      <button type="button" class="pm-close-x" id="modalCloseX" title="Close">✕</button>
+      <h2 id="modalTitle">Game Over 💀</h2>
+      <p id="modalMessage"></p>
+      <p id="modalCoins" class="pm-modal-coins hidden"></p>
+      <!-- IAB MREC 300x250, shown on the Congratulations popup only (Game
+           Over hides it). Rotates through the "level_complete_banner"
+           creatives every 5s while the popup is open. -->
+      <div id="modalBannerAd" class="pm-banner-ad-card hidden"></div>
+      <div class="pm-modal-buttons">
+        <button type="button" id="continueAdBtn" class="pm-menu-btn pm-continue-btn hidden">▶ Watch Ad &amp; Continue</button>
+        <button type="button" id="modalPrimaryBtn" class="pm-menu-btn pm-primary">🔁 Retry Level</button>
+        <!-- Replay the level before this one: Congratulations popup only,
+             and only when there is an earlier level to go back to. -->
+        <button type="button" id="modalPrevBtn" class="pm-menu-btn hidden">⬅ Previous Level</button>
+        <button type="button" id="modalSecondaryBtn" class="pm-menu-btn">🗺 Level Select</button>
+      </div>
+      <p id="continueNote" class="pm-continue-note hidden"></p>
+    </div>
+  </div>
+
+  <!-- ============ VIDEO AD OVERLAY ============ -->
+  <!-- Real local video-ad player (matches the shared ad architecture used
+       across the portfolio): an actual <video> element playing a bundled
+       MP4 from sponsor-media.json, not a static image with a fake timer. -->
+  <div class="ad-overlay hidden" id="ad-overlay">
+    <div class="ad-stage">
+      <div class="ad-topbar">
+        <span class="ad-badge">● Ad Playing</span>
+        <span class="ad-advertiser" id="ad-advertiser"></span>
+        <span class="ad-countdown" id="ad-countdown"></span>
+        <button id="ad-sound-toggle" class="sound-toggle small ad-sound-toggle" aria-label="Toggle ad sound">
+          <svg class="icon-on" viewbox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"></path><path d="M16.5 8.5a5 5 0 010 7M19 6a9 9 0 010 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg>
+          <svg class="icon-off" viewbox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"></path><path d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg>
+        </button>
+      </div>
+      <div class="ad-video-wrap">
+        <video id="ad-video" playsinline preload="auto"></video>
+        <p class="ad-status" id="ad-status">Loading ad…</p>
+      </div>
+      <div class="ad-actions">
+        <button type="button" id="ad-unmute-btn" class="btn btn-secondary ad-hidden">🔇 Tap for sound</button>
+        <button type="button" id="ad-skip-btn" class="btn btn-secondary ad-hidden">Skip ▶</button>
+      </div>
+      <p class="ad-reward-note" id="ad-reward-note"></p>
+    </div>
+  </div>
+
+  <!-- ============ CONFIRMATION DIALOG: WATCH 5 ADS ============
+       Pac-Man's #confirmOverlay, element for element (same ids, same order,
+       Pac-Man's classes with a "pm-" prefix). Tapping an ad-unlockable locked
+       level (Select Level, in-game Prev / Next, Level Complete's Previous)
+       pops this up FIRST so the player opts in before any video rolls. OK
+       closes it and plays the 5 ads back to back; Cancel just closes it.
+       Styled by Pac-Man's own rules at the end of style.css. -->
+  <div id="confirmOverlay" class="pm-overlay pm-confirm-overlay hidden">
+    <div class="pm-modal pm-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <h2 id="confirmTitle" class="pm-confirm-title">📺 Unlock Level</h2>
+      <p id="confirmMessage" class="pm-confirm-message"></p>
+      <p id="confirmSubMessage" class="pm-confirm-submessage hidden"></p>
+      <div class="pm-modal-buttons pm-confirm-buttons">
+        <button type="button" id="confirmOkBtn" class="pm-menu-btn pm-primary pm-confirm-ok-btn">✔ OK</button>
+        <button type="button" id="confirmCancelBtn" class="pm-menu-btn pm-confirm-cancel-btn">✖ Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/wp-content/uploads/gcm-games/13/b20261020095223-d4iuqs/icons.js"></script>
+  <script src="/wp-content/uploads/gcm-games/13/b20261020095223-d4iuqs/script.js"></script>
+</body>
+</html>

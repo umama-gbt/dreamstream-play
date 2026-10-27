@@ -1,0 +1,2987 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #dbe6e0;
+  --bg-gradient: linear-gradient(180deg, #eaf4ee 0%, #dcebe2 100%);
+  --surface: #e7f1eb;
+  --surface-2: #dbe8e0;
+  --tile-default: #d6e4dc;
+  --text: #182231;
+  --text-muted: #5b6675;
+  --border: rgba(24, 34, 49, 0.14);
+  --accent: #1f9d63;
+  --accent-strong: #167a4c;
+  --on-accent: #f5f9f6;
+  --danger: #d1453d;
+  --danger-strong: #a8362f;
+  --amber: #f2960f;
+  --navy: #1b2436;
+  --coin: #d69b1f;
+  --font: "Inter", "Poppins", sans-serif;
+
+  --shadow-sm: 0 2px 6px rgba(24, 34, 49, 0.12);
+  --shadow-md: 0 8px 22px rgba(24, 34, 49, 0.18);
+
+  /* board theme variables (overridden by JS when a theme is equipped) */
+  --board-bg: #2b2b2c;
+  --board-grid: rgba(255, 255, 255, 0.06);
+}
+
+* {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-gradient);
+  color: var(--text);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ---------- App frame: fixed-height, growing-width rectangle ---------- */
+.app-frame {
+  height: 100vh;
+  height: 100dvh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem;
+  overflow: hidden;
+}
+
+/* ---------- Wrapper ---------- */
+.wrapper {
+  position: relative;
+  height: auto;
+  max-height: min(920px, calc(100vh - 2rem));
+  max-height: min(920px, calc(100dvh - 2rem));
+  width: fit-content;
+  min-width: 340px;
+  max-width: 98vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  box-shadow: var(--shadow-md);
+  padding: 1.25rem;
+  overflow-x: auto;
+  overflow-y: auto;
+  /* NO transition on width/height — prevents the screen-switch shrink bug */
+}
+
+/* The menu screens (start / select level / customize) share one fixed card
+   size instead of each resizing the whole wrapper to its own content height. */
+.wrapper.menu-mode {
+  width: min(500px, 96vw);
+  height: min(700px, calc(100vh - 2rem));
+  height: min(700px, calc(100dvh - 2rem));
+  max-height: min(700px, calc(100vh - 2rem));
+  max-height: min(700px, calc(100dvh - 2rem));
+}
+
+/* ---------- Buttons (shared) ---------- */
+.btn {
+  padding: 0.6rem 1.1rem;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.2s, background 0.2s, border-color 0.2s, box-shadow 0.2s;
+  background: linear-gradient(135deg, #24b578, var(--accent-strong));
+  color: var(--on-accent);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn:hover {
+  background: linear-gradient(135deg, #2bcb85, var(--accent));
+  box-shadow: var(--shadow-md);
+  opacity: 1;
+}
+
+
+
+.btn-large {
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ---------- Logo ---------- */
+.logo-mine {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logo-icon-img {
+  display: block;
+  object-fit: contain;
+  animation: logoPop 0.5s ease backwards;
+  filter: drop-shadow(0 8px 16px rgba(31, 157, 99, 0.28));
+}
+
+@keyframes logoPop {
+  0% { transform: scale(0.6) rotate(-8deg); opacity: 0; }
+  60% { transform: scale(1.08) rotate(3deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+.logo-mine-lg .logo-icon-img {
+  width: 140px;
+  height: auto;
+  max-width: 100%;
+}
+
+
+.logo-wordmark {
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--accent-strong);
+}
+
+
+/* ---------- Coin pill ---------- */
+.coin-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  background: linear-gradient(135deg, rgba(214, 155, 31, 0.18), rgba(214, 155, 31, 0.06));
+  border: 1px solid rgba(214, 155, 31, 0.35);
+  border-radius: 999px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.95rem;
+  color: var(--coin);
+  flex-shrink: 0;
+}
+
+.coin-pill-corner {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.coin-pill-corner-left {
+  right: auto;
+  left: 1rem;
+}
+
+/* ---------- Icon button (mute/sound toggle) ---------- */
+.icon-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  transition: color 0.2s, transform 0.15s;
+  flex-shrink: 0;
+}
+
+.icon-btn:hover {
+  color: var(--text);
+}
+
+.icon-btn.muted {
+  color: var(--danger);
+}
+
+.icon-btn-corner {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}
+
+/* ---------- Start screen ---------- */
+.start-screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+  gap: 0.5rem;
+}
+
+.tagline {
+  color: var(--text-muted);
+  margin: 0.6rem 0 1.75rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.start-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  width: 100%;
+  max-width: 420px;
+}
+
+.start-actions .btn {
+  width: 100%;
+}
+
+.btn-play {
+  padding: 1rem 1.5rem;
+  font-size: 1.15rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #3fd07f 0%, #1f9d63 100%);
+  box-shadow: 0 6px 0 var(--accent-strong), var(--shadow-md);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.btn-play:hover {
+  background: linear-gradient(180deg, #47dd89, #1f9d63);
+}
+
+.btn-play:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 var(--accent-strong);
+}
+
+.start-actions-row {
+  display: flex;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+
+
+/* ---------- Start screen action cards ---------- */
+.action-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.9rem 0.4rem;
+  min-height: 84px;
+  border: none;
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+
+.action-card:hover {
+  background: var(--surface-2);
+  box-shadow: var(--shadow-md);
+  opacity: 1;
+}
+
+.action-card:active {
+  transform: scale(0.97);
+}
+
+.action-card-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.action-card-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.start-caption {
+  margin: 1.1rem 0 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  opacity: 0.85;
+}
+
+/* ---------- Level select screen ---------- */
+.level-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: center;
+  text-align: center;
+}
+
+.level-screen > p {
+  color: var(--text-muted);
+  margin: 0 0 1.25rem;
+  font-size: 1.1rem;
+}
+
+.level-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+  width: 100%;
+}
+
+.level-select-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  flex: 1;
+}
+
+.progress-text {
+  color: var(--text-muted);
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+}
+
+.level-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.6rem;
+  width: 100%;
+  max-width: 560px;
+  overflow-y: auto;
+  padding: 0.25rem;
+}
+
+.level-tile {
+  position: relative;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  background: var(--surface-2);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--font);
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s, background 0.2s;
+}
+
+.level-tile:hover:not(:disabled) {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.level-tile .level-num {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.level-tile .level-diff {
+  font-size: 0.5rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+}
+
+
+.level-tile.diff-beginner .level-diff { color: var(--accent); }
+.level-tile.diff-easy .level-diff { color: #4fa672; }
+.level-tile.diff-medium .level-diff { color: var(--amber); }
+.level-tile.diff-hard .level-diff { color: #e0763b; }
+.level-tile.diff-expert .level-diff { color: var(--danger); }
+
+.level-tile.completed {
+  border-color: var(--accent);
+  background: linear-gradient(160deg, rgba(31, 157, 99, 0.16), rgba(31, 157, 99, 0.05));
+}
+
+.level-tile.completed::after {
+  content: "\2713";
+  position: absolute;
+  top: 3px;
+  right: 5px;
+  font-size: 0.6rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.level-tile.locked {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.level-tile.locked .level-lock {
+  font-size: 1rem;
+}
+
+.level-tile:disabled {
+  cursor: not-allowed;
+}
+
+/* ---------- Customize screen ---------- */
+.customize-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  min-width: 0;
+  text-align: center;
+}
+
+.customize-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.75rem 0 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.customize-tab {
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.customize-tab.active {
+  background: linear-gradient(135deg, #24b578, var(--accent-strong));
+  color: var(--on-accent);
+  border-color: transparent;
+}
+
+.customize-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.85rem;
+  width: 100%;
+  max-width: 560px;
+  overflow-y: auto;
+  padding: 0.25rem 0.25rem 1rem;
+}
+
+.customize-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.75rem 0.5rem;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  background: var(--surface-2);
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s;
+  position: relative;
+}
+
+.customize-card:hover {
+  transform: translateY(-2px);
+}
+
+.customize-card.equipped {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(31, 157, 99, 0.25);
+}
+
+.customize-swatch {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.customize-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.customize-cost {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--coin);
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.customize-cost.owned {
+  color: var(--accent-strong);
+}
+
+.customize-card.locked .customize-swatch {
+  opacity: 0.55;
+}
+
+.customize-badge-equipped {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--accent-strong);
+}
+
+/* ---------- How to play button & nav ---------- */
+.how-to-play-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  flex-shrink: 0;
+}
+
+.how-to-play-btn:hover {
+  border-color: var(--text);
+  color: var(--text);
+  background: var(--surface);
+}
+
+.nav-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s, background 0.2s;
+  flex-shrink: 0;
+}
+
+.nav-btn:hover {
+  border-color: var(--accent);
+  background: var(--surface);
+}
+
+.nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.exit-btn {
+  font-size: 1.3rem;
+}
+
+.exit-btn:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+/* ---------- How to play modal ---------- */
+.how-to-play-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 21, 32, 0.82);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  padding: 1rem;
+}
+
+.how-to-play-modal {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  max-width: 440px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.how-to-play-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.how-to-play-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.how-to-play-close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s, background 0.2s;
+}
+
+.how-to-play-close:hover {
+  color: var(--text);
+  background: var(--tile-default);
+}
+
+.how-to-play-body {
+  padding: 1.25rem;
+}
+
+.how-to-play-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.how-to-play-list li {
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+/* ---------- Game screen ---------- */
+.game-screen {
+  height: 100%;
+  width: fit-content;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ---------- GAME HEADER: ALWAYS SINGLE LINE ON ALL SCREENS ---------- */
+.header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.header::-webkit-scrollbar {
+  display: none;
+}
+
+.header-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+
+
+
+
+.stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.85rem;
+  background: linear-gradient(135deg, var(--surface), var(--surface-2));
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-size: 1rem;
+}
+
+.stat-icon {
+  font-size: 1rem;
+}
+
+/* Compact header elements — always applied (not behind a media query)
+   so the single line fits on every screen width. */
+.header .nav-btn,
+.header .how-to-play-btn {
+  width: 28px;
+  height: 28px;
+  font-size: 0.9rem;
+}
+
+
+.header .stat-pill {
+  padding: 0.3rem 0.55rem;
+  gap: 0.22rem;
+  font-size: 0.82rem;
+}
+
+
+
+/* ---------- Game board ---------- */
+.game-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.mine-board {
+  position: relative;
+  box-shadow: 0 0 2px #000, 0 4px 14px rgba(0, 0, 0, 0.4);
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.mine-board canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  cursor: pointer;
+}
+/* No tap / selection flash over the board: phone browsers otherwise paint
+   their default highlight (blue on Android, grey on iOS) over the whole
+   canvas on every tap, and the long-press callout menu is suppressed too. */
+.mine-board,
+.mine-board canvas {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  outline: none;
+}
+/* Double-tap on the board is a game action (chord), not a zoom, and taps
+   register without the browser's double-tap wait. */
+.mine-board canvas { touch-action: manipulation; }
+
+/* ---------- Mobile responsive ---------- */
+@media (max-width: 480px) {
+  .wrapper {
+    min-width: 0;
+    width: 100%;
+    padding: 0.75rem;
+  }
+
+  .wrapper.menu-mode {
+    width: 100%;
+    height: min(680px, calc(100dvh - 1rem));
+    max-height: min(680px, calc(100dvh - 1rem));
+  }
+
+  .customize-screen {
+    min-width: 0;
+  }
+
+  .logo-mine-lg .logo-icon-img {
+    width: 110px;
+  }
+
+  .level-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .customize-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Extra compact header on very small screens */
+  .header .nav-btn,
+  .header .how-to-play-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 0.8rem;
+  }
+
+  
+  .header .stat-pill {
+    padding: 0.25rem 0.45rem;
+    gap: 0.18rem;
+    font-size: 0.72rem;
+  }
+
+  
+  
+  .start-screen {
+    max-width: 100%;
+  }
+
+  .start-actions {
+    max-width: 100%;
+  }
+}
+
+/* Tablet responsive */
+@media (min-width: 481px) and (max-width: 768px) {
+  .wrapper {
+    min-width: 0;
+    padding: 1rem;
+  }
+
+  .logo-mine-lg .logo-icon-img {
+    width: 120px;
+    max-width: 100%;
+  }
+}
+
+/* ---------- Pause cover ----------
+   Absolutely positioned over the board, so it hides the grid without being
+   part of the layout that sizes it — the board's box is unchanged whether
+   the game is paused or not, and resuming cannot shift anything. */
+.mine-board { position: relative; }
+
+.pause-cover {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background: var(--surface, #fff);
+  border-radius: 10px;
+  z-index: 5;
+}
+
+.pause-cover.hidden { display: none; }
+
+.pause-cover-icon { font-size: 2rem; line-height: 1; }
+
+.pause-cover-text {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  opacity: 0.75;
+}
+
+/* ---------- The game card fills the space it is given ----------
+   The board keeps SQUARE tiles — that is not negotiable in Minesweeper, the
+   sprite art and the hit-testing both depend on it — so a 12x8 grid can
+   only ever be as big as the shorter side of its box allows. On a portrait
+   tablet that means the board tops out on width and cannot reach the bottom
+   of the column however it is sized: at 853x1280 it is 768 across and 512
+   tall in a column with 815 to give. No amount of tuning reaches that.
+   What CAN be fixed is that the leftover was bare page. The card was
+   `width: fit-content` with a 920px height cap, so it shrank to the board
+   and floated in the middle of the screen with background above, below and
+   to both sides. In game mode it now takes the whole space between the ad
+   cards and the board is centred inside it — the same pixels, but as the
+   game's own panel rather than as a gap around it. */
+.wrapper:not(.menu-mode) {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  justify-content: flex-start;
+}
+
+.wrapper:not(.menu-mode) .game-screen {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.wrapper:not(.menu-mode) .game-container {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =======================================================================
+   PAC-MAN STANDARD — START (LOGO) / LEVEL / CUSTOMIZE (SHOP) / HOW TO PLAY
+   -----------------------------------------------------------------------
+   These four screens now use the exact same card, sizes, spacing, type,
+   buttons, icons and responsive tiers as Pac-Man's Menu, Level Select,
+   Shop and How to Play screens. Every value below is copied from
+   Pac-Man's style.css; the only substitution is the brand colour —
+   where Pac-Man paints its yellow (Play / Got it / sound button, cleared
+   level tiles, list bullets, equipped outline) Minesweeper keeps its own
+   green. Everything here is scoped to those four screens, so the game
+   screen, the result popup and the ad overlays are untouched.
+   ======================================================================= */
+:root {
+  --ps-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ps-text: #1b2437;
+  --ps-title: #223047;
+  --ps-brand: linear-gradient(135deg, #34c97f, #1f9d63);
+  --ps-brand-hover: linear-gradient(135deg, #42d68b, #24ad6d);
+  --ps-brand-solid: #1f9d63;
+  --ps-brand-ink: #ffffff;
+  --ps-brand-glow: rgba(31, 157, 99, 0.45);
+  --ps-brand-glow-strong: rgba(31, 157, 99, 0.55);
+}
+@keyframes psFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+#startScreen, #startScreen *, #startScreen *::before, #startScreen *::after,
+#levelScreen, #levelScreen *, #levelScreen *::before, #levelScreen *::after,
+#customizeScreen, #customizeScreen *, #customizeScreen *::before, #customizeScreen *::after,
+#howToPlayOverlay, #howToPlayOverlay *, #howToPlayOverlay *::before, #howToPlayOverlay *::after {
+  box-sizing: border-box;
+  font-family: var(--ps-font);
+  -webkit-font-smoothing: auto;
+}
+#startScreen button, #levelScreen button, #customizeScreen button, #howToPlayOverlay button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* ---------- The card (Pac-Man .screen) ---------- */
+.wrapper.menu-mode {
+  width: min(500px, 96vw);
+  min-width: 0;
+  max-width: none;
+  height: min(700px, calc(100dvh - 2rem));
+  max-height: min(700px, calc(100dvh - 2rem));
+  flex-shrink: 0;
+  padding: 0;
+  background: #ffffff;
+  border: 1px solid rgba(90, 120, 160, 0.14);
+  border-radius: 22px;
+  box-shadow: 0 10px 30px rgba(90, 120, 170, 0.12);
+  color: var(--ps-text);
+  overflow: hidden;
+}
+#startScreen,
+#levelScreen,
+#customizeScreen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  min-height: 0;
+  padding: 1.25rem;
+  color: var(--ps-text);
+  text-align: center;
+  animation: psFadeIn 0.2s ease;
+}
+
+/* ===================== START / LOGO SCREEN (Pac-Man Menu) ===================== */
+#startScreen {
+  justify-content: safe center;
+  gap: 0;
+  overflow-y: auto;
+}
+#startScreen > .logo-mine,
+#startScreen > .tagline,
+#startScreen > .start-actions,
+#startScreen > .start-caption {
+  width: 100%;
+  max-width: 420px;
+  margin-left: auto;
+  margin-right: auto;
+}
+/* Top bar: coin pill left, sound button right — 40px each, 1rem in. */
+#startScreen .coin-pill-corner {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  right: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0 0.85rem;
+  background: #fff3c4;
+  border: 1.5px solid #ffd670;
+  border-radius: 999px;
+  color: #7a5b00;
+  font-weight: 700;
+  font-size: 0.95rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+#startScreen .coin-pill-corner .stat-icon,
+#customizeScreen .coin-pill .stat-icon {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+#startScreen #muteBtn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--ps-brand);
+  color: var(--ps-brand-ink);
+  font-size: 1.1rem;
+  box-shadow: 0 3px 8px rgba(31, 157, 99, 0.4);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.15s ease;
+}
+#startScreen #muteBtn:hover { background: var(--ps-brand-hover); color: var(--ps-brand-ink); }
+#startScreen #muteBtn:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 5px rgba(31, 157, 99, 0.4);
+}
+#startScreen #muteBtn.muted {
+  background: linear-gradient(135deg, #dfe4ec, #c7cedb);
+  color: #454f61;
+  box-shadow: 0 3px 8px rgba(120, 130, 150, 0.35);
+}
+#startScreen #muteBtn.muted:hover { background: linear-gradient(135deg, #e7ebf2, #d2d8e3); }
+#startScreen #muteIcon { display: inline-flex; align-items: center; line-height: 1; }
+
+/* Logo + title */
+#startScreen .logo-mine-lg {
+  gap: 0;
+}
+#startScreen .logo-mine-lg .logo-icon-img {
+  width: auto;
+  height: 120px;
+  max-width: 78%;
+  margin: 0 auto;
+  object-fit: contain;
+}
+#startScreen .logo-wordmark {
+  display: block;
+  width: 100%;
+  margin-top: 0.5rem;
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: normal;
+  color: var(--ps-title);
+  text-align: center;
+}
+#startScreen .tagline {
+  margin: 0.6rem auto 1.75rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: normal;
+  color: var(--ps-text);
+  opacity: 0.75;
+  text-align: center;
+}
+
+/* Play across the top, the three action cards in one row beneath it. */
+#startScreen .start-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 0;
+}
+#startScreen .btn-play {
+  width: 100%;
+  margin-bottom: 0.45rem;
+  padding: 1rem 1.5rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--ps-brand);
+  color: var(--ps-brand-ink);
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: normal;
+  box-shadow: 0 4px 14px var(--ps-brand-glow);
+  transition: transform 0.1s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+#startScreen .btn-play:hover {
+  background: var(--ps-brand-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px var(--ps-brand-glow-strong);
+}
+#startScreen .btn-play:active { transform: translateY(1px); box-shadow: 0 4px 14px var(--ps-brand-glow); }
+#startScreen .start-actions-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.55rem;
+  width: 100%;
+}
+#startScreen .action-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-width: 0;
+  min-height: 78px;
+  padding: 0.8rem 0.6rem;
+  border: 1px solid rgba(90, 120, 160, 0.18);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--ps-title);
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.25;
+  box-shadow: 0 3px 10px rgba(90, 120, 170, 0.12);
+  transition: transform 0.1s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+#startScreen .action-card:hover {
+  background: #f5f9ff;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(90, 120, 170, 0.18);
+}
+#startScreen .action-card:active { transform: translateY(1px); }
+#startScreen .action-card-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+#startScreen .action-card-label {
+  max-width: 100%;
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+#startScreen .start-caption {
+  margin: 1.1rem auto 0;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--ps-text);
+  opacity: 0.7;
+  text-align: center;
+}
+@media (max-width: 420px) {
+  #startScreen .action-card { font-size: 0.8rem; }
+}
+@media (max-height: 700px) {
+  #startScreen { padding: 1rem; }
+  #startScreen .tagline { margin-bottom: 1.1rem; }
+  #startScreen .logo-mine-lg .logo-icon-img { width: auto; height: 88px; }
+}
+@media (max-height: 620px) {
+  #startScreen .action-card { min-height: 58px; padding: 0.5rem; gap: 0.25rem; }
+  #startScreen .action-card-icon { font-size: 1.15rem; }
+  #startScreen .action-card-label { font-size: 0.76rem; }
+}
+
+/* ===================== LEVEL SCREEN (Pac-Man Level Select) ===================== */
+#levelScreen {
+  justify-content: flex-start;
+  overflow: hidden;
+}
+#levelScreen > *,
+#customizeScreen > * {
+  width: 100%;
+  max-width: 420px;
+  margin-left: auto;
+  margin-right: auto;
+}
+/* Shared top bar: round back button | centred title | right-hand item */
+#levelScreen .level-title-row,
+#customizeScreen .level-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  width: 100%;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+#levelScreen .level-title-row > *,
+#customizeScreen .level-title-row > * {
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  margin: 0;
+}
+#levelScreen .nav-btn,
+#levelScreen .how-to-play-btn,
+#customizeScreen .nav-btn {
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+  justify-content: center;
+  border: 1px solid rgba(217, 67, 67, 0.4);
+  border-radius: 50%;
+  background: rgba(217, 67, 67, 0.1);
+  color: #d94343;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1;
+  opacity: 1;
+  transition: none;
+}
+#levelScreen .how-to-play-btn { font-weight: 800; }
+#levelScreen .nav-btn:hover,
+#levelScreen .how-to-play-btn:hover,
+#customizeScreen .nav-btn:hover {
+  background: rgba(217, 67, 67, 0.2);
+  border-color: rgba(217, 67, 67, 0.4);
+  color: #d94343;
+}
+#levelScreen .level-select-title,
+#customizeScreen .level-select-title {
+  flex: 1 1 auto;
+  justify-content: center;
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  text-transform: none;
+  letter-spacing: 0;
+  line-height: normal;
+  white-space: nowrap;
+  text-align: center;
+  color: var(--ps-title);
+}
+#levelScreen .progress-text {
+  margin: 0.35rem auto 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: normal;
+  color: var(--ps-text);
+  opacity: 0.75;
+  text-align: center;
+}
+#levelScreen .level-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.6rem;
+  width: 100%;
+  max-width: 420px;
+  max-height: none;
+  margin: 0.9rem auto 0;
+  padding: 2px 4px 0.4rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  align-content: start;
+}
+#levelScreen .level-tile {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  min-width: 0;
+  padding: 0.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  border: 1px solid rgba(90, 120, 160, 0.18);
+  border-radius: 10px;
+  background: #ffffff;
+  color: var(--ps-title);
+  font-size: 0.83rem;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(90, 120, 170, 0.1);
+  opacity: 1;
+  cursor: pointer;
+  transition: transform 0.1s ease, background 0.15s ease;
+}
+#levelScreen .level-tile:hover:not(:disabled) { transform: none; border-color: rgba(90, 120, 160, 0.18); }
+/* The level you can play next (Pac-Man "unlocked") */
+#levelScreen .level-tile:not(.locked):not(.completed) {
+  background: #e3f8ee;
+  border-color: #2ee6a6;
+  color: #0f5a44;
+}
+#levelScreen .level-tile:not(.locked):not(.completed):hover {
+  background: #cdf3e1;
+  border-color: #2ee6a6;
+  transform: translateY(-1px);
+}
+/* Cleared levels (Pac-Man "completed": filled with the brand colour) */
+#levelScreen .level-tile.completed,
+#levelScreen .level-tile.completed:hover:not(:disabled) {
+  background: var(--ps-brand);
+  border-color: var(--ps-brand-solid);
+  color: var(--ps-brand-ink);
+}
+#levelScreen .level-tile.completed .level-diff { color: var(--ps-brand-ink); }
+#levelScreen .level-tile.completed::after { color: var(--ps-brand-ink); }
+#levelScreen .level-tile.locked {
+  background: #e8ebf1;
+  border-color: rgba(90, 120, 160, 0.22);
+  color: #7c8aa0;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+#levelScreen .level-tile .level-num {
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1;
+}
+#levelScreen .level-tile .level-lock {
+  font-size: 0.72rem;
+  line-height: 1;
+  opacity: 0.85;
+}
+#levelScreen .level-tile .level-diff {
+  display: block;
+  margin-top: 0.1rem;
+  padding: 0 3px;
+  font-size: 0.5rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.1;
+  white-space: nowrap;
+  text-align: center;
+  opacity: 0.9;
+}
+#levelScreen .level-tile.diff-easy:not(.locked):not(.completed) .level-diff { color: #1f9d6f; }
+#levelScreen .level-tile.diff-medium:not(.locked):not(.completed) .level-diff { color: #c98a12; }
+#levelScreen .level-tile.diff-hard:not(.locked):not(.completed) .level-diff { color: #d9534f; }
+#levelScreen .level-tile.diff-expert:not(.locked):not(.completed) .level-diff { color: #7c4dff; }
+@media (max-width: 480px) {
+  #levelScreen .level-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.65rem;
+    margin-top: 0.75rem;
+  }
+  #levelScreen .progress-text { font-size: 0.78rem; }
+  #levelScreen .level-tile .level-num { font-size: 1rem; }
+  #levelScreen .level-tile .level-lock { font-size: 0.68rem; }
+}
+/* Tablets (touch, 600–1400px wide): the 30 tiles fill the card, 5 × 6. */
+@media (pointer: coarse) and (min-width: 600px) and (min-height: 600px) and (max-width: 1400px) {
+  html body #levelScreen > * { max-width: 100%; }
+  html body #levelScreen .level-grid {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-width: 100%;
+    margin: 0.9rem auto 0;
+    padding-bottom: 0;
+    gap: 0.75rem;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(6, minmax(0, 1fr));
+    align-content: stretch;
+    overflow: visible;
+  }
+  html body #levelScreen .level-tile {
+    aspect-ratio: auto;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    border-radius: 16px;
+    gap: 0.2rem;
+  }
+  html body #levelScreen .level-tile .level-num { font-size: 1.7rem; }
+  html body #levelScreen .level-tile .level-lock { font-size: 1.1rem; }
+  html body #levelScreen .level-tile .level-diff { font-size: 0.66rem; margin-top: 0.1rem; }
+}
+@media (pointer: coarse) and (min-width: 600px) and (min-height: 600px) and (max-width: 1400px) and (max-height: 700px) {
+  html body #levelScreen .level-grid { gap: 0.55rem; margin-top: 0.6rem; }
+  html body #levelScreen .level-tile { border-radius: 14px; }
+  html body #levelScreen .level-tile .level-num { font-size: 1.35rem; }
+  html body #levelScreen .level-tile .level-lock { font-size: 0.95rem; }
+  html body #levelScreen .level-tile .level-diff { font-size: 0.58rem; }
+}
+
+/* ===================== CUSTOMIZE SCREEN (Pac-Man Shop) ===================== */
+#customizeScreen {
+  justify-content: flex-start;
+  min-width: 0;
+}
+#customizeScreen .level-title-row .coin-pill {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  padding: 5px 12px;
+  background: #fff3c4;
+  border: 1.5px solid #ffd670;
+  border-radius: 999px;
+  color: #7a5b00;
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+#customizeScreen .customize-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem;
+  max-width: 420px;
+  margin: 0.6rem auto 0.2rem;
+}
+#customizeScreen .customize-tab {
+  padding: 0.34rem 0.7rem;
+  border: 2px solid #b8c0ff;
+  border-radius: 999px;
+  background: #f8f9fa;
+  color: #495057;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: normal;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+#customizeScreen .customize-tab.active {
+  background: #b8c0ff;
+  border-color: #b8c0ff;
+  color: #2b2d42;
+}
+#customizeScreen .customize-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 420px;
+  margin: 0.6rem auto 0;
+  padding: 2px 4px 8px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  /* Pac-Man's shop holds 7 items = 3 rows, and its cards take a third of the
+     grid each. Minesweeper's tabs hold 5, so the grid is given the same three
+     rows; without this the two rows of cards stretched to fill the space and
+     came out half as tall again as Pac-Man's. */
+  grid-template-rows: repeat(3, minmax(max-content, 1fr));
+}
+#customizeScreen .customize-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  min-width: 0;
+  padding: 0.85rem;
+  border: 2px solid rgba(90, 120, 160, 0.18);
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--ps-text);
+  font-size: 1rem;
+  text-align: center;
+  box-shadow: none;
+  cursor: pointer;
+  transition: none;
+}
+#customizeScreen .customize-card:hover { transform: none; }
+#customizeScreen .customize-card.equipped {
+  border-color: #35c9e0; /* Pac-Man .shop-item.equipped-item */
+  box-shadow: 0 0 0 2px rgba(53, 201, 224, 0.25);
+}
+#customizeScreen .customize-swatch {
+  width: 100%;
+  height: 46px;
+  border: none;
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+#customizeScreen .customize-card.locked .customize-swatch { opacity: 1; }
+#customizeScreen .customize-name {
+  min-height: 2.4em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--ps-title);
+  text-align: center;
+}
+/* The price / status line is drawn as Pac-Man's shop button pill. */
+#customizeScreen .customize-cost {
+  display: block;
+  width: 100%;
+  margin-top: auto;
+  padding: 0.4rem 0.3rem;
+  border-radius: 999px;
+  background: #ffd670;
+  color: #7a5b00;
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: normal;
+  white-space: nowrap;
+  text-align: center;
+  transition: all 0.15s;
+}
+#customizeScreen .customize-card:hover .customize-cost { background: #ffc94d; }
+#customizeScreen .customize-card.cant-afford .customize-cost,
+#customizeScreen .customize-card.cant-afford:hover .customize-cost {
+  background: #e9ecef;
+  color: #adb5bd;
+}
+#customizeScreen .customize-cost.owned { background: #b8c0ff; color: #2b2d42; }
+#customizeScreen .customize-card:hover .customize-cost.owned { background: #a3abff; }
+#customizeScreen .customize-card.equipped .customize-cost,
+#customizeScreen .customize-card.equipped:hover .customize-cost {
+  background: #95d5b2;
+  color: #1b4332;
+  cursor: default;
+}
+#customizeScreen .customize-card.equipped { cursor: default; }
+/* "Equipped" is already written on the pill. */
+#customizeScreen .customize-badge-equipped { display: none; }
+@media (max-width: 480px) {
+  #customizeScreen .customize-grid { grid-template-columns: repeat(3, 1fr); }
+  #customizeScreen .customize-cost { font-size: 0.68rem; padding: 0.35rem 0.2rem; }
+  #customizeScreen .customize-name { font-size: 0.8rem; }
+}
+@media (max-width: 380px) {
+  /* Pac-Man's 7 items fill 4 rows here, which overflow, so its cards stay at
+     their natural height instead of stretching; same height here. */
+  #customizeScreen .customize-grid { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; grid-template-rows: none; grid-auto-rows: max-content; align-content: start; }
+  #customizeScreen .customize-card { padding: 0.7rem 0.6rem; }
+  #customizeScreen .customize-cost { font-size: 0.72rem; }
+}
+
+/* ---------- Customize: one fixed card, grid fills it (all devices) ----------
+   BUG FIX: the Customize card changed size from device to device and did not
+   match the other menu screens. On portrait phones (and a 600px tablet) it
+   shrank to its content (e.g. 470px tall where Start / Select Level are
+   700px); on desktop and tablets the card kept Pac-Man's size but its 5 items
+   used two of three rows, leaving ~190px blank at the bottom; on small and
+   landscape phones the cards did not fit and the grid scrolled with cards cut
+   off.
+   Now the card is exactly Pac-Man's .screen card at every breakpoint — the
+   same size as Start and Select Level (width min(500px, 96vw), height
+   min(700px, 100dvh - 2rem), same padding, header, title, coin pill and tab
+   sizes). Inside it the grid takes all the height left under the tabs and
+   its rows share it equally, so the cards fill the card with no blank band
+   and nothing to scroll. The colour preview in each card is what grows or
+   shrinks with the room; name, price pill, fonts and paddings keep Pac-Man's
+   shop sizes. Colours and behaviour are unchanged. */
+#customizeScreen { overflow: hidden; }
+#customizeScreen .customize-grid {
+  flex: 1 1 0;
+  min-height: 0;
+  grid-template-rows: none;
+  grid-auto-rows: minmax(0, 1fr);
+  align-content: stretch;
+  overflow-x: hidden;
+  overflow-y: auto; /* safety net only: the rows are sized to fit */
+}
+#customizeScreen .customize-card {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  container-type: size; /* lets the flag preview scale with its card */
+}
+#customizeScreen .customize-swatch {
+  flex: 1 1 46px;
+  height: auto;
+  min-height: 22px;
+}
+/* Flag previews are an icon in the swatch: it grows with the card (Pac-Man
+   size, 1.4rem, is the fallback where container units are unsupported). */
+@supports (height: 1cqh) {
+  #customizeScreen .customize-swatch { font-size: clamp(1rem, calc((100cqh - 95px) * 0.5), 3rem); }
+}
+#customizeScreen .customize-name,
+#customizeScreen .customize-cost { flex: 0 0 auto; }
+/* <= 380px: Pac-Man's two columns; 5 items = 3 rows sharing the height. */
+@media (max-width: 380px) {
+  #customizeScreen .customize-grid {
+    grid-template-rows: none;
+    grid-auto-rows: minmax(0, 1fr);
+    align-content: stretch;
+  }
+}
+/* Phones on their side (short screens): the card is only ~290-420px tall,
+   too short for two rows of cards, so the 5 items sit in one row of five
+   that fills the width and the height — no scrolling, no cut-off cards.
+   The header, tabs and spacing tighten the same way as the other menu
+   screens' short-landscape tier. */
+@media (orientation: landscape) and (max-height: 520px) {
+  #customizeScreen { gap: 8px; padding: 0.8rem 1rem 0.9rem; }
+  /* five across need the card's full inner width (Pac-Man's 420px cap
+     is for its three-across grid) */
+  #customizeScreen > .customize-grid { max-width: none; }
+  #customizeScreen .customize-tabs { margin: 0.25rem auto 0; }
+  #customizeScreen .customize-tab { padding: 0.26rem 0.7rem; }
+  #customizeScreen .customize-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+  }
+  #customizeScreen .customize-card { padding: 0.55rem 0.4rem; gap: 4px; }
+  #customizeScreen .customize-name { font-size: 0.72rem; min-height: 2.4em; }
+  #customizeScreen .customize-cost { font-size: 0.64rem; padding: 0.3rem 0.1rem; }
+}
+
+/* ===================== HOW TO PLAY (Pac-Man How to Play screen) =====================
+   Still opened from the start, level and game screens exactly as before;
+   it now takes the place of the card the way Pac-Man's screen does,
+   instead of a dark popup over it. */
+.how-to-play-overlay {
+  background: var(--bg-gradient);
+  padding: 6px;
+}
+#howToPlayOverlay .how-to-play-modal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  width: min(500px, 96vw);
+  max-width: none;
+  height: auto;
+  max-height: min(700px, calc(100dvh - 2rem));
+  padding: 1.25rem;
+  background: #ffffff;
+  border: 1px solid rgba(90, 120, 160, 0.14);
+  border-radius: 22px;
+  box-shadow: 0 10px 30px rgba(90, 120, 170, 0.12);
+  color: var(--ps-text);
+  overflow: hidden;
+  animation: psFadeIn 0.2s ease;
+}
+#howToPlayOverlay .how-to-play-modal > * {
+  width: 100%;
+  max-width: 420px;
+  margin-left: auto;
+  margin-right: auto;
+}
+#howToPlayOverlay .how-to-play-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0;
+  border-bottom: none;
+}
+#howToPlayOverlay .how-to-play-header > * {
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  margin: 0;
+}
+#howToPlayOverlay .how-to-play-header h2 {
+  flex: 1 1 auto;
+  justify-content: flex-start;
+  font-size: 1.5rem;
+  font-weight: 800;
+  text-transform: none;
+  letter-spacing: 0;
+  line-height: normal;
+  color: var(--ps-title);
+}
+#howToPlayOverlay .how-to-play-close {
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+  justify-content: center;
+  border: 1px solid rgba(217, 67, 67, 0.4);
+  border-radius: 50%;
+  background: rgba(217, 67, 67, 0.1);
+  color: #d94343;
+  font-size: 1rem;
+  line-height: 1;
+  transition: none;
+}
+#howToPlayOverlay .how-to-play-close:hover {
+  background: rgba(217, 67, 67, 0.2);
+  color: #d94343;
+}
+#howToPlayOverlay .how-to-play-body {
+  flex: 0 1 auto;
+  min-height: 0;
+  padding: 0;
+  overflow-y: auto;
+  background: none;
+  text-align: left;
+}
+#howToPlayOverlay .how-to-play-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0.2rem 0 0.6rem;
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+#howToPlayOverlay .how-to-play-list li {
+  padding-left: 1rem;
+  text-indent: -1rem;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+}
+#howToPlayOverlay .how-to-play-list li::before {
+  content: "\2022  ";
+  color: var(--ps-brand-solid);
+  font-weight: 700;
+}
+#howToPlayOverlay #howToPlayGotIt {
+  flex: 0 0 auto;
+  align-self: center;
+  width: auto;
+  min-width: 140px;
+  margin-top: 0.9rem;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 999px;
+  background: var(--ps-brand);
+  color: var(--ps-brand-ink);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: normal;
+  cursor: pointer;
+  box-shadow: 0 4px 14px var(--ps-brand-glow);
+  transition: transform 0.1s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+#howToPlayOverlay #howToPlayGotIt:hover {
+  background: var(--ps-brand-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px var(--ps-brand-glow-strong);
+}
+#howToPlayOverlay #howToPlayGotIt:active { transform: translateY(1px); }
+@media (max-width: 600px) and (orientation: portrait), (max-height: 520px) {
+  #howToPlayOverlay .how-to-play-list { font-size: 0.78rem; gap: 0.55rem; }
+  #howToPlayOverlay .how-to-play-header h2 { font-size: 1.2rem; }
+}
+
+/* ===================== SHORT LANDSCAPE PHONES (Pac-Man menu tier) ===================== */
+@media screen and (orientation: landscape) and (max-height: 640px) {
+  .wrapper.menu-mode:has(> #startScreen:not(.hidden)) {
+    height: calc(100dvh - 12px);
+    max-height: calc(100dvh - 12px);
+  }
+  .wrapper.menu-mode #startScreen {
+    padding: 2.4rem 0.9rem 0.6rem;
+    gap: 0;
+    justify-content: safe center;
+    overflow: hidden;
+  }
+  .wrapper.menu-mode #startScreen .coin-pill-corner { top: 0.4rem; left: 0.7rem; height: 30px; min-height: 30px; font-size: 0.8rem; }
+  .wrapper.menu-mode #startScreen #muteBtn { top: 0.4rem; right: 0.7rem; width: 30px; height: 30px; min-height: 30px; font-size: 0.95rem; }
+  .wrapper.menu-mode #startScreen .logo-mine-lg { flex: 0 1 auto; min-height: 0; }
+  .wrapper.menu-mode #startScreen .logo-mine-lg .logo-icon-img {
+    flex: 0 1 auto;
+    min-height: 0;
+    height: clamp(38px, 22vh, 110px);
+    width: auto;
+    max-width: 62%;
+    object-fit: contain;
+    margin: 0 auto;
+  }
+  .wrapper.menu-mode #startScreen .logo-wordmark { font-size: clamp(1.05rem, 4.6vh, 2.2rem); line-height: 1.1; margin-top: 0.3rem; }
+  .wrapper.menu-mode #startScreen .tagline { font-size: clamp(0.55rem, 2vh, 0.85rem); margin: 0.3rem auto 0.5rem; }
+  .wrapper.menu-mode #startScreen .start-actions { margin-top: 0; gap: 0.35rem; }
+  .wrapper.menu-mode #startScreen .start-actions-row { gap: 0.35rem; }
+  .wrapper.menu-mode #startScreen .btn-play {
+    padding: clamp(0.35rem, 1.8vh, 1rem) 1.5rem;
+    font-size: clamp(0.85rem, 3.4vh, 1.15rem);
+    margin-bottom: 0.2rem;
+  }
+  .wrapper.menu-mode #startScreen .action-card { min-height: clamp(40px, 16vh, 84px); padding: 0.4rem 0.3rem; gap: 0.2rem; }
+  .wrapper.menu-mode #startScreen .action-card-icon { font-size: clamp(0.9rem, 3.4vh, 1.5rem); }
+  .wrapper.menu-mode #startScreen .action-card-label { font-size: clamp(0.62rem, 2.2vh, 0.84rem); }
+  .wrapper.menu-mode #startScreen .start-caption { display: none; }
+}
+/* =================== END PAC-MAN STANDARD =================== */
+
+/* =======================================================================
+   PAC-MAN STANDARD — GAMEPLAY SCREEN
+   -----------------------------------------------------------------------
+   Ported from Pac-Man's style.css "FINAL GAME BAR + LANDSCAPE FRAME"
+   block (tokens, tiers and selectors' roles one for one) plus its board
+   frame, hint line, side-rail / leaderboard and carousel rules:
+     - no card around the game: full-screen frame, safe-area aware;
+     - board column on top (board area + desktop hint line), the bar along
+       the bottom (#gameScreen is column-reverse), full width;
+     - the Minesweeper grid is centred in the board area, both ways;
+     - bar = 3-column grid [ stats | centre | buttons ], equal outer
+       columns, height = --joy + 2 x --bar-pad-y, same tiers as Pac-Man;
+     - stats = title block + Mines / Time / Coins chips in Pac-Man's
+       Score / Lives / Coins slots, same chip tokens, words and icons;
+     - ads placed by fitGameLayout() (Pac-Man's geometry, see routines.js).
+   Colours: Pac-Man's own, with Pac-Man's yellow brand colour swapped for
+   Minesweeper's green — the same rule as the four menu screens. Scoped to
+   the game screen and the display ads; menus, popups and the video ad are
+   not touched.
+   ======================================================================= */
+
+/* ---------- Frame: full screen while playing ---------- */
+html.ms-game .app-frame {
+  padding: 0;
+  gap: 0;
+}
+html.ms-game .app-frame > .wrapper:not(.menu-mode) {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  max-width: none;
+  max-height: none;
+  padding-top: max(4px, env(safe-area-inset-top, 0px));
+  padding-right: max(4px, env(safe-area-inset-right, 0px));
+  padding-bottom: max(4px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(4px, env(safe-area-inset-left, 0px));
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: hidden;
+}
+html.ms-game #gameScreen {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: stretch;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: calc(4px + var(--ad-band, 0px)) 4px 4px;
+  row-gap: 6px;
+}
+
+/* ---------- Board column: board area + hint ---------- */
+html.ms-game #gameScreen .game-container {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: var(--maze-w, 100%);
+  max-width: none;
+  margin: 0 0 0 var(--maze-x, 0px);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
+  overflow: hidden;
+}
+html.ms-game #gameScreen .board-area {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  overflow: hidden;
+}
+/* Pac-Man's board frame (#gameCanvas): 2px cyan border, 8px radius, glow. */
+html.ms-game #gameScreen .mine-board {
+  margin: auto;
+  flex-shrink: 0;
+  box-sizing: content-box;
+  border: 2px solid #35c9e0;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(53, 201, 224, 0.35);
+  overflow: hidden;
+}
+html.ms-game #gameScreen .pause-cover { border-radius: 6px; }
+html.ms-game #gameScreen .hint {
+  flex: 0 0 auto;
+  margin: 0;
+  font-family: var(--ps-font);
+  font-size: 0.72rem;
+  font-weight: 400;
+  line-height: 1.2;
+  color: #1b2437;
+  opacity: 0.65;
+  text-align: center;
+}
+@media (max-height: 700px) {
+  html.ms-game #gameScreen .hint { display: none; }
+}
+@media (max-width: 1024px), (pointer: coarse) {
+  html.ms-game #gameScreen .hint { display: none; }
+}
+
+/* ---------- Design tokens (default: laptop / desktop / large tablet) ---------- */
+#gameScreen {
+  --joy: 64px;
+  --bar-pad-y: 4px;
+  --bar-pad-x: 12px;
+  --bar-gap: 12px;
+  --btn-h: 30px;
+  --btn-px: 9px;
+  --btn-fs: 0.78rem;
+  --btn-gap: 5px;
+  --chip-h: 32px;
+  --chip-px: 12px;
+  --chip-fs: 1rem;
+  --chip-gap: 8px;
+  --title-fs: 1.32rem;
+  --tag-fs: 0.66rem;
+}
+@media (pointer: fine) {
+  #gameScreen { --joy: 54px; }
+}
+
+/* ---------- The bar ---------- */
+#gameScreen .game-bar,
+#gameScreen .game-bar * {
+  box-sizing: border-box;
+  font-family: var(--ps-font);
+}
+#gameScreen .game-bar {
+  display: grid;
+  /* Pac-Man: [ stats | joystick | buttons ]. Minesweeper has no joystick, so
+     the centre column is empty; the buttons column is sized to its buttons
+     and the stats take the rest. With the stats hard left and the buttons
+     hard right this draws exactly like Pac-Man's equal 1fr columns, but the
+     stats can never be squeezed by an empty centre. */
+  grid-template-columns: minmax(0, 1fr) 0 auto;
+  align-items: center;
+  column-gap: var(--bar-gap);
+  position: relative;
+  z-index: 6; /* above the side rails, below every popup */
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  flex: 0 0 auto;
+  overflow: visible;
+  height: calc(var(--joy) + 2 * var(--bar-pad-y));
+  min-height: 0;
+  padding: 0 var(--bar-pad-x);
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(90, 120, 160, 0.14);
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(90, 120, 170, 0.08);
+  color: #1b2437;
+  font-size: 16px;
+}
+
+/* Left block: level + mines / time / coins, hard left. */
+#gameScreen .bar-left {
+  grid-column: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: calc(var(--chip-gap) * 1.6);
+  min-width: 0;
+}
+#gameScreen .header-title-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-width: 0;
+  gap: 0;
+}
+#gameScreen .brand-tag-sm {
+  display: block;
+  font-size: var(--tag-fs);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ps-brand-solid);
+  white-space: nowrap;
+}
+#gameScreen .level-title {
+  display: block;
+  margin: 0;
+  font-size: var(--title-fs);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #223047;
+  text-align: left;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+#gameScreen .level-title .lvl-num { margin-left: 0.32em; }
+#gameScreen .scoreboard {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  flex: 0 1 auto;
+  min-width: 0;
+  gap: var(--chip-gap);
+  font-size: var(--chip-fs);
+  font-weight: 600;
+}
+#gameScreen .scoreboard .stat-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3em;
+  height: var(--chip-h);
+  padding: 0 var(--chip-px);
+  font-size: var(--chip-fs);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  background: #ffffff;
+  border: 1px solid rgba(90, 120, 160, 0.18);
+  border-radius: 20px;
+  box-shadow: 0 2px 6px rgba(90, 120, 170, 0.1);
+  color: #1b2437;
+  font-variant-numeric: tabular-nums;
+}
+#gameScreen .scoreboard .stat-word { font-weight: 800; }
+/* Pac-Man's chips never go below 30px tall (a touch target), and tablets /
+   phones on their side (501-1024px wide) raise chips and buttons to 34px. */
+#gameScreen .scoreboard .stat-pill { min-height: 30px; }
+@media screen and (min-width: 501px) and (max-width: 1024px) {
+  #gameScreen .scoreboard .stat-pill { min-height: 34px; }
+  #gameScreen .game-controls .ctrl-btn { min-height: 34px; }
+}
+#gameScreen .scoreboard .game-coin-pill {
+  background: #fff3c4;
+  border-color: #ffd670;
+  color: #7a5b00;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+/* Pac-Man: the coin icon sits in a 1em box, centred. */
+#gameScreen .scoreboard .coin-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+  font-size: 1.05em;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+/* 3-mistake limit chip: grey at 0/3, red once a mine has been hit, solid
+   red on the last chance. Its cross icon follows the Mines / Time icons:
+   hidden while the word "Mistakes:" is shown, shown once the words go. */
+#gameScreen .scoreboard .mistakes-pill { transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease; }
+#gameScreen .mistakes-pill .stat-icon { display: none; color: #5b6577; }
+#gameScreen .scoreboard .mistakes-pill.has-mistakes {
+  background: #fff1f0;
+  border-color: #ffb3ad;
+  color: #b3261e;
+}
+#gameScreen .mistakes-pill.has-mistakes .stat-icon { color: #e53935; }
+#gameScreen .scoreboard .mistakes-pill.last-chance {
+  background: #ffe1de;
+  border-color: #e53935;
+}
+#gameScreen .scoreboard .mistakes-pill.bump { animation: ms-mistake-bump 0.45s ease; }
+@keyframes ms-mistake-bump {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-3px) scale(1.06); }
+  40% { transform: translateX(3px) scale(1.06); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #gameScreen .scoreboard .mistakes-pill.bump { animation: none; }
+}
+/* Mines / Time icons: shown only where Pac-Man swaps the words Score /
+   Lives for its trophy / heart icons (<= 999px), in the same icon box. */
+#gameScreen .score-label .stat-icon,
+#gameScreen .lives-label .stat-icon { display: none; }
+#gameScreen .score-label .stat-icon {
+  width: 1.25em;
+  height: 1.2em;
+  margin-top: -0.15em;
+  margin-bottom: -0.15em;
+  vertical-align: -0.1em;
+  flex: none;
+  overflow: hidden;
+  color: transparent;
+  font-size: 1em;
+  line-height: 1.2em;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='3 0 24 24'%3E%3Crect x='11.2' y='2.6' width='1.9' height='18.4' rx='.9' fill='%235b6577'/%3E%3Cpath d='M13.1 3.4 23.4 7.6 13.1 11.8Z' fill='%23e53935'/%3E%3Crect x='7.6' y='19.6' width='9.2' height='2.6' rx='1.1' fill='%235b6577'/%3E%3C/svg%3E") center/auto 100% no-repeat;
+}
+
+/* Right block: the buttons, hard right. */
+#gameScreen .game-controls {
+  grid-column: 3;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--btn-gap);
+  margin: 0;
+  min-width: 0;
+}
+#gameScreen .game-controls .ctrl-btn {
+  -webkit-appearance: none;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35em;
+  flex: 0 0 auto;
+  height: var(--btn-h);
+  min-width: var(--btn-h);
+  margin: 0;
+  padding: 0 var(--btn-px);
+  font-size: var(--btn-fs);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  border: none;
+  border-radius: 999px;
+  background: var(--ps-brand);
+  color: var(--ps-brand-ink);
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(31, 157, 99, 0.4);
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.15s ease;
+}
+#gameScreen .game-controls .ctrl-btn:hover { background: var(--ps-brand-hover); }
+#gameScreen .game-controls .ctrl-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 5px rgba(31, 157, 99, 0.4);
+}
+#gameScreen .game-controls .ctrl-btn.icon-only {
+  padding: 0;
+  font-size: calc(var(--btn-fs) * 1.15);
+}
+#gameScreen .game-controls .ctrl-btn .ico { font-size: 1.05em; line-height: 1; }
+#gameScreen .game-controls .ctrl-btn.icon-only .ico { font-size: 1em; }
+#gameScreen .game-controls .ctrl-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  background: #dfe4ec;
+  color: #5b6577;
+  box-shadow: none;
+  transform: none;
+}
+#gameScreen .game-controls .ctrl-btn.exit-btn {
+  background: linear-gradient(135deg, #ff8080, #ff5c5c);
+  color: #400e0e;
+  box-shadow: 0 3px 8px rgba(255, 92, 92, 0.4);
+}
+#gameScreen .game-controls .ctrl-btn.exit-btn:hover { background: linear-gradient(135deg, #ff9494, #ff6b6b); }
+#gameScreen .game-controls #soundBtnGame.muted {
+  background: linear-gradient(135deg, #dfe4ec, #c7cedb);
+  color: #454f61;
+  box-shadow: 0 3px 8px rgba(120, 130, 150, 0.35);
+}
+#gameScreen .game-controls #soundBtnGame.muted:hover { background: linear-gradient(135deg, #e7ebf2, #d2d8e3); }
+#gameScreen .game-controls .ctrl-btn.pause-btn {
+  background: #35c9e0;
+  color: #05263c;
+  font-weight: 800;
+}
+#gameScreen .game-controls .ctrl-btn.pause-btn.is-paused {
+  background: #ffd257;
+  color: #4a3200;
+}
+
+/* ---------- Tier B: 1000-1199px — level arrows go icon-only ---------- */
+@media (max-width: 1199px) {
+  /* Pac-Man's tag is the game name alone; the difficulty keeps its place
+     only where the bar has the room (1200px and up). */
+    #gameScreen #prevLevelNavBtn .lbl,
+  #gameScreen #nextLevelNavBtn .lbl { display: none; }
+  #gameScreen .game-controls #prevLevelNavBtn,
+  #gameScreen .game-controls #nextLevelNavBtn { padding: 0; }
+}
+
+/* ---------- Tier C: up to 999px — every button icon-only, chips use
+   icons instead of the words Mines / Time ---------- */
+@media (max-width: 999px) {
+  #gameScreen {
+    --bar-pad-x: 10px;
+    --bar-gap: 10px;
+    --btn-gap: 6px;
+    --chip-gap: 6px;
+    --chip-px: 10px;
+    --chip-fs: 0.95rem;
+    --title-fs: 1.12rem;
+    --tag-fs: 0.6rem;
+  }
+  #gameScreen .game-controls .ctrl-btn .lbl { display: none; }
+  #gameScreen .game-controls .ctrl-btn { padding: 0; }
+  #gameScreen .scoreboard .stat-word { display: none; }
+  #gameScreen .score-label .stat-icon,
+  #gameScreen .lives-label .stat-icon,
+  #gameScreen .mistakes-pill .stat-icon { display: inline-block; }
+}
+
+/* ---------- Tier C2: up to 860px — portrait tablets ---------- */
+@media (max-width: 860px) {
+  #gameScreen {
+    --chip-px: 7px;
+    --chip-gap: 4px;
+    --chip-fs: 0.9rem;
+    --title-fs: 1rem;
+  }
+  #gameScreen .bar-left { gap: 10px; }
+}
+
+/* ---------- Tier D: up to 699px — smaller controls, "L1" title ---------- */
+@media (max-width: 699px) {
+  #gameScreen {
+    --joy: 56px;
+    --bar-pad-x: 8px;
+    --bar-gap: 8px;
+    --btn-h: 32px;
+    --btn-gap: 5px;
+    --chip-h: 28px;
+    --chip-px: 6px;
+    --chip-gap: 4px;
+    --chip-fs: 0.85rem;
+    --title-fs: 1rem;
+  }
+  #gameScreen .bar-left { gap: 8px; }
+  #gameScreen .brand-tag-sm { display: none; }
+  #gameScreen .level-title .lvl-word { display: none; }
+  #gameScreen .level-title .lvl-num { margin-left: 0; }
+  #gameScreen .level-title .lvl-num::before { content: "L"; }
+  /* Minesweeper's extra "?" button gives way here, so the bar keeps exactly
+     Pac-Man's buttons (and room) on small screens. How to Play stays on the
+     start and level screens. */
+  }
+
+/* ---------- Tier E: up to 559px — portrait phones ---------- */
+@media (max-width: 559px) {
+  #gameScreen {
+    --joy: 46px;
+    --bar-pad-x: 5px;
+    --bar-gap: 6px;
+    --btn-h: 30px;
+    --btn-gap: 4px;
+    --chip-h: 26px;
+    --chip-px: 4px;
+    --chip-gap: 2px;
+    --chip-fs: 0.74rem;
+    --title-fs: 0.85rem;
+  }
+  #gameScreen .bar-left { gap: 4px; overflow: hidden; padding: 3px 0; }
+  /* Pac-Man drops the first chip's icon here (its trophy). */
+  #gameScreen .score-label .stat-icon { display: none; }
+  #gameScreen .scoreboard .coin-icon { font-size: 0.9em; }
+  /* Pac-Man keeps only Pause, Sound, Restart and Exit on a portrait phone. */
+  #gameScreen .game-controls #prevLevelNavBtn,
+  #gameScreen .game-controls #nextLevelNavBtn { display: none; }
+}
+
+/* ---------- Phones on their side: height is the scarce thing ---------- */
+@media (orientation: landscape) and (max-height: 520px) {
+  #gameScreen {
+    --joy: clamp(44px, 14vh, 60px);
+    --bar-pad-y: 3px;
+    --btn-h: clamp(28px, 8.4vh, 34px);
+    --chip-h: clamp(24px, 7vh, 28px);
+  }
+  html.ms-game #gameScreen { row-gap: 4px; }
+}
+
+/* ---------- Tier F: up to 339px ---------- */
+@media (max-width: 339px) {
+  #gameScreen {
+    --joy: 44px;
+    --btn-h: 26px;
+    --btn-gap: 3px;
+    --bar-pad-x: 4px;
+    --bar-gap: 4px;
+    --chip-h: 24px;
+    --chip-px: 4px;
+  }
+}
+
+/* ---------- Tier E2: up to 380px ---------- */
+@media (max-width: 380px) {
+  #gameScreen {
+    --chip-fs: 0.68rem;
+    --title-fs: 0.78rem;
+    --chip-px: 3px;
+    --bar-gap: 4px;
+  }
+  #gameScreen .scoreboard .coin-icon { font-size: 0.8em; }
+}
+@media (max-width: 339px) {
+  #gameScreen { --chip-fs: 0.64rem; --title-fs: 0.72rem; }
+  #gameScreen .bar-left { gap: 2px; }
+  #gameScreen .lives-label .stat-icon { font-size: 0.85em; }
+}
+
+/* ---------- Display ads: VERTICAL_BANNER rails + LEADER_BOARD ---------- */
+.ad-rail,
+.ad-leaderboard {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  line-height: 0;
+  /* Pac-Man keeps these above the board and below every popup; here that
+     is under the bar (6), the result popup (10) and the other overlays. */
+  z-index: 5;
+}
+.ad-rail.is-shown,
+.ad-leaderboard.is-shown { display: block; }
+.ad-rail {
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(50, 60, 110, 0.10), 0 2px 8px rgba(50, 60, 110, 0.10);
+}
+.ad-leaderboard {
+  border-radius: 14px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.3);
+}
+.ad-rail .ad-unit-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  -webkit-user-drag: none;
+}
+/* Lengthened card: the creative stays 1:2 at the top and its last stretch
+   fades into the creative's own colour below it (Pac-Man's .is-tall). */
+.ad-rail.is-tall > .ad-unit-img {
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 4.667%), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 4.667%), transparent);
+}
+.ad-leaderboard .ad-unit-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  -webkit-user-drag: none;
+}
+/* Carousel: the next creative slides in from the side (Pac-Man). */
+.ad-rail.ad-sliding,
+.ad-leaderboard.ad-sliding { overflow: hidden; }
+.ad-rail .ad-slide-track,
+.ad-leaderboard .ad-slide-track {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  width: 200%;
+  transform: translateX(0);
+  transition: transform 0.38s cubic-bezier(0.22, 0.61, 0.36, 1);
+  z-index: 1;
+}
+.ad-leaderboard .ad-slide-track { height: 100%; z-index: 2; }
+.ad-rail .ad-slide-track.slide-next,
+.ad-leaderboard .ad-slide-track.slide-next { transform: translateX(-50%); }
+.ad-rail .ad-slide-track .ad-unit-img,
+.ad-leaderboard .ad-slide-track .ad-unit-img {
+  flex: 0 0 50%;
+  width: 50%;
+}
+.ad-rail .ad-slide-track .ad-unit-img { height: auto; }
+.ad-leaderboard .ad-slide-track .ad-unit-img { height: 100%; object-fit: cover; }
+.ad-dots {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  pointer-events: none;
+  z-index: 2;
+}
+.ad-dots i {
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.38);
+  transition: width 0.25s ease, background 0.25s ease;
+}
+.ad-dots i.on { width: 20px; background: #ffffff; }
+.ad-leaderboard .ad-dots { bottom: 4px; }
+.ad-leaderboard .ad-dots i { width: 5px; height: 5px; }
+.ad-leaderboard .ad-dots i.on { width: 14px; }
+@media (prefers-reduced-motion: reduce) {
+  .ad-dots i { transition: none; }
+}
+/* =================== END PAC-MAN STANDARD — GAMEPLAY =================== */
+
+/* =======================================================================
+   POPUPS & ADS — PAC-MAN STANDARD
+   -----------------------------------------------------------------------
+   Pac-Man's own rules for its result popup (#overlay .modal), confirm
+   dialog (#confirmOverlay), fullscreen video ad (#adOverlay), the MREC
+   inside the Congratulations popup (#modalBannerAd) and its toast
+   (.session-toast) — copied rule for rule, with every media query, so the
+   popups come out the same size, at the same breakpoints, as Pac-Man's.
+   The markup in index.html uses Pac-Man's ids and classes for the same
+   reason. The only substitution: Pac-Man's yellow primary button is drawn
+   in Minesweeper's brand green (--ps-brand), as on the menus.
+   ======================================================================= */
+/* Pac-Man resets margins and font on every element; scoped here to the
+   popups so nothing else in Minesweeper moves. */
+.overlay, .ad-overlay, .session-toast { font-family: var(--ps-font); color: var(--ps-text); }
+:where(.overlay, .ad-overlay) * { margin: 0; font-family: var(--ps-font); box-sizing: border-box; }
+
+:where(.overlay .modal) h2 { font-size: 1.5rem; font-weight: 700; line-height: normal; color: var(--ps-text); }
+
+:where(.overlay .modal) p { line-height: normal; }
+.menu-btn:disabled { opacity: 0.55; cursor: default; transform: none; }
+/* Minesweeper's bonus line (Board Cleared / No Wrong Flags / Fast Clear),
+   set in Pac-Man's .continue-note type so it reads as part of the card. */
+.modal-rewards { font-size: 0.74rem; font-weight: 600; color: #6c757d; text-align: center; text-wrap: balance; }
+@media (max-width: 600px) and (orientation: portrait), (max-height: 520px) {
+  .modal-rewards { font-size: 0.68rem; }
+}
+@media (pointer: coarse) and (min-width: 600px) and (min-height: 600px) and (max-width: 1400px) {
+  #overlay .modal-rewards { font-size: clamp(0.9rem, 1.9vmin, 1.05rem); }
+}
+
+.menu-btn { border-radius: 999px;
+  padding: 12px 18px;
+  background: #ffffff;
+  border: 1px solid rgba(90, 120, 160, 0.18);
+  color: #223047;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(90, 120, 170, 0.12);
+  transition: transform 0.1s ease, background 0.15s ease, box-shadow 0.15s ease; }
+.menu-btn:hover { background: #f5f9ff;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(90, 120, 170, 0.18); }
+.menu-btn:active { transform: translateY(1px); }
+.menu-btn.primary { background: var(--ps-brand);
+  color: var(--ps-brand-ink);
+  border: none;
+  box-shadow: 0 4px 14px var(--ps-brand-glow); }
+.menu-btn.primary:hover { background: var(--ps-brand-hover);
+  box-shadow: 0 6px 16px var(--ps-brand-glow-strong); }
+.overlay { position: fixed;
+  inset: 0;
+  background: rgba(20, 40, 70, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 16px; }
+.overlay.hidden { display: none; }
+.modal { position: relative;
+  background: #ffffff;
+  border: 1px solid rgba(53, 201, 224, 0.5);
+  border-radius: 14px;
+  padding: 26px 22px;
+  max-width: 380px;
+  width: 100%;
+  max-height: 88vh;
+  overflow-y: auto;
+  text-align: center;
+  box-shadow: 0 12px 40px rgba(20, 40, 70, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 14px; }
+.close-x { position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid rgba(90, 120, 160, 0.25);
+  background: #f7f8fd;
+  color: #5b6a8c;
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center; }
+.close-x:hover { background: #ffe2e2;
+  color: #d94343;
+  border-color: rgba(217, 67, 67, 0.4); }
+.modal-buttons { display: flex; }
+.modal-coins { font-weight: 700;
+  color: #7a5b00;
+  background: #fff3c4;
+  display: inline-block;
+  align-self: center;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.85rem; }
+.menu-btn.continue-btn { background: linear-gradient(135deg, #ff8a65, #e2493e);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 14px rgba(226, 74, 62, 0.4); }
+.menu-btn.continue-btn:hover { background: linear-gradient(135deg, #ff9d7d, #ef5a4d); }
+.continue-note { font-size: 0.74rem;
+  font-weight: 600;
+  color: #6c757d;
+  text-align: center; }
+.banner-ad-card { position: relative;
+  align-items: center;
+  gap: 0.65rem;
+  border-radius: 14px;
+  overflow: hidden;
+  text-align: left; }
+.ad-overlay { position: fixed;
+  inset: 0;
+  
+  background: #0c0f18;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem; }
+.ad-overlay.hidden { display: none; }
+.ad-stage { width: 100%;
+  max-width: 520px;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem; }
+.ad-topbar { display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #eaf0fd;
+  font-size: 0.78rem;
+  font-weight: 700; }
+.ad-badge { display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(226, 74, 62, 0.9);
+  color: #fff;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.65rem; }
+.ad-advertiser { flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.85; }
+.ad-countdown { font-variant-numeric: tabular-nums;
+  opacity: 0.9; }
+.ad-video-wrap { position: relative;
+  flex: 0 1 auto;
+  min-height: 120px; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #05070c;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  overflow: hidden; }
+#adVideo { max-width: 100%;
+  max-height: 60vh;
+  width: 100%;
+  height: auto;
+  display: block;
+  background: #05070c; }
+.ad-status { position: absolute;
+  margin: 0;
+  color: #cdd8f0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 0 1rem; }
+.ad-actions { display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+  min-height: 40px; }
+.ad-actions .menu-btn { width: auto;
+  margin: 0;
+  padding: 9px 16px;
+  font-size: 0.85rem; }
+.ad-reward-note { margin: 0;
+  text-align: center;
+  color: rgba(234, 240, 253, 0.82);
+  font-size: 0.78rem;
+  font-weight: 600;
+  min-height: 1rem; }
+.ad-hidden { display: none !important; }
+@media screen and (orientation: landscape) and (max-height: 560px) {
+  .ad-overlay { padding: 0.5rem; }
+  .ad-stage { max-width: 78vw; gap: 0.35rem; }
+  .ad-topbar { font-size: 0.68rem; gap: 6px; }
+  .ad-badge { padding: 3px 8px; font-size: 0.58rem; }
+  #adVideo { max-height: 44vh; }
+  .ad-video-wrap { min-height: 80px; }
+  .ad-actions { min-height: 32px; gap: 6px; }
+  .ad-actions .menu-btn { padding: 6px 12px; font-size: 0.75rem; }
+  .ad-reward-note { font-size: 0.68rem; }
+}
+@media screen and (orientation: landscape) and (max-height: 380px) {
+  #adVideo { max-height: 38vh; }
+  .ad-topbar { font-size: 0.62rem; }
+  .ad-reward-note { display: none; }
+}
+@media (max-width: 380px) {
+  .ad-topbar { font-size: 0.68rem; gap: 6px; }
+  .ad-badge { padding: 3px 8px; font-size: 0.58rem; }
+  .ad-actions .menu-btn { padding: 7px 12px; font-size: 0.78rem; }
+  .ad-reward-note { font-size: 0.7rem; }
+}
+@media (min-width: 900px) and (min-height: 700px) {
+  .ad-stage { max-width: 620px; }
+}
+.session-toast { position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translate(-50%, 20px);
+  background: #223047;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 10px 20px;
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  z-index: 300;
+  
+  white-space: normal;
+  max-width: calc(100vw - 32px);
+  text-align: center; }
+.session-toast.show { opacity: 1;
+  transform: translate(-50%, 0); }
+.banner-ad-card { display: flex;
+  justify-content: center;
+  padding: 0;
+  background: none !important;
+  box-shadow: none;
+  height: calc(250px * var(--mrec-scale, 1));
+  margin: 0.6rem 0 0.2rem; }
+.banner-ad-card.clickable { cursor: pointer; }
+.close-x { z-index: 5; }
+#modalBannerAd { display: block;
+  width: min(300px, 50vmin);
+  max-width: 100%;
+  aspect-ratio: 6 / 5;
+  
+  height: auto;
+  line-height: 0;
+  padding: 0;
+  margin: 0 auto;
+  border-radius: 14px;
+  overflow: hidden;
+  flex: 0 0 auto;
+  background: none !important;
+  box-shadow: none; }
+#modalBannerAd.hidden { display: none; }
+#modalBannerAd .ad-unit-img { display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain; }
+.modal-buttons { flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: stretch;
+  gap: 8px; }
+.modal-buttons .menu-btn { flex: 1 1 0;
+  
+  min-width: 90px;
+  padding: 9px 8px;
+  font-size: 0.8rem;
+  white-space: nowrap; }
+.modal-buttons .continue-btn { flex: 1 1 100%; }
+@media (max-width: 430px) {
+  .modal-buttons .menu-btn { flex: 1 1 100%; }
+}
+@media (max-width: 600px) and (orientation: portrait), (max-height: 520px) {
+  .modal { max-height: 94%;
+    overflow-y: auto;
+    padding: 14px 16px; }
+  .modal h2,
+#modalTitle { font-size: 1.05rem; margin-bottom: 6px; }
+  #modalMessage { font-size: 0.78rem; line-height: 1.35; margin-bottom: 6px; }
+  .modal-buttons { gap: 6px; }
+  .modal-buttons .menu-btn { min-width: 74px;
+    padding: 7px 6px;
+    font-size: 0.72rem; }
+}
+@media (max-width: 430px) and (orientation: portrait), (max-height: 400px) {
+  .modal { padding: 10px 14px; max-height: 96%; }
+  #modalTitle { font-size: 0.92rem; margin-bottom: 4px; }
+  #modalMessage { font-size: 0.72rem; line-height: 1.3; margin-bottom: 4px; }
+  .modal-buttons { gap: 5px; }
+  .modal-buttons .menu-btn { min-width: 62px; padding: 5px 4px; font-size: 0.66rem; }
+}
+@media (max-width: 400px) and (orientation: portrait), (max-height: 400px) {
+  #modalMessage { font-size: 0.68rem; line-height: 1.25; margin-bottom: 3px; }
+  #modalTitle { font-size: 0.86rem; margin-bottom: 3px; }
+  .modal { padding: 8px 12px; max-height: 98%; }
+  .modal-buttons .menu-btn { padding: 4px 4px; font-size: 0.64rem; min-width: 58px; }
+}
+@media (max-width: 340px) and (orientation: portrait), (max-height: 340px) {
+  .modal { padding: 6px 10px; }
+}
+#overlay .modal { max-width: 360px;
+  padding: 1.8rem 1.2rem;
+  border-radius: 16px;
+  gap: 0.55rem; }
+#overlay .modal-buttons { gap: 0.5rem; }
+#overlay .modal-buttons .menu-btn { padding: 0.6rem 0.35rem;
+  font-size: 0.78rem;
+  border-radius: 999px; }
+#overlay .banner-ad-card { margin: 0.85rem auto 1rem; }
+@media (max-height: 520px) {
+  #overlay .modal { padding: 0.8rem 0.9rem; max-width: 340px; gap: 0.4rem; }
+  #overlay .banner-ad-card { margin: 0.4rem auto 0.5rem; }
+}
+@media (max-width: 600px) and (orientation: portrait), (max-height: 520px) {
+  #overlay .modal { padding: 12px 14px; gap: 0.4rem; }
+  #overlay .banner-ad-card { margin: 0.4rem auto 0.5rem; }
+  #overlay .modal-buttons { gap: 0.35rem; }
+}
+@media (max-width: 430px) and (orientation: portrait), (max-height: 400px) {
+  #overlay .modal { padding: 10px 14px; }
+}
+@media (max-width: 340px) and (orientation: portrait) {
+  #overlay .modal { padding: 8px 12px; }
+}
+@media (max-width: 380px) and (orientation: portrait) {
+  #overlay .modal { gap: 0.28rem; padding: 8px 12px; }
+  #overlay .banner-ad-card { margin: 0.25rem auto 0.3rem; }
+  #overlay .modal-buttons { gap: 0.3rem; flex-wrap: nowrap; }
+  #overlay .modal-buttons .menu-btn { padding: 0.45rem 0.25rem;
+    font-size: 0.68rem;
+    flex: 1 1 0;
+    min-width: 0;
+    white-space: nowrap; }
+  #overlay .modal-coins { margin: 0; font-size: 0.8rem; }
+  #overlay #modalTitle { font-size: 1.1rem; }
+  #overlay #modalMessage { font-size: 0.78rem; }
+}
+#overlay .modal:has(#continueAdBtn:not(.hidden)) { max-width: 340px;
+  padding: 2rem; }
+#overlay .modal:has(#continueAdBtn:not(.hidden)) #continueAdBtn,
+#overlay .modal:has(#continueAdBtn:not(.hidden)) .modal-buttons .menu-btn { width: 100%;
+  flex: 0 0 auto;
+  font-size: 0.9rem;
+  padding: 0.7rem 1rem; }
+#overlay .modal:has(#continueAdBtn:not(.hidden)) .modal-buttons { flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 0.55rem;
+  width: 100%; }
+@media (max-width: 600px) and (orientation: portrait), (max-height: 520px) {
+  #overlay .modal:has(#continueAdBtn:not(.hidden)) { padding: 12px 14px; }
+  #overlay .modal:has(#continueAdBtn:not(.hidden)) #continueAdBtn,
+#overlay .modal:has(#continueAdBtn:not(.hidden)) .modal-buttons .menu-btn { font-size: 0.8rem;
+    padding: 0.5rem 0.8rem; }
+  #overlay .modal:has(#continueAdBtn:not(.hidden)) .modal-buttons { gap: 0.4rem; }
+}
+#modalBannerAd { transition: opacity 0.26s ease; }
+#modalBannerAd.ad-fading { opacity: 0; }
+#modalBannerAd .ad-dots { bottom: 6px; }
+#modalBannerAd .ad-dots i { width: 6px; height: 6px; }
+#modalBannerAd .ad-dots i.on { width: 16px; }
+@media (prefers-reduced-motion: reduce) {
+  #modalBannerAd { transition: none; }
+}
+@media (pointer: coarse) and (min-width: 600px) and (min-height: 600px) and (max-width: 1400px) {
+  #overlay .modal,
+#overlay .modal:has(#continueAdBtn:not(.hidden)) { width: 100%;
+    max-width: min(90vw, 620px);
+    padding: 2.1rem 2.2rem;
+    gap: 0.9rem;
+    border-radius: 24px;
+    max-height: 94dvh; }
+  #overlay .modal:has(#continueAdBtn:not(.hidden)) { max-width: min(88vw, 540px); }
+  #overlay #modalTitle { font-size: clamp(1.7rem, 3.6vmin, 2.3rem);
+    margin-bottom: 0.15rem; }
+  #overlay #modalMessage { font-size: clamp(1.1rem, 2.4vmin, 1.35rem);
+    line-height: 1.4;
+    margin-bottom: 0.2rem; }
+  #overlay .modal-coins { font-size: clamp(1.05rem, 2.3vmin, 1.3rem);
+    padding: 0.45rem 1.3rem; }
+  #overlay .continue-note { font-size: clamp(0.95rem, 2vmin, 1.15rem);
+    line-height: 1.35; }
+  #overlay .close-x { width: 46px;
+    height: 46px;
+    top: 14px;
+    right: 14px;
+    font-size: 1.15rem; }
+  html #overlay #modalBannerAd { width: min(300px, 40vh); }
+  #overlay .banner-ad-card { margin: 0.5rem auto 0.7rem; }
+  #overlay .modal-buttons { gap: 0.8rem; }
+  #overlay .modal-buttons .menu-btn { min-width: 140px;
+    min-height: 58px;
+    padding: 0.9rem 1.2rem;
+    font-size: clamp(1.05rem, 2.2vmin, 1.25rem);
+    border-radius: 999px;
+    white-space: nowrap; }
+  #overlay .modal:has(#continueAdBtn:not(.hidden)) .modal-buttons { gap: 0.8rem; }
+  #overlay .modal:has(#continueAdBtn:not(.hidden)) #continueAdBtn,
+#overlay .modal:has(#continueAdBtn:not(.hidden)) .modal-buttons .menu-btn { width: 100%;
+    min-height: 58px;
+    padding: 0.9rem 1.2rem;
+    font-size: clamp(1.05rem, 2.2vmin, 1.25rem); }
+}
+@media (pointer: coarse) and (min-width: 600px) and (min-height: 600px) and (max-width: 1400px) and (max-height: 700px) {
+  #overlay .modal,
+#overlay .modal:has(#continueAdBtn:not(.hidden)) { padding: 1.3rem 1.8rem;
+    gap: 0.55rem; }
+  #overlay #modalTitle { font-size: 1.55rem; }
+  #overlay #modalMessage { font-size: 1.05rem; }
+  #overlay .modal-coins { font-size: 1rem; padding: 0.3rem 1rem; }
+  #overlay .banner-ad-card { margin: 0.25rem auto 0.4rem; }
+  #overlay .modal-buttons .menu-btn,
+#overlay .modal:has(#continueAdBtn:not(.hidden)) #continueAdBtn,
+#overlay .modal:has(#continueAdBtn:not(.hidden)) .modal-buttons .menu-btn { min-height: 50px;
+    padding: 0.65rem 1rem;
+    font-size: 1.05rem; }
+}
+
+/* ---------- Congratulations popup: fits the screen, no scrolling ----------
+   Scoped to the win popup (.win-modal, set in endGame), so Game Over, the
+   confirm dialog and every other screen are untouched. Pac-Man's sizes stay
+   as they are; only on short screens (phones on their side, short laptop
+   windows) the spacing between the lines is tightened, and the MREC is
+   drawn smaller by fitResultPopup() (routines.js) by exactly what the card
+   would otherwise overflow — the card never scrolls. */
+html #overlay .modal.win-modal.banner-fitted #modalBannerAd {
+  width: var(--win-banner-w);
+  max-width: 100%;
+}
+@media (max-height: 640px) {
+  #overlay .modal.win-modal .banner-ad-card { margin: 0.25rem auto 0.35rem; }
+}
+@media (max-height: 460px) {
+  #overlay .modal.win-modal { gap: 0.3rem; padding-top: 10px; padding-bottom: 10px; }
+  #overlay .modal.win-modal #modalTitle { margin-bottom: 0; }
+  #overlay .modal.win-modal #modalMessage { margin-bottom: 0; line-height: 1.25; }
+  #overlay .modal.win-modal .modal-coins { padding: 3px 12px; }
+  #overlay .modal.win-modal .banner-ad-card { margin: 0.15rem auto 0.2rem; }
+  #overlay .modal.win-modal .modal-buttons .menu-btn { padding-top: 0.45rem; padding-bottom: 0.45rem; }
+}
+
+/* ---------- Confirm dialog (Pac-Man) ---------- */
+.confirm-overlay { z-index: 80;
+  padding: 12px; }
+.confirm-modal { max-width: 360px;
+  padding: 22px 20px 18px;
+  gap: 12px; }
+.confirm-title { font-size: 1.15rem;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1.2; }
+.confirm-message { font-size: 0.95rem;
+  line-height: 1.45;
+  margin: 0;
+  color: #1f2a44; }
+.confirm-submessage { font-size: 0.8rem;
+  line-height: 1.4;
+  margin: 0;
+  color: #5b6a8c; }
+.confirm-submessage.hidden { display: none; }
+.confirm-buttons { flex-direction: row;
+  gap: 10px;
+  margin-top: 4px; }
+.confirm-buttons .menu-btn { flex: 1 1 0;
+  min-height: 44px;     
+  min-width: 120px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  padding: 10px 14px;
+  
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  cursor: pointer; }
+.confirm-cancel-btn { background: #f0f2f7;
+  color: #4a5870;
+  border: 1px solid rgba(90, 120, 160, 0.3); }
+.confirm-cancel-btn:active { background: #e3e7f0; }
+.confirm-ok-btn:active { filter: brightness(0.95);
+  transform: translateY(1px); }
+@media (max-width: 380px) {
+  .confirm-modal { padding: 18px 16px 14px; }
+  .confirm-title { font-size: 1.05rem; }
+  .confirm-message { font-size: 0.88rem; }
+  .confirm-buttons { flex-direction: column;
+    gap: 8px; }
+  .confirm-buttons .menu-btn { min-width: 0;
+    width: 100%; }
+}
+
+/* =================== END POPUPS & ADS — PAC-MAN STANDARD =================== */
+
+/* =======================================================================
+   PHONE LANDSCAPE: use the full screen width   (Pac-Man's rule; keep LAST)
+   -----------------------------------------------------------------------
+   iOS reports the same safe-area inset on BOTH side edges in landscape
+   (~47-62px), though the camera cut-out is on one side only; padding by both
+   squeezed [ ad | board | ad ] and the bar into the middle with blank strips
+   at both sides. As in Pac-Man, the in-game frame runs to the screen edge
+   sideways in phone landscape (short side <= 500px). Top and bottom keep
+   their insets, so the bar still clears the home indicator. Only the outer
+   edge of an ad card can sit under a cut-out; the board and the bar's
+   controls stay clear of it. Portrait, tablets and desktop are unaffected.
+   ======================================================================= */
+@media (orientation: landscape) and (max-height: 500px) {
+  html.ms-game .app-frame > .wrapper:not(.menu-mode) {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+}

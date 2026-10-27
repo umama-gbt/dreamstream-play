@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head><meta charset="UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Tetris</title>
+    <link rel="icon" type="image/png" href="/wp-content/uploads/gcm-games/12/b20261020095234-6h3thr/logo.png">
+    <!-- ONE family for the whole game: Inter, at every weight the UI uses,
+         bundled locally exactly as Pac-Man does — see fonts.css for why
+         this is no longer a Google Fonts request. -->
+    <link rel="stylesheet" href="/wp-content/uploads/gcm-games/12/b20261020095234-6h3thr/fonts.css">
+    <link rel="stylesheet" type="text/css" href="/wp-content/uploads/gcm-games/12/b20261020095234-6h3thr/style.css">
+    <!-- Icons as SVG (same look on every phone): see icons.css -->
+    <link rel="stylesheet" href="/wp-content/uploads/gcm-games/12/b20261020095234-6h3thr/icons.css">
+  </head>
+  <body>
+    <!-- ===== SIDE AD CARDS (IAB VERTICAL_BANNER 300x600) =====
+         Same rotating carousel as Pac-Man's rails: creatives come from
+         sponsor-media.json, and the visible card swaps to the next one in
+         the "banner" placement every 5s (startRailCarousel in script.js).
+         Shown during play and kept up through Game Over.
+         NOTE: the old "hidden" class here was a bug — .hidden is
+         display:none !important, which beat every inline style the rail
+         placer sets, so the rails could NEVER appear and the space either
+         side of the board sat empty. Pac-Man's rails carry no hidden class
+         and neither do these now; fitSideRailsToViewport() owns visibility
+         through inline styles alone. -->
+    <div id="adRailLeft" class="ad-rail ad-rail--left" aria-hidden="true"></div>
+    <div id="adRailRight" class="ad-rail ad-rail--right" aria-hidden="true"></div>
+
+    <!-- ===== LEADER_BOARD 970x90, shown ABOVE the board =====
+         The fallback for a phone / narrow-portrait window that has no side
+         gutter for the two cards above (see portraitRailLayout() /
+         placeLeaderboardTop() in script.js) — same pattern Pac-Man uses:
+         one wide-short card above the board instead of no ad at all. Hidden
+         again the moment the window rotates back to landscape, where the
+         side rails take over. -->
+    <aside class="ad-leaderboard" id="adLeaderboard" aria-hidden="true"></aside>
+
+
+    <div class="wrapper">
+      <!-- ============ START SCREEN ============ -->
+      <div id="startScreen" class="start-screen">
+        <div class="top-bar">
+          <div class="top-pill coin-pill"><span class="stat-icon">🪙</span><span class="coin-display">0</span></div>
+          <button type="button" id="soundToggleBtn" class="top-pill icon-pill" title="Toggle sound" aria-label="Toggle sound">🔊</button>
+        </div>
+        <img class="logo-tetris-img" src="/wp-content/uploads/gcm-games/12/b20261020095234-6h3thr/logo.png" alt="Tetris Logo">
+        <h1 class="game-name">Tetris</h1>
+        <p class="tagline">35 Levels • Stack • Clear • Survive</p>
+        <div class="start-actions">
+          <button type="button" id="playBtn" class="btn btn-large btn-play">▶ Play</button>
+          <div class="pill-grid">
+            <button type="button" id="selectLevelBtn" class="pill-card"><span class="pill-icon menu-btn-icon"><svg viewbox="0 0 24 24" width="1em" height="1em" fill="none" aria-hidden="true"><path d="M7.5 10.2V7.6a4.5 4.5 0 0 1 9 0v2.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path><rect x="4.5" y="10.2" width="15" height="11" rx="3" fill="currentColor"></rect><circle cx="12" cy="14.9" r="1.6" fill="#fff"></circle><rect x="11.15" y="14.9" width="1.7" height="3.2" rx="0.6" fill="#fff"></rect></svg></span><span class="pill-label">Select Level</span></button>
+            <button type="button" id="shopBtn" class="pill-card"><span class="pill-icon menu-btn-icon"><svg viewbox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8h12l-1.2 12.4a2 2 0 0 1-2 1.6H9.2a2 2 0 0 1-2-1.6L6 8Z"></path><path d="M9 8V6a3 3 0 0 1 6 0v2"></path></svg></span><span class="pill-label">Shop</span></button>
+            <button type="button" id="howToPlayBtnStart" class="pill-card"><span class="pill-icon menu-btn-icon">❓</span><span class="pill-label">How to Play</span></button>
+          </div>
+        </div>
+        <!-- Pac-Man's caption line under the menu buttons (.start-caption):
+             it is part of what sets where the menu's content sits in the card. -->
+        <p class="start-caption">35 levels · unlock the next as you clear each one</p>
+      </div>
+
+      <!-- ============ SHOP SCREEN ============
+           Achievements now live inside the Shop as a second tab instead of
+           their own main-menu button, so the start screen stays a 3-option
+           row (Select Level, Shop, How to Play) — same as Pac-Man's. -->
+      <div id="shopScreen" class="level-screen hidden">
+        <div class="level-title-row">
+          <button type="button" id="backToStartFromShopBtn" class="nav-btn" title="Back" aria-label="Back to menu">‹</button>
+          <h2 class="level-select-title">Shop</h2>
+          <div class="top-pill coin-pill shop-coin-pill" title="Your coins"><span class="stat-icon">🪙</span><span class="coin-display">0</span></div>
+        </div>
+        <div class="shop-tabs" id="shopTabs">
+          <button type="button" class="shop-tab active" data-tab="skins">Skins</button>
+          <button type="button" class="shop-tab" data-tab="achievements">Achievements</button>
+        </div>
+        <div id="shopGrid" class="shop-grid"></div>
+        <div id="achievementsList" class="achievements-list hidden"></div>
+      </div>
+
+      <!-- ============ LEVEL SELECT SCREEN ============ -->
+      <div id="levelScreen" class="level-screen hidden">
+        <div class="level-title-row">
+          <button type="button" id="backToStartBtn" class="nav-btn" title="Back" aria-label="Back to menu">‹</button>
+          <h2 class="level-select-title">Select Level</h2>
+          <button type="button" id="howToPlayBtnLevel" class="how-to-play-btn" title="How to play" aria-label="How to play">
+            <span aria-hidden="true">?</span>
+          </button>
+        </div>
+        <p id="progressText" class="progress-text">Highest level reached: 1 of 35</p>
+        <div id="levelGrid" class="level-grid"></div>
+      </div>
+
+      <!-- ============ HOW TO PLAY SCREEN ============
+           A full screen in the same start/level-select/shop flow, not a
+           floating modal — exactly how Pac-Man does it. It MUST be a direct
+           child of .wrapper, same as levelScreen/shopScreen/startScreen
+           right above: .wrapper:has(> .level-screen:not(.hidden)) in
+           style.css only centers/sizes the screen when it is a direct
+           child, which is exactly why this screen showed nothing at all
+           when it lived outside .wrapper as the old modal did. Reuses
+           .level-screen's flex-column/full-height frame, so scrolling
+           behaves the same as Level Select / Shop: only .how-to-play-body
+           scrolls, the header and the "Got it" button stay put. Opened from
+           the start screen's "How to Play" tile or the "?" in the Level
+           Select corner above; closing it (the × or "Got it") returns to
+           whichever one it was opened from — see howToReturnScreen in
+           script.js, the same pattern as Pac-Man's
+           back-btn/howToReturnScreen. -->
+      <div id="howToPlayScreen" class="level-screen hidden">
+        <div class="level-title-row">
+          <h2 id="howToPlayTitle" class="level-select-title">How to Play</h2>
+          <button type="button" id="howToPlayClose" class="how-to-play-btn" title="Close" aria-label="Close">×</button>
+        </div>
+        <div class="how-to-play-body">
+          <ul class="how-to-play-list">
+            <li><strong>Goal:</strong> stack the falling blocks and clear horizontal lines before the board fills up.</li>
+            <li><strong>Move:</strong> <strong>← →</strong> slide a piece, <strong>↓</strong> drops it faster, <strong>↑</strong> rotates it — or use the on-screen joystick on a phone or tablet. <strong>Esc</strong> (or Pause) pauses anytime.</li>
+            <li><strong>Levels:</strong> there are <strong>35 levels</strong>. Clear 10 lines to finish one and the pieces drop faster on the next. The <strong>← ↻ →</strong> buttons under the board go back, restart (after a short ad) or move on.</li>
+            <li><strong>Rewards:</strong> finishing a level earns <strong>🌟 stars</strong> and <strong>🪙 coins</strong>, with a bonus for clearing several rows at once and for combos. Unlock <strong>Achievements</strong> along the way.</li>
+            <li><strong>Shop:</strong> spend coins on block skins and unlock achievements along the way.</li>
+            <li><strong>Game over:</strong> it happens when a new piece has nowhere to spawn — you can watch a short ad to continue where you were, <strong>as many times as you like</strong>.</li>
+            <li>Progress resets <strong>24 hours</strong> after your session begins. After a reset, tap a locked level on Select Level and <strong>watch 5 ads</strong> to unlock it — only that level opens.</li>
+            <li>Reaching a level unlocks it as a <strong>starting level</strong> for next time.</li>
+          </ul>
+        </div>
+        <!-- Pac-Man closes its How to Play with a full-width "✔ Got it" at
+             the bottom of the list rather than sending you back to the ×
+             in the corner. After scrolling seventeen bullets the corner is
+             off-screen, so the button you need is the one that ends where
+             the reading ends. The × stays for anyone who wants it. -->
+        <button type="button" id="howToPlayGotIt" class="btn btn-large how-to-play-gotit">✔ Got it</button>
+      </div>
+
+      <!-- ============ GAME SCREEN ============ -->
+      <div id="gameScreen" class="game-screen hidden">
+        <!-- v91: the top row (logo, sound, pause, exit) used to live in a
+             <header> above the board. It now sits in the bottom control row
+             (see .board-brand / .board-actions inside .under-board-controls),
+             so the black box gets that whole strip of height back. -->
+
+        <div id="boardArea">
+          <div id="tetris">
+            <div id="canvas-frame">
+              <div id="canvas"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Everything below the board -- stats (Level, Lines, Coins), Next
+             preview, joystick and controls -- now sits in ONE single row,
+             same as Pac-Man's bottom control bar (Pac-Man's #gameScreen is
+             column-reverse with one flex row for
+             title+scoreboard+joystick+controls; the Level pill here plays
+             the same role Pac-Man's title does, just styled as a pill like
+             the other stats instead of a heading). Score and the run timer
+             stay gone; Lines counts DOWN to the level's target (see
+             setInfo("lines") in script.js) so the icon itself reads as
+             "lines left to clear". The joystick sits in the MIDDLE of the
+             row (stats + Next on its left, power-ups on its right), and the
+             four #btnLeft/#btnRight/#btnDown/#btnRotate ids it wires up are
+             unchanged from before -- only the layout moved. -->
+        <div class="under-board-controls pm-header">
+          <div class="stats-group">
+            <!-- Stats: Pac-Man's exact bar-left markup (title group + scoreboard
+                 pills), with Pac-Man's own classes under a "pm-" prefix so its
+                 rules can be copied across verbatim without colliding with the
+                 older Tetris rules that share names like .title / .coin-pill.
+                 Slot for slot: Level = Pac-Man's Level, Lines = Score,
+                 Next = Lives, Coins = Coins. -->
+            <div class="pm-bar-left">
+              <div class="pm-header-title-group">
+                <span class="pm-brand-tag-sm">Tetris</span>
+                <h1 class="pm-title" id="levelTitle"><span class="pm-lvl-word">Level</span><span class="pm-lvl-num" id="levelNumGame">1</span></h1>
+              </div>
+              <div class="pm-scoreboard">
+                <div class="pm-score-label pm-lines-label" title="Lines left to clear">
+                  <span class="pm-stat-word">Lines:</span>
+                  <span id="statLines">0</span>
+                </div>
+                <div class="pm-lives-label pm-next-label" title="Next piece">
+                  <span class="pm-stat-word">Next:</span>
+                  <div class="next-view"><div id="next_shape"></div></div>
+                </div>
+                <div class="pm-coin-pill pm-game-coin-pill" title="Your coins">
+                  <span class="pm-coin-icon">🪙</span><span class="coin-display">0</span>
+                </div>
+              </div>
+            </div>
+            <div class="joystick" id="joystick" aria-label="Move and rotate">
+              <div class="joystick-ring">
+                <button type="button" class="joystick-btn joystick-btn--up" id="btnRotate" aria-label="Rotate">▲</button>
+                <button type="button" class="joystick-btn joystick-btn--left" id="btnLeft" aria-label="Move left">◀</button>
+                <button type="button" class="joystick-btn joystick-btn--right" id="btnRight" aria-label="Move right">▶</button>
+                <button type="button" class="joystick-btn joystick-btn--down" id="btnDown" aria-label="Move down">▼</button>
+                <div class="joystick-hub" aria-hidden="true"></div>
+              </div>
+            </div>
+            <div class="pac-controls-side">
+<div class="board-actions">
+                <button type="button" id="pauseBtn" class="ctrl-btn pause-btn" title="Pause" aria-label="Pause"><span class="ico">⏸</span><span class="lbl">Pause</span></button>
+                <button type="button" id="soundToggleBtnGame" class="ctrl-btn mute-btn sound-toggle-game" title="Sound on/off" aria-label="Sound on/off"></button>
+                <button type="button" id="prevLevelBtn" class="ctrl-btn nav-ctrl" title="Previous level" aria-label="Previous level"><span class="ico">⬅</span><span class="lbl">Prev</span></button>
+                <button type="button" id="restartBtn" class="ctrl-btn restart-ctrl" title="Restart" aria-label="Restart level"><span class="lbl">Restart</span><span class="ico">🔁</span></button>
+                <button type="button" id="nextLevelBtn" class="ctrl-btn nav-ctrl" title="Next level" aria-label="Next level"><span class="lbl">Next</span><span class="ico">➡</span></button>
+                <button type="button" id="exitBtn" class="ctrl-btn exit-btn" title="Exit to main menu" aria-label="Exit"><span class="lbl">Exit</span><span class="ico">✖</span></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p class="hint-text">Arrow keys to move · Esc or P to pause</p>
+
+      </div>
+    </div>
+
+    <!-- ============ CONFIRMATION DIALOG: WATCH 5 ADS ============
+         Pac-Man's #confirmOverlay, element for element (same ids, same
+         order, Pac-Man's classes with a "pm-" prefix). Tapping an
+         ad-unlockable locked level (Select Level, in-game Prev / Next, the
+         Congratulations popup's Previous) pops this up FIRST, so the player
+         opts in before any video rolls. OK closes it and plays the 5 ads back
+         to back; Cancel just closes it and leaves everything as it was.
+         Styled by Pac-Man's own CONFIRMATION DIALOG rules at the end of
+         style.css. -->
+    <div id="confirmOverlay" class="pm-overlay pm-confirm-overlay hidden">
+      <div class="pm-modal pm-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+        <h2 id="confirmTitle" class="pm-confirm-title">📺 Unlock Level</h2>
+        <p id="confirmMessage" class="pm-confirm-message"></p>
+        <p id="confirmSubMessage" class="pm-confirm-submessage hidden"></p>
+        <div class="pm-modal-buttons pm-confirm-buttons">
+          <button type="button" id="confirmOkBtn" class="pm-menu-btn pm-primary pm-confirm-ok-btn">✔ OK</button>
+          <button type="button" id="confirmCancelBtn" class="pm-menu-btn pm-confirm-cancel-btn">✖ Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ GAME OVER / CONGRATULATIONS ============
+         Pac-Man's #overlay .modal — ONE popup for both results, exactly as
+         in Pac-Man — copied element for element (same ids, same
+         order, same classes with a "pm-" prefix): close ×, title, message,
+         then Watch Ad & Continue / Retry Level / Level Select, then the
+         once-per-attempt note. Styled by the "PAC-MAN STANDARD" block at the
+         end of style.css, which is Pac-Man's own rules for this popup. -->
+    <div id="overlay" class="pm-overlay hidden">
+      <div class="pm-modal">
+        <button type="button" class="pm-close-x" id="modalCloseX" title="Close">✕</button>
+        <h2 id="modalTitle">Game Over 💀</h2>
+        <p id="modalMessage"></p>
+        <p id="modalCoins" class="pm-modal-coins hidden"></p>
+        <!-- IAB MREC 300x250, shown on the Congratulations popup only (Game
+             Over hides it). Rotates through the "level_complete_banner"
+             creatives every 5s while the popup is open. -->
+        <div id="modalBannerAd" class="pm-banner-ad-card hidden"></div>
+        <div class="pm-modal-buttons">
+          <button type="button" id="continueAdBtn" class="pm-menu-btn pm-continue-btn hidden">▶ Watch Ad &amp; Continue</button>
+          <button type="button" id="modalPrimaryBtn" class="pm-menu-btn pm-primary">🔁 Retry Level</button>
+          <!-- Replay the level before this one: Congratulations popup only,
+               and only when there is an earlier level to go back to. -->
+          <button type="button" id="modalPrevBtn" class="pm-menu-btn hidden">⬅ Previous Level</button>
+          <button type="button" id="modalSecondaryBtn" class="pm-menu-btn">🗺 Level Select</button>
+        </div>
+        <p id="continueNote" class="pm-continue-note hidden"></p>
+      </div>
+    </div>
+
+    <div id="toast" class="toast hidden" role="status" aria-live="assertive"></div>
+
+    <!-- ============ VIDEO AD OVERLAY ============ -->
+    <div id="adOverlay" class="ad-overlay hidden" aria-hidden="true">
+      <div class="ad-stage">
+        <div class="ad-topbar">
+          <span class="ad-badge" id="adBadge">● Ad Playing</span>
+          <span class="ad-advertiser" id="adAdvertiser"></span>
+          <span class="ad-countdown" id="adCountdown"></span>
+        </div>
+        <div class="ad-video-wrap">
+          <video id="adVideo" playsinline preload="auto"></video>
+          <img id="adImage" class="hidden" alt="Advertisement">
+          <p class="ad-status" id="adStatus">Loading ad…</p>
+          <span class="ad-res-chip" id="adRes"></span>
+        </div>
+        <div class="ad-actions">
+          <button type="button" id="adUnmuteBtn" class="btn btn-ghost hidden">🔇 Tap for sound</button>
+          <button type="button" id="adSkipBtn" class="btn hidden">Skip ▶</button>
+        </div>
+        <p class="ad-reward-note" id="adRewardNote"></p>
+      </div>
+    </div>
+
+    <script src="/wp-content/uploads/gcm-games/12/b20261020095234-6h3thr/icons.js"></script>
+    <script type="text/javascript" src="/wp-content/uploads/gcm-games/12/b20261020095234-6h3thr/script.js"></script>
+  </body>
+</html>

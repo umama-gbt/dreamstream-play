@@ -1,0 +1,351 @@
+/* Game Catalog Manager admin styles */
+
+.gcm-wrap .gcm-card {
+	max-width: 1100px;
+	margin: 20px 0;
+	padding: 4px 24px 20px;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 8px;
+}
+
+.gcm-wrap .gcm-card--muted {
+	background: #f6f7f7;
+}
+
+.gcm-muted {
+	color: #646970;
+}
+
+.gcm-list {
+	list-style: disc;
+	padding-left: 20px;
+}
+
+.gcm-list li {
+	margin-bottom: 6px;
+}
+
+.gcm-import-form fieldset {
+	margin: 12px 0;
+}
+
+/* Badges */
+.gcm-badge {
+	display: inline-block;
+	padding: 3px 9px;
+	border-radius: 999px;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 1.5;
+	white-space: nowrap;
+}
+
+.gcm-badge--none { background: #f0f0f1; color: #50575e; }
+.gcm-badge--pending { background: #fcf0e1; color: #8a4b00; }
+.gcm-badge--testable { background: #e5f0fa; color: #135e96; }
+.gcm-badge--verified { background: #e6f4ea; color: #1a6b32; }
+
+/* Status strip */
+.gcm-status-strip {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+	gap: 12px;
+	max-width: 1100px;
+	margin-top: 16px;
+}
+
+.gcm-status-tile {
+	display: block;
+	padding: 14px 16px;
+	border: 1px solid #dcdcde;
+	border-left-width: 4px;
+	border-radius: 6px;
+	background: #fff;
+	color: #1d2327;
+	text-decoration: none;
+}
+
+.gcm-status-tile strong {
+	display: block;
+	font-size: 24px;
+	line-height: 1.2;
+}
+
+.gcm-status-tile--none { border-left-color: #a7aaad; }
+.gcm-status-tile--pending { border-left-color: #dba617; }
+.gcm-status-tile--testable { border-left-color: #2271b1; }
+.gcm-status-tile--verified { border-left-color: #00a32a; }
+
+/* Drop zone */
+.gcm-dropzone {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	padding: 32px 16px;
+	border: 2px dashed #8c8f94;
+	border-radius: 8px;
+	text-align: center;
+	cursor: pointer;
+}
+
+.gcm-dropzone.is-over,
+.gcm-dropzone:hover {
+	border-color: #2271b1;
+	background: #f0f6fc;
+}
+
+.gcm-dropzone .dashicons {
+	width: 32px;
+	height: 32px;
+	font-size: 32px;
+	color: #2271b1;
+}
+
+.gcm-dropzone input[type="file"] {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	opacity: 0;
+}
+
+.gcm-dropzone:focus-within {
+	outline: 2px solid #2271b1;
+	outline-offset: 2px;
+}
+
+/* Queue */
+.gcm-queue {
+	margin-top: 16px;
+}
+
+.gcm-queue td {
+	vertical-align: top;
+}
+
+.gcm-queue tr.is-done td:first-child { box-shadow: inset 4px 0 0 #00a32a; }
+.gcm-queue tr.is-pending td:first-child { box-shadow: inset 4px 0 0 #dba617; }
+.gcm-queue tr.is-error td:first-child { box-shadow: inset 4px 0 0 #d63638; }
+.gcm-queue tr.is-error td:nth-child(2) { color: #b32d2e; }
+.gcm-queue tr.is-muted { opacity: 0.6; }
+
+.gcm-problem {
+	margin-top: 6px;
+	color: #8a4b00;
+}
+
+.gcm-match-select {
+	display: block;
+	width: 100%;
+	max-width: 360px;
+	margin: 6px 0;
+}
+
+.gcm-match-actions {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+/* Import report */
+.gcm-totals {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin: 12px 0 20px;
+}
+
+.gcm-total {
+	min-width: 110px;
+	padding: 10px 14px;
+	border-radius: 6px;
+	background: #f6f7f7;
+}
+
+.gcm-total strong {
+	display: block;
+	font-size: 22px;
+}
+
+.gcm-total--ok { background: #e6f4ea; }
+.gcm-total--bad { background: #fcf0f1; }
+.gcm-total--warn { background: #fcf9e8; }
+
+.gcm-result {
+	font-weight: 600;
+}
+
+.gcm-result--created,
+.gcm-result--updated { color: #1a6b32; }
+.gcm-result--skipped { color: #b32d2e; }
+
+.gcm-report details {
+	margin: 16px 0;
+}
+
+.gcm-ok-line {
+	color: #1a6b32;
+	font-weight: 600;
+}
+
+/* Edit screen */
+.gcm-synopsis-label {
+	margin: 18px 0 4px;
+	padding: 0 !important;
+	font-size: 14px !important;
+	font-weight: 600 !important;
+}
+
+.gcm-fields {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 0 16px;
+}
+
+.gcm-fields label {
+	display: block;
+	margin-bottom: 4px;
+	font-weight: 600;
+}
+
+.gcm-fields input,
+.gcm-fields select {
+	width: 100%;
+}
+
+.gcm-genre-picker,
+.gcm-mode {
+	margin: 8px 0 12px;
+}
+
+.gcm-genre-picker legend,
+.gcm-mode legend {
+	margin-bottom: 6px;
+	font-weight: 600;
+}
+
+.gcm-genre-picker label {
+	display: inline-block;
+	min-width: 130px;
+	margin: 0 8px 6px 0;
+}
+
+.gcm-mode label {
+	display: block;
+	margin-bottom: 10px;
+}
+
+.gcm-mode .gcm-muted,
+.gcm-verify .gcm-muted {
+	display: block;
+	margin: 2px 0 0 24px;
+}
+
+.gcm-checks {
+	margin: 12px 0;
+	padding: 10px 14px;
+	border-radius: 6px;
+	background: #f6f7f7;
+}
+
+.gcm-checks ul {
+	margin: 6px 0 0 18px;
+	list-style: disc;
+}
+
+.gcm-checks--bad { background: #fcf0e1; }
+.gcm-checks--good { background: #e6f4ea; }
+
+.gcm-verify {
+	padding: 12px 14px;
+	border: 1px solid #c3c4c7;
+	border-radius: 6px;
+}
+
+.gcm-inline-upload {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
+	margin-top: 16px;
+	padding-top: 14px;
+	border-top: 1px solid #f0f0f1;
+}
+
+.gcm-thumb-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+	gap: 14px;
+}
+
+.gcm-thumb {
+	margin: 0;
+	padding: 8px;
+	border: 1px solid #dcdcde;
+	border-radius: 8px;
+	background: #fff;
+}
+
+.gcm-thumb.is-chosen {
+	border-color: #00a32a;
+	box-shadow: 0 0 0 2px #00a32a;
+}
+
+.gcm-thumb img {
+	display: block;
+	width: 100%;
+	aspect-ratio: 16 / 10;
+	object-fit: cover;
+	border-radius: 4px;
+	background: #f0f0f1;
+}
+
+.gcm-thumb figcaption {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 4px;
+	margin-top: 8px;
+}
+
+.gcm-thumb__name {
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: 12px;
+}
+
+.gcm-chosen {
+	color: #1a6b32;
+}
+
+/* List table */
+.column-gcm_thumb {
+	width: 72px;
+}
+
+.gcm-list-thumb {
+	display: block;
+	width: 64px;
+	height: 40px;
+	object-fit: cover;
+	border-radius: 4px;
+}
+
+.gcm-list-thumb--empty {
+	background: #f0f0f1;
+	color: #a7aaad;
+	line-height: 40px;
+	text-align: center;
+}
+
+.column-gcm_files {
+	width: 190px;
+}
+
+.gcm-steps li { margin-bottom: 10px; }
+.gcm-steps li .gcm-muted { display: block; }
+.gcm-steps li.is-done strong::after { content: " \2713"; color: #00a32a; }

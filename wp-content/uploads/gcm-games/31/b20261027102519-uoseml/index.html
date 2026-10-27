@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head><meta charset="UTF-8">
+    
+    <!-- viewport-fit=cover lets the page use the full screen on a notched
+         handset in landscape, where the notch otherwise reserves a band down
+         one side. maximum-scale/user-scalable stop a double-tap on a control
+         button from zooming the board, which on a touch game reads as the
+         maze suddenly jumping. The page is never rotated now, so this is the
+         only viewport declaration involved: the layout follows whichever way
+         the device is actually held. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Memory Card</title>
+
+    <link rel="icon" type="image/png" href="/wp-content/uploads/gcm-games/31/b20261027102519-uoseml/logo.png">
+    <link rel="apple-touch-icon" href="/wp-content/uploads/gcm-games/31/b20261027102519-uoseml/logo.png">
+    <!-- Pac-Man standard: one typeface (Inter) from local files, no webfont
+         request; Pac-Man's stylesheet, then Pac-Man's SVG icon set. -->
+    <link rel="stylesheet" href="/wp-content/uploads/gcm-games/31/b20261027102519-uoseml/fonts.css">
+    <link rel="stylesheet" href="/wp-content/uploads/gcm-games/31/b20261027102519-uoseml/style.css">
+    <link rel="stylesheet" href="/wp-content/uploads/gcm-games/31/b20261027102519-uoseml/icons.css">
+  </head>
+  <body>
+    <!-- ===== SIDE AD CARDS (IAB VERTICAL_BANNER 300x600) =====
+       Two half-page / skyscraper cards in the space either side of the maze,
+       shown only while a level is being played. Built at their exact pixel
+       size and scaled as a whole by fitSideRails() in script.js, so the 1:2
+       shape is always the standard one — never cropped, never stretched.
+       Each visible card rotates to the next creative in the "banner"
+       placement every 5s (startRailCarousel), the same beat the leaderboard
+       and the popup MREC run on. -->
+  <aside class="ad-rail" id="adRailLeft" aria-hidden="true"></aside>
+  <aside class="ad-rail" id="adRailRight" aria-hidden="true"></aside>
+
+  <!-- ===== LEADER_BOARD 970x90 =====
+       The one ad portrait ever shows: on a portrait screen there is no side
+       gutter for the two VERTICAL_BANNER cards above (the board wants the
+       full width), but there is a strip ABOVE the board that is wide and
+       short — exactly the shape a leaderboard is standard for. Also used as
+       the landscape fallback when even a single side rail is too cramped to
+       be worth showing. Built at its exact pixel size and scaled as a whole
+       by placeLeaderboardTop() in script.js, same pattern as the side
+       cards, and always placed at the TOP of the screen. -->
+  <aside class="ad-leaderboard" id="adLeaderboard" aria-hidden="true"></aside>
+
+  <div class="wrapper">
+
+      <!-- ===================== MAIN MENU ===================== -->
+      <section id="menuScreen" class="screen active">
+        <div class="menu-top-bar">
+          <div class="coin-pill" title="Your coins"><span class="coin-icon">🪙</span><span id="coinCountMenu">0</span></div>
+          <button id="menuMuteBtn" class="ctrl-btn mute-btn menu-mute-btn" aria-pressed="false">🔊 Sound</button>
+        </div>
+        <img class="logo" src="/wp-content/uploads/gcm-games/31/b20261027102519-uoseml/logo.png" alt="Memory Card logo">
+        <h1 class="title">Memory Card</h1>
+        <p class="subtitle">30 Levels • Flip • Match • Win</p>
+        <div class="menu-buttons">
+          <button id="playBtn" class="menu-btn primary">▶ Play</button>
+          <!-- Icon and label in their own spans so the icon can sit ABOVE
+               the label, as Minesweeper's action cards do. Side by side,
+               "How to Play" is the label that wraps first and the three
+               stop matching each other. -->
+          <button id="levelSelectBtn" class="menu-btn">
+            <span class="menu-btn-icon"><svg viewbox="0 0 24 24" width="1em" height="1em" style="width:1em;height:1em;display:block" fill="none" aria-hidden="true"><path d="M7.5 10.2V7.6a4.5 4.5 0 0 1 9 0v2.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path><rect x="4.5" y="10.2" width="15" height="11" rx="3" fill="currentColor"></rect><circle cx="12" cy="14.9" r="1.6" fill="#fff"></circle><rect x="11.15" y="14.9" width="1.7" height="3.2" rx="0.6" fill="#fff"></rect></svg></span><span class="menu-btn-label">Select Level</span>
+          </button>
+          <button id="shopBtn" class="menu-btn">
+            <span class="menu-btn-icon"><svg viewbox="0 0 24 24" width="1em" height="1em" style="width:1em;height:1em;display:block" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8h12l-1.2 12.4a2 2 0 0 1-2 1.6H9.2a2 2 0 0 1-2-1.6L6 8Z"></path><path d="M9 8V6a3 3 0 0 1 6 0v2"></path></svg></span><span class="menu-btn-label">Shop</span>
+          </button>
+          <button id="howToPlayBtn" class="menu-btn">
+            <span class="menu-btn-icon">❓</span><span class="menu-btn-label">How to Play</span>
+          </button>
+        </div>
+        <p class="start-caption">30 levels · unlock the next as you clear each one</p>
+      </section>
+
+      <!-- ===================== HOW TO PLAY ===================== -->
+      <section id="howToPlayScreen" class="screen">
+        <div class="screen-top-bar">
+          <h2 class="section-title">How to Play</h2>
+          <button class="close-btn back-btn" data-target="menu" title="Close">✖</button>
+        </div>
+        <div class="howto-content">
+          <ul class="howto-list">
+            <li><strong>Goal:</strong> find every matching pair of cards to clear the level.</li>
+            <li><strong>Flip:</strong> tap or click two cards. A matching pair stays face up; two different cards turn back over.</li>
+            <li><strong>Timer:</strong> clear the board before time runs out — <strong>60 seconds</strong> on the first level, down to <strong>20 seconds</strong> on the last.</li>
+            <li><strong>Moves:</strong> every two cards you turn over count as one move.</li>
+            <li><strong>Coins:</strong> <strong>+20</strong> for each clear, <strong>+20</strong> more with no mistakes and <strong>+15</strong> for a fast clear.</li>
+            <li>There are <strong>30 levels</strong>, each with more cards. Clearing one unlocks the next.</li>
+            <li>Time up is Game Over — you can watch a short ad to continue where you were with <strong>the full time back, as many times as you like</strong>.</li>
+            <li><strong>Shop:</strong> unlock card packs with coins or a short ad: Food, Vehicles, Countries and Games.</li>
+          </ul>
+        </div>
+        <button class="menu-btn primary back-btn" data-target="menu">✔ Got it</button>
+      </section>
+
+      <!-- ===================== LEVEL SELECT ===================== -->
+      <section id="levelSelectScreen" class="screen">
+        <div class="screen-top-bar">
+          <button class="close-btn back-btn" data-target="menu" title="Back to Menu">‹</button>
+          <h2 class="section-title">Select Level</h2>
+          <!-- The corner opposite the back button was an empty spacer whose
+               only job was to keep the heading centred. A help button does
+               that job and is worth having here: this is the screen a
+               player lands on before their first game. -->
+          <button type="button" id="levelHelpBtn" class="close-btn" title="How to play">?</button>
+        </div>
+        <!-- How far in you are, in words. The grid shows it in padlocks,
+             which you have to count. -->
+        <p id="levelProgressLine" class="level-progress-line"></p>
+        <div id="levelGrid" class="level-grid"></div>
+      </section>
+
+      <!-- ===================== SHOP ===================== -->
+      <section id="shopScreen" class="screen">
+        <div class="screen-top-bar">
+          <button class="close-btn back-btn" data-target="menu" title="Back to Menu">‹</button>
+          <h2 class="section-title">Shop</h2>
+          <!-- Same corner the Level Select screen gives its help button: the
+               coin count used to sit centred on its own row under this bar,
+               which read as a second header. Up here, at the side, it is
+               read the same way the menu screen's coin pill is — a status
+               readout that lives with the rest of the top bar, not a row of
+               its own. -->
+          <div class="coin-pill shop-coin-pill" title="Your coins"><span class="coin-icon">🪙</span><span id="coinCountShop">0</span></div>
+        </div>
+        <div class="shop-tabs" id="shopTabs">
+          <button type="button" class="shop-tab active" data-cat="packs">Card Packs</button>
+        </div>
+        <div id="shopGrid" class="shop-grid"></div>
+      </section>
+
+      <!-- ===================== GAME SCREEN ===================== -->
+      <section id="gameScreen" class="screen" data-bar="xl">
+        <!-- ===== BOTTOM GAME BAR =====
+             ONE bar for every screen size: Pac-Man's 3-column grid
+             [ stats | centre | buttons ]. Memory Card has no joystick, so the
+             centre column is empty; the two outer columns stay equal. All sizing / icon-only tiers live in the
+             "FINAL GAME BAR" block at the end of style.css. -->
+        <header class="header">
+          <div class="bar-left">
+            <div class="header-title-group">
+              <span class="brand-tag-sm">Memory Card</span>
+              <h1 class="title" id="levelTitle"><span class="lvl-word">Level</span><span class="lvl-num">1</span></h1>
+            </div>
+            <div class="scoreboard">
+              <div class="score-label">
+                <span class="stat-word">Time:</span>
+                <span id="time">60</span>
+              </div>
+              <div class="lives-label">
+                <span class="stat-word">Moves:</span>
+                <span id="moves">0</span>
+              </div>
+              <div class="coin-pill game-coin-pill" title="Your coins">
+                <span class="coin-icon">🪙</span><span id="coinCountGame">0</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="game-controls">
+            <!-- Label and icon are separate spans so a narrow bar can drop the
+                 word and keep the icon (.lbl is hidden by the tier rules). -->
+            <button id="pauseBtn" class="ctrl-btn pause-btn" aria-pressed="false" title="Pause"><span class="ico">⏸</span><span class="lbl">Pause</span></button>
+            <button id="muteBtn" class="ctrl-btn mute-btn icon-only" aria-pressed="false" title="Sound on/off" aria-label="Sound on/off">🔊</button>
+            <button id="prevLevelBtn" class="ctrl-btn" title="Previous level"><span class="ico">⬅</span><span class="lbl">Prev</span></button>
+            <button id="restartBtn" class="ctrl-btn" title="Restart"><span class="lbl">Restart</span><span class="ico">🔁</span></button>
+            <button id="nextLevelBtn" class="ctrl-btn" title="Next level"><span class="lbl">Next</span><span class="ico">➡</span></button>
+            <button id="exitBtn" class="ctrl-btn exit-btn" title="Exit"><span class="lbl">Exit</span><span class="ico">✖</span></button>
+          </div>
+        </header>
+
+        <main class="game-container">
+          <!-- The board: the box Pac-Man's canvas occupies (same frame, same
+               fitting), holding Memory Card's own card grid. -->
+          <div id="gameBoard" class="game-board">
+            <ul class="cards" id="cardsGrid"></ul>
+          </div>
+          <p class="hint">
+            Click two cards to flip them. Match every pair before the time runs out! Press P or Esc to pause.
+          </p>
+        </main>
+      </section>
+
+      <!-- ===================== OVERLAYS / MODALS ===================== -->
+      <div id="overlay" class="overlay hidden">
+        <div class="modal">
+          <button class="close-x" id="modalCloseX" title="Close">✕</button>
+          <h2 id="modalTitle">Level Complete!</h2>
+          <p id="modalMessage">Great job!</p>
+          <p id="modalCoins" class="modal-coins hidden"></p>
+          <!-- IAB MREC 300x250, shown on the Congratulations popup only
+               (handleGameOver hides it). Rotates through the
+               "level_complete_banner" creatives every 5s while the popup is
+               open — startModalBannerCarousel() in script.js. -->
+          <div id="modalBannerAd" class="banner-ad-card hidden"></div>
+          <div class="modal-buttons">
+            <button id="continueAdBtn" class="menu-btn continue-btn hidden">▶ Watch Ad &amp; Continue</button>
+            <button id="modalPrimaryBtn" class="menu-btn primary">Next Level ➡</button>
+            <!-- Replay the level just before this one. Only shown on the
+                 Congratulations popup, and only when there IS an earlier
+                 level to go back to. -->
+            <button id="modalPrevBtn" class="menu-btn hidden">⬅ Previous Level</button>
+            <button id="modalSecondaryBtn" class="menu-btn"><svg viewbox="0 0 24 24" width="1em" height="1em" style="width:1em;height:1em;display:inline-block;vertical-align:-0.15em;margin-right:0.3em" fill="none" aria-hidden="true"><path d="M7.5 10.2V7.6a4.5 4.5 0 0 1 9 0v2.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path><rect x="4.5" y="10.2" width="15" height="11" rx="3" fill="currentColor"></rect><circle cx="12" cy="14.9" r="1.6" fill="#fff"></circle><rect x="11.15" y="14.9" width="1.7" height="3.2" rx="0.6" fill="#fff"></rect></svg>Level Select</button>
+          </div>
+          <p id="continueNote" class="continue-note hidden"></p>
+        </div>
+      </div>
+
+      <!-- ===================== CONFIRMATION DIALOG =====================
+           Used by the Level-Select "Watch 5 ads to unlock" tile: tapping it
+           pops this up FIRST, with the level number and the ad count, so the
+           player opts in before any video rolls. OK kicks the 5-ad sequence
+           off; Cancel closes the dialog and the grid is untouched. Sits on
+           top of everything (z-index above the existing overlay) so it can
+           appear over the Level Select screen. Touch-sized buttons, no
+           hover-only behaviour, so it works on phone / tablet / desktop. -->
+      <div id="confirmOverlay" class="overlay confirm-overlay hidden">
+        <div class="modal confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+          <h2 id="confirmTitle" class="confirm-title">📺 Unlock Level</h2>
+          <p id="confirmMessage" class="confirm-message"></p>
+          <p id="confirmSubMessage" class="confirm-submessage hidden"></p>
+          <div class="modal-buttons confirm-buttons">
+            <button type="button" id="confirmOkBtn" class="menu-btn primary confirm-ok-btn">✔ OK</button>
+            <button type="button" id="confirmCancelBtn" class="menu-btn confirm-cancel-btn">✖ Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== VIDEO AD OVERLAY ===================== -->
+      <div id="adOverlay" class="ad-overlay hidden">
+        <div class="ad-stage">
+          <div class="ad-topbar">
+            <span class="ad-badge">● Ad Playing</span>
+            <span class="ad-advertiser" id="adAdvertiser"></span>
+            <span class="ad-countdown" id="adCountdown"></span>
+          </div>
+          <div class="ad-video-wrap">
+            <video id="adVideo" playsinline preload="auto"></video>
+            <p class="ad-status" id="adStatus">Loading ad…</p>
+          </div>
+          <div class="ad-actions">
+            <button type="button" id="adUnmuteBtn" class="menu-btn ad-hidden">🔇 Tap for sound</button>
+            <button type="button" id="adSkipBtn" class="menu-btn ad-hidden">Skip ▶</button>
+          </div>
+          <p class="ad-reward-note" id="adRewardNote"></p>
+        </div>
+      </div>
+
+    </div>
+
+    <script src="/wp-content/uploads/gcm-games/31/b20261027102519-uoseml/icons.js"></script>
+    <script src="/wp-content/uploads/gcm-games/31/b20261027102519-uoseml/script.js"></script>
+  </body>
+</html>

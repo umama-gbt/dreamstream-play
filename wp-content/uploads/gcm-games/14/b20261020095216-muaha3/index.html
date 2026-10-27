@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head><meta charset="UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Minesweeper</title>
+    <link rel="icon" type="image/png" sizes="128x128" href="/wp-content/uploads/gcm-games/14/b20261020095216-muaha3/assets/img/minesweeper_icon.png">
+    <link rel="apple-touch-icon" href="/wp-content/uploads/gcm-games/14/b20261020095216-muaha3/assets/img/minesweeper_icon.png">
+    <!-- Inter, bundled locally (same five weights, same files as Pac-Man),
+         so the menus render in the same typeface online and offline. -->
+    <!-- ?v=27 on every stylesheet and script: phones (iPhone Safari above all)
+         keep cached copies of files whose names have not changed, so an
+         updated build could keep running the OLD layout. Bump this number
+         whenever these files change. -->
+    <link rel="stylesheet" href="/wp-content/uploads/gcm-games/14/b20261020095216-muaha3/assets/css/fonts.css?v=27">
+    <link rel="stylesheet" href="/wp-content/uploads/gcm-games/14/b20261020095216-muaha3/assets/css/stylesheet.css?v=27">
+    <!-- Icons as SVG (same look on every phone) — shared with Pac-Man. -->
+    <link rel="stylesheet" href="/wp-content/uploads/gcm-games/14/b20261020095216-muaha3/assets/css/icons.css?v=27">
+  </head>
+  <body>
+    <div class="app-frame">
+      <!-- ===== Display ads — Pac-Man gameplay standard =====
+           Shown only while a level is being played (never on the menus).
+           Landscape: VERTICAL_BANNER 300x600 rails beside the board, one or
+           two, sized and placed by fitGameLayout() in routines.js.
+           Portrait: one LEADER_BOARD 970x90 across the top.
+           Every unit is drawn at its exact IAB size and scaled as a whole. -->
+      <aside class="ad-rail" id="adRailLeft" aria-label="Advertisement"></aside>
+      <aside class="ad-rail" id="adRailRight" aria-label="Advertisement"></aside>
+      <aside class="ad-leaderboard" id="adLeaderboard" aria-label="Advertisement"></aside>
+
+      <div class="wrapper menu-mode">
+        <!-- Start / home screen -->
+        <div id="startScreen" class="start-screen">
+          <div class="coin-pill coin-pill-corner coin-pill-corner-left" id="coinPillStart" title="Coins">
+            <span class="stat-icon">🪙</span>
+            <span id="coinCountStart">0</span>
+          </div>
+          <button type="button" id="muteBtn" class="icon-btn icon-btn-corner" title="Sound" aria-label="Toggle sound">
+            <span aria-hidden="true" id="muteIcon">🔊</span>
+          </button>
+          <div class="logo-mine logo-mine-lg" aria-label="Minesweeper">
+            <img class="logo-icon-img" src="/wp-content/uploads/gcm-games/14/b20261020095216-muaha3/assets/img/logo.png" alt="" aria-hidden="true">
+            <span class="logo-wordmark">Minesweeper</span>
+          </div>
+          <!-- Pac-Man's subtitle pattern ("30 Levels • Collect • Survive • Win"):
+               short enough to stay on one line down to 320px wide. -->
+          <p class="tagline">30 Levels • Reveal • Flag • Win</p>
+          <div class="start-actions">
+            <button type="button" id="playBtn" class="btn btn-large btn-play">▶ Play</button>
+            <div class="start-actions-row">
+              <button type="button" id="selectLevelBtn" class="action-card">
+                <span class="action-card-icon" aria-hidden="true"><svg viewbox="0 0 24 24" width="1em" height="1em" style="width:1em;height:1em;display:block" fill="none" aria-hidden="true"><path d="M7.5 10.2V7.6a4.5 4.5 0 0 1 9 0v2.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path><rect x="4.5" y="10.2" width="15" height="11" rx="3" fill="currentColor"></rect><circle cx="12" cy="14.9" r="1.6" fill="#fff"></circle><rect x="11.15" y="14.9" width="1.7" height="3.2" rx="0.6" fill="#fff"></rect></svg></span>
+                <span class="action-card-label">Select Level</span>
+              </button>
+              <button type="button" id="customizeBtn" class="action-card">
+                <span class="action-card-icon" aria-hidden="true"><svg viewbox="0 0 24 24" width="1em" height="1em" style="width:1em;height:1em;display:block" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8h12l-1.2 12.4a2 2 0 0 1-2 1.6H9.2a2 2 0 0 1-2-1.6L6 8Z"></path><path d="M9 8V6a3 3 0 0 1 6 0v2"></path></svg></span>
+                <span class="action-card-label">Customize</span>
+              </button>
+              <button type="button" id="howToPlayBtnStart" class="action-card">
+                <span class="action-card-icon" aria-hidden="true">❓</span>
+                <span class="action-card-label">How to Play</span>
+              </button>
+            </div>
+          </div>
+          <p class="start-caption">30 levels · unlock the next as you clear each one</p>
+        </div>
+
+        <!-- Level selection -->
+        <div id="levelScreen" class="level-screen hidden">
+          <div class="level-title-row">
+            <button type="button" id="backToStartBtn" class="nav-btn" title="Back" aria-label="Back to menu">‹</button>
+            <h2 class="level-select-title">Select Level</h2>
+            <button type="button" id="howToPlayBtnLevel" class="how-to-play-btn" title="How to play" aria-label="How to play">
+              <span aria-hidden="true">?</span>
+            </button>
+          </div>
+          <p id="progressText" class="progress-text">Level 1 of 30 unlocked</p>
+          <div id="levelGrid" class="level-grid"></div>
+        </div>
+
+        <!-- Customize screen -->
+        <div id="customizeScreen" class="customize-screen hidden">
+          <div class="level-title-row">
+            <button type="button" id="backFromCustomizeBtn" class="nav-btn" title="Back" aria-label="Back to menu">‹</button>
+            <h2 class="level-select-title">Customize</h2>
+            <div class="coin-pill" title="Coins">
+              <span class="stat-icon">🪙</span>
+              <span id="coinCountCustomize">0</span>
+            </div>
+          </div>
+          <div class="customize-tabs" id="customizeTabs">
+            <button type="button" class="customize-tab active" data-cat="theme">Themes</button>
+            <button type="button" class="customize-tab" data-cat="tile">Tiles</button>
+            <button type="button" class="customize-tab" data-cat="flag">Flags</button>
+          </div>
+          <div class="customize-grid" id="customizeGrid"></div>
+        </div>
+
+        <!-- Game screen -->
+        <div id="gameScreen" class="game-screen hidden">
+          <!-- ===== Game bar — Pac-Man gameplay standard =====
+               One bar along the bottom (#gameScreen is column-reverse, so it
+               is first here but sits under the board): a 3-column grid
+               [ stats | centre | buttons ] with equal outer columns.
+               Stats, slot for slot with Pac-Man: title block (game name over
+               "Level N"), then Mines in the Score chip, Time in the Lives
+               chip, Coins in the Coins chip. Buttons in Pac-Man's order:
+               Pause, Sound, Prev, Restart (New Game), Next, Exit — plus
+               Minesweeper's own How to Play, icon-only beside Sound. -->
+          <header class="game-bar" id="gameBar">
+            <div class="bar-left">
+              <div class="header-title-group">
+                <span class="brand-tag-sm">Minesweeper</span>
+                <span class="level-title" id="levelBadge"><span class="lvl-word">Level</span><span class="lvl-num">1</span></span>
+              </div>
+              <div class="scoreboard">
+                <div class="stat-pill score-label" title="Mines remaining">
+                  <span class="stat-icon" aria-hidden="true">⚑</span><span class="stat-word">Mines:</span><span id="mineCount">08</span>
+                </div>
+                <div class="stat-pill lives-label" title="Time elapsed">
+                  <span class="stat-icon" aria-hidden="true">⏱</span><span class="stat-word">Time:</span><span id="timerDisplay">00:00</span>
+                </div>
+                <!-- 3-mistake limit: mines hit on this board, out of 3. -->
+                <div class="stat-pill mistakes-pill" id="mistakesPill" title="Mistakes: 0 of 3 (mines hit)">
+                  <span class="stat-icon mistakes-icon" aria-hidden="true">✖</span><span class="stat-word">Mistakes:</span><span id="mistakeCount">0/3</span>
+                </div>
+                <div class="stat-pill game-coin-pill" title="Coins">
+                  <span class="stat-icon coin-icon" aria-hidden="true">🪙</span><span id="coinCountGame">0</span>
+                </div>
+              </div>
+            </div>
+            <div class="game-controls">
+              <button type="button" id="pauseBtnGame" class="ctrl-btn pause-btn" title="Pause" aria-label="Pause game" aria-pressed="false">
+                <span class="ico" aria-hidden="true" id="pauseIconGame">⏸</span><span class="lbl" id="pauseLblGame">Pause</span>
+              </button>
+              <button type="button" id="soundBtnGame" class="ctrl-btn icon-only" title="Sound" aria-label="Toggle sound">
+                <span class="ico" aria-hidden="true" id="soundIconGame">🔊</span>
+              </button>
+              <button type="button" id="prevLevelNavBtn" class="ctrl-btn nav-ctrl" title="Previous level" aria-label="Previous level">
+                <span class="ico" aria-hidden="true">⬅</span><span class="lbl">Prev</span>
+              </button>
+              <button type="button" id="resetGame" class="ctrl-btn" title="Restart" aria-label="Restart">
+                <span class="lbl">Restart</span><span class="ico" aria-hidden="true">🔁</span>
+              </button>
+              <button type="button" id="nextLevelNavBtn" class="ctrl-btn nav-ctrl" title="Next level" aria-label="Next level">
+                <span class="lbl">Next</span><span class="ico" aria-hidden="true">➡</span>
+              </button>
+              <button type="button" id="exitBtn" class="ctrl-btn exit-btn" title="Exit to main menu" aria-label="Exit">
+                <span class="lbl">Exit</span><span class="ico" aria-hidden="true">✖</span>
+              </button>
+            </div>
+          </header>
+
+          <!-- Board column (Pac-Man's .game-container): the board area, then
+               the one-line hint (desktop only, as in Pac-Man). The grid is
+               centred in the board area. -->
+          <main class="game-container">
+            <div class="board-area">
+              <div id="mineSweeper" class="mine-board">
+                <!-- canvas gets rendered here -->
+                <!-- Sits over the board while paused: the clock stops and the
+                     grid is hidden, so pausing cannot be used to study it. -->
+                <div id="pauseCover" class="pause-cover hidden">
+                  <span class="pause-cover-icon" aria-hidden="true">⏸</span>
+                  <span class="pause-cover-text">Paused</span>
+                  <button type="button" id="resumeBtn" class="btn btn-large">▶ Resume</button>
+                </div>
+              </div>
+            </div>
+            <p class="hint">Left click to reveal a tile, right click to flag a mine. Clear every safe tile — 3 mines hit and it's Game Over!</p>
+          </main>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===================== OVERLAYS / MODALS — Pac-Man standard =====================
+         Same markup, ids and classes as Pac-Man's popups, so the Congratulations /
+         Game Over card, the confirm dialog, the video ad and the toast are drawn by
+         the same rules at every screen size. What goes INTO them is Minesweeper's:
+         its reward breakdown, its once-per-attempt continue, its Play Again. -->
+    <div id="overlay" class="overlay hidden">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <button type="button" class="close-x" id="modalCloseX" title="Close" aria-label="Close">✕</button>
+        <h2 id="modalTitle">Level Complete!</h2>
+        <p id="modalMessage"></p>
+        <p id="modalCoins" class="modal-coins hidden"></p>
+        <!-- Minesweeper's bonuses (Board Cleared / No Wrong Flags / Fast Clear),
+             one quiet line under the coins pill. -->
+        <p id="modalRewards" class="modal-rewards hidden"></p>
+        <!-- IAB MREC 300x250, Congratulations popup only. Rotates through the
+             "level_complete_banner" creatives every 5s while the popup is open. -->
+        <div id="modalBannerAd" class="banner-ad-card hidden" aria-label="Advertisement"></div>
+        <div class="modal-buttons">
+          <button type="button" id="continueAdBtn" class="menu-btn continue-btn hidden">▶ Watch Ad &amp; Continue</button>
+          <button type="button" id="modalPrimaryBtn" class="menu-btn primary">Next Level ➡</button>
+          <button type="button" id="modalPrevBtn" class="menu-btn hidden">⬅ Previous Level</button>
+          <button type="button" id="modalSecondaryBtn" class="menu-btn">🔁 Play Again</button>
+        </div>
+        <p id="continueNote" class="continue-note hidden"></p>
+      </div>
+    </div>
+
+    <!-- ===================== CONFIRMATION DIALOG =====================
+         Pac-Man's confirm card. Used for "Exit this level?" — the same question
+         the game asked before, in the game's own dialog instead of the
+         browser's. -->
+    <div id="confirmOverlay" class="overlay confirm-overlay hidden">
+      <div class="modal confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+        <h2 id="confirmTitle" class="confirm-title">Exit Level</h2>
+        <p id="confirmMessage" class="confirm-message"></p>
+        <p id="confirmSubMessage" class="confirm-submessage hidden"></p>
+        <div class="modal-buttons confirm-buttons">
+          <button type="button" id="confirmOkBtn" class="menu-btn primary confirm-ok-btn">✔ OK</button>
+          <button type="button" id="confirmCancelBtn" class="menu-btn confirm-cancel-btn">✖ Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== VIDEO AD OVERLAY (Pac-Man standard) ===================== -->
+    <div id="adOverlay" class="ad-overlay hidden">
+      <div class="ad-stage">
+        <div class="ad-topbar">
+          <span class="ad-badge">● Ad Playing</span>
+          <span class="ad-advertiser" id="adAdvertiser"></span>
+          <span class="ad-countdown" id="adCountdown"></span>
+        </div>
+        <div class="ad-video-wrap">
+          <video id="adVideo" playsinline preload="auto"></video>
+          <p class="ad-status" id="adStatus">Loading ad…</p>
+        </div>
+        <div class="ad-actions">
+          <button type="button" id="adUnmuteBtn" class="menu-btn ad-hidden">🔇 Tap for sound</button>
+          <button type="button" id="adSkipBtn" class="menu-btn ad-hidden">Skip ▶</button>
+        </div>
+        <p class="ad-reward-note" id="adRewardNote"></p>
+      </div>
+    </div>
+
+    <!-- Toast (Pac-Man .session-toast): bottom-centre pill. -->
+    <div id="toast" class="session-toast" role="status" aria-live="polite"></div>
+
+    <!-- How to play modal -->
+    <div id="howToPlayOverlay" class="how-to-play-overlay hidden" aria-hidden="true">
+      <div class="how-to-play-modal" role="dialog" aria-labelledby="howToPlayTitle" aria-modal="true">
+        <div class="how-to-play-header">
+          <h2 id="howToPlayTitle">How to Play</h2>
+          <button type="button" id="howToPlayClose" class="how-to-play-close" aria-label="Close">✖</button>
+        </div>
+        <div class="how-to-play-body">
+          <!-- Eight bullets, as in Pac-Man's How to Play, so the card fits its
+               content instead of scrolling. Same rules as before, merged:
+               reveal / flag / chord are one "Controls" line, numbers and
+               auto-open are one line. Dropped: the 24-hour reset note and the
+               New Game / arrow-button tip (Pac-Man's screen has neither).
+               Board sizes corrected to the real level table (15x10 to 31x24). -->
+          <ul class="how-to-play-list">
+            <li><strong>Goal:</strong> reveal every safe tile without hitting a mine.</li>
+            <li><strong>Controls:</strong> left click a tile to reveal it. Right click to place a ⚑ flag, again for a ? mark, once more to clear it. Double click a number to open its neighbors once you've flagged that many mines around it. On a phone or tablet: tap to reveal, press and hold to flag, double-tap a number.</li>
+            <li><strong>Numbers:</strong> each one tells you how many mines touch that tile. An empty tile opens up all the connected empty tiles.</li>
+            <li>Your <strong>first click is always safe</strong> — the mines are placed after it.</li>
+            <li>There are <strong>30 levels</strong>, from a 15×10 Beginner board up to a 31×24 Expert board. Win a level to unlock the next one.</li>
+            <li><strong>Rewards:</strong> <strong>20 coins</strong> for clearing a board, <strong>+20</strong> for no wrong flags, <strong>+15</strong> for a fast clear.</li>
+            <li><strong>3 mistakes allowed:</strong> each mine you hit counts as a mistake and is marked on the board. Hit a 3rd mine and it is Game Over — watch a short ad to continue right where you left off with all 3 mistakes restored, or retry the level.</li>
+            <li><strong>Customize:</strong> spend coins on board themes, tile designs and flag designs.</li>
+          </ul>
+        </div>
+        <button type="button" id="howToPlayGotIt" class="how-to-play-gotit">✔ Got it</button>
+      </div>
+    </div>
+
+    <script type="text/javascript" src="/wp-content/uploads/gcm-games/14/b20261020095216-muaha3/assets/js/Celula.js?v=27"></script>
+    <script type="text/javascript" src="/wp-content/uploads/gcm-games/14/b20261020095216-muaha3/assets/js/icons.js?v=27"></script>
+    <script type="text/javascript" src="/wp-content/uploads/gcm-games/14/b20261020095216-muaha3/assets/js/routines.js?v=27"></script>
+  </body>
+</html>

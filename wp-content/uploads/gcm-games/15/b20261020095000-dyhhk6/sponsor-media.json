@@ -1,0 +1,234 @@
+{
+  "_comment": "Ad catalogue for Breakout - same placements, sizes and rules as Pac-Man. 'continue' plays on Game Over's Watch Ad & Continue. 'restart' plays on the in-game Restart button (once per attempt). 'level_gate' plays after Congratulations, when Next Level is pressed, on every 3rd level (3, 6, 9 ...). 'recover' plays 5 times in a row on Level Select when the player unlocks a level after a 24-hour reset. All videos are skippable after 10 seconds. If an ad fails to load, its reward is not granted. 'level_complete_banner' is the IAB MREC 300x250 inside the Congratulations popup. 'banner' is the IAB VERTICAL_BANNER 300x600 shown beside the board during play on landscape screens (one or two cards). 'leaderboard' is the IAB LEADER_BOARD 970x90 shown above the board on portrait / narrow screens. Every image placement rotates to its next creative every 5 seconds; adding an ad to a placement extends its rotation with no code change. All creatives are bundled locally so playback never depends on reaching an outside domain.",
+  "ads": [
+    {
+      "id": "bo-continue-1",
+      "adType": "video",
+      "advertiser": "Continue Sponsor",
+      "duration": 67,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-continue-2.mp4",
+      "placements": [
+        "continue"
+      ]
+    },
+    {
+      "id": "bo-continue-2",
+      "adType": "video",
+      "advertiser": "Continue Sponsor",
+      "duration": 16,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-continue-3.mp4",
+      "placements": [
+        "continue"
+      ]
+    },
+    {
+      "id": "bo-restart-1",
+      "adType": "video",
+      "advertiser": "Restart Sponsor",
+      "duration": 30,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-restart-2.mp4",
+      "placements": [
+        "restart"
+      ]
+    },
+    {
+      "id": "bo-restart-2",
+      "adType": "video",
+      "advertiser": "Restart Sponsor",
+      "duration": 36,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-restart-3.mp4",
+      "placements": [
+        "restart"
+      ]
+    },
+    {
+      "id": "bo-levelgate-1",
+      "adType": "video",
+      "advertiser": "Level Sponsor",
+      "duration": 27,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-levelgate-2.mp4",
+      "placements": [
+        "level_gate"
+      ]
+    },
+    {
+      "id": "bo-recover-1",
+      "adType": "video",
+      "advertiser": "Unlock Sponsor",
+      "duration": 25,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-recover-2.mp4",
+      "placements": [
+        "recover"
+      ]
+    },
+    {
+      "id": "bo-banner-creditkey",
+      "adType": "image",
+      "advertiser": "Credit Key",
+      "title": "Credit Key",
+      "subtitle": "Buy Now, Pay On Your Terms",
+      "ctaText": "Learn more",
+      "bgFrom": "#0b1450",
+      "bgTo": "#1e3a8a",
+      "streamUrl": "ad-creditkey-mrec.png",
+      "clickUrl": "",
+      "placements": [
+        "level_complete_banner"
+      ],
+      "adSize": "MREC",
+      "imageUrl": "ad-creditkey-mrec.png"
+    },
+    {
+      "id": "bo-banner-creditkey-2",
+      "adType": "image",
+      "advertiser": "Credit Key",
+      "title": "Credit Key",
+      "subtitle": "Buy Now, Pay On Your Terms",
+      "ctaText": "Learn more",
+      "bgFrom": "#0b1450",
+      "bgTo": "#1e3a8a",
+      "streamUrl": "ad-creditkey-mrec-2.png",
+      "clickUrl": "",
+      "placements": [
+        "level_complete_banner"
+      ],
+      "imageUrl": "ad-creditkey-mrec-2.png",
+      "adSize": "MREC"
+    },
+    {
+      "id": "bo-banner-creditkey-3",
+      "adType": "image",
+      "advertiser": "Credit Key",
+      "title": "Credit Key",
+      "subtitle": "Buy Now, Pay On Your Terms",
+      "ctaText": "Learn more",
+      "bgFrom": "#0b1450",
+      "bgTo": "#1e3a8a",
+      "streamUrl": "ad-creditkey-mrec-3.png",
+      "clickUrl": "",
+      "placements": [
+        "level_complete_banner"
+      ],
+      "imageUrl": "ad-creditkey-mrec-3.png",
+      "adSize": "MREC"
+    },
+    {
+      "id": "bo-rail-creditkey",
+      "adType": "image",
+      "adSize": "VERTICAL_BANNER",
+      "advertiser": "Credit Key",
+      "title": "Credit Key",
+      "subtitle": "Buy Now, Pay On Your Terms",
+      "rating": 4.5,
+      "ctaText": "Learn more",
+      "bgFrom": "#0b1450",
+      "bgTo": "#1e3a8a",
+      "streamUrl": "ad-creditkey-banner.png",
+      "clickUrl": "",
+      "placements": [
+        "banner"
+      ],
+      "imageUrl": "ad-creditkey-banner.png",
+      "bgBottom": "#070d59"
+    },
+    {
+      "id": "bo-rail-creditkey-2",
+      "adType": "image",
+      "advertiser": "Credit Key",
+      "title": "Credit Key",
+      "subtitle": "Buy Now, Pay On Your Terms",
+      "ctaText": "Learn more",
+      "bgFrom": "#0b1450",
+      "bgTo": "#1e3a8a",
+      "streamUrl": "ad-creditkey-banner-2.png",
+      "clickUrl": "",
+      "placements": [
+        "banner"
+      ],
+      "imageUrl": "ad-creditkey-banner-2.png",
+      "adSize": "VERTICAL_BANNER",
+      "bgBottom": "#091148"
+    },
+    {
+      "id": "bo-rail-creditkey-3",
+      "adType": "image",
+      "advertiser": "Credit Key",
+      "title": "Credit Key",
+      "subtitle": "Buy Now, Pay On Your Terms",
+      "ctaText": "Learn more",
+      "bgFrom": "#0b1450",
+      "bgTo": "#1e3a8a",
+      "streamUrl": "ad-creditkey-banner-3.png",
+      "clickUrl": "",
+      "placements": [
+        "banner"
+      ],
+      "imageUrl": "ad-creditkey-banner-3.png",
+      "adSize": "VERTICAL_BANNER",
+      "bgBottom": "#0d1a6b"
+    },
+    {
+      "id": "bo-leader-creditkey",
+      "adType": "image",
+      "adSize": "LEADER_BOARD",
+      "advertiser": "Credit Key",
+      "title": "Credit Key",
+      "subtitle": "Buy Now, Pay On Your Terms",
+      "ctaText": "Learn more",
+      "bgFrom": "#0b1450",
+      "bgTo": "#1e3a8a",
+      "streamUrl": "ad-creditkey-leaderboard.png",
+      "clickUrl": "",
+      "placements": [
+        "leaderboard"
+      ],
+      "imageUrl": "ad-creditkey-leaderboard.png"
+    },
+    {
+      "id": "bo-leader-creditkey-2",
+      "adType": "image",
+      "advertiser": "Credit Key",
+      "title": "Credit Key",
+      "subtitle": "Buy Now, Pay On Your Terms",
+      "ctaText": "Learn more",
+      "bgFrom": "#0b1450",
+      "bgTo": "#1e3a8a",
+      "streamUrl": "ad-creditkey-leaderboard-2.png",
+      "clickUrl": "",
+      "placements": [
+        "leaderboard"
+      ],
+      "imageUrl": "ad-creditkey-leaderboard-2.png",
+      "adSize": "LEADER_BOARD"
+    },
+    {
+      "id": "bo-leader-creditkey-3",
+      "adType": "image",
+      "advertiser": "Credit Key",
+      "title": "Credit Key",
+      "subtitle": "Buy Now, Pay On Your Terms",
+      "ctaText": "Learn more",
+      "bgFrom": "#0b1450",
+      "bgTo": "#1e3a8a",
+      "streamUrl": "ad-creditkey-leaderboard-3.png",
+      "clickUrl": "",
+      "placements": [
+        "leaderboard"
+      ],
+      "imageUrl": "ad-creditkey-leaderboard-3.png",
+      "adSize": "LEADER_BOARD"
+    }
+  ]
+}

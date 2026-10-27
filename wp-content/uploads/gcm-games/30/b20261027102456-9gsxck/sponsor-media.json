@@ -1,0 +1,234 @@
+{
+  "_comment": "Demo ad catalogue for Hangman (same placements as Pac-Man). 'continue' plays on Game Over's Watch Ad & Continue (+2 guesses, once per attempt). 'restart' plays on the in-game Restart button (once per attempt). 'level_gate' plays after Congratulations, when the player presses Next Level, on every 3rd level (3, 6, 9 ...). 'recover' plays 5 times in a row on Level Select when the player taps a level the 24-hour reset took back (a level they'd reached before); it is 30 seconds with a skip button appearing after 10, same non-skippable window as 'continue' and 'restart' — skipping (or finishing) one advances straight to the next of the 5. 'level_complete_banner' is a compact horizontal image card shown INSIDE the Congratulations popup, below the coins-earned line. All creatives are bundled LOCALLY so they never depend on reaching an outside domain - swap in your own files any time, same names or update streamUrl. 'banner' is the IAB VERTICAL_BANNER 300x600 (half-page / skyscraper) shown in the space either side of the board during play; those cards are rendered at that exact size and scaled as a whole when the window is smaller, so the 1:2 shape never changes. 'leaderboard' is the IAB LEADER_BOARD 970x90, shown as a single wide banner ABOVE the board on windows with no side gutter for the 300x600 cards (portrait tablets, phones, narrow windows) - same scale-as-a-whole rule, so the 970:90 shape never changes either. Every image placement here now rotates: wherever a placement holds more than one ad, the card on screen swaps to the next one every 5 seconds rather than sitting on a single creative - that applies to 'leaderboard', to 'banner' (the 300x600 cards beside the maze) and to 'level_complete_banner' (the 300x250 inside the Congratulations popup). Adding another ad to any of those placements below extends that placement's rotation with no code change. The 'level_complete_banner', 'banner', and 'leaderboard' placements each now each carry THREE Credit Key image creatives, so the 5-second rotation visibly cycles 1 -> 2 -> 3 -> 1. The two extra creatives per placement are stand-in Credit Key layouts built only from claims already in the original ads; replace the files (same names) or edit the entries to use real ones.",
+  "ads": [
+    {
+      "id": "pm-continue-1",
+      "adType": "video",
+      "advertiser": "Continue Sponsor",
+      "duration": 67,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-continue-2.mp4",
+      "placements": [
+        "continue"
+      ]
+    },
+    {
+      "id": "pm-continue-2",
+      "adType": "video",
+      "advertiser": "Continue Sponsor",
+      "duration": 16,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-continue-3.mp4",
+      "placements": [
+        "continue"
+      ]
+    },
+    {
+      "id": "pm-restart-1",
+      "adType": "video",
+      "advertiser": "Restart Sponsor",
+      "duration": 30,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-restart-2.mp4",
+      "placements": [
+        "restart"
+      ]
+    },
+    {
+      "id": "pm-restart-2",
+      "adType": "video",
+      "advertiser": "Restart Sponsor",
+      "duration": 36,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-restart-3.mp4",
+      "placements": [
+        "restart"
+      ]
+    },
+    {
+      "id": "pm-levelgate-1",
+      "adType": "video",
+      "advertiser": "Level Sponsor",
+      "duration": 27,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-levelgate-2.mp4",
+      "placements": [
+        "level_gate"
+      ]
+    },
+    {
+      "id": "pm-recover-1",
+      "adType": "video",
+      "advertiser": "Unlock Sponsor",
+      "duration": 25,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-recover-2.mp4",
+      "placements": [
+        "recover"
+      ]
+    },
+    {
+      "id": "pm-banner-creditkey",
+      "adType": "image",
+      "advertiser": "Credit Key",
+      "title": "Credit Key",
+      "subtitle": "Buy Now, Pay On Your Terms",
+      "ctaText": "Learn more",
+      "bgFrom": "#0b1450",
+      "bgTo": "#1e3a8a",
+      "streamUrl": "ad-creditkey-mrec.png",
+      "clickUrl": "",
+      "placements": [
+        "level_complete_banner"
+      ],
+      "adSize": "MREC",
+      "imageUrl": "ad-creditkey-mrec.png"
+    },
+    {
+      "id": "pm-banner-creditkey-2",
+      "adType": "image",
+      "advertiser": "Credit Key",
+      "title": "Credit Key",
+      "subtitle": "Buy Now, Pay On Your Terms",
+      "ctaText": "Learn more",
+      "bgFrom": "#0b1450",
+      "bgTo": "#1e3a8a",
+      "streamUrl": "ad-creditkey-mrec-2.png",
+      "clickUrl": "",
+      "placements": [
+        "level_complete_banner"
+      ],
+      "imageUrl": "ad-creditkey-mrec-2.png",
+      "adSize": "MREC"
+    },
+    {
+      "id": "pm-banner-creditkey-3",
+      "adType": "image",
+      "advertiser": "Credit Key",
+      "title": "Credit Key",
+      "subtitle": "Buy Now, Pay On Your Terms",
+      "ctaText": "Learn more",
+      "bgFrom": "#0b1450",
+      "bgTo": "#1e3a8a",
+      "streamUrl": "ad-creditkey-mrec-3.png",
+      "clickUrl": "",
+      "placements": [
+        "level_complete_banner"
+      ],
+      "imageUrl": "ad-creditkey-mrec-3.png",
+      "adSize": "MREC"
+    },
+    {
+      "id": "pm-rail-creditkey",
+      "adType": "image",
+      "adSize": "VERTICAL_BANNER",
+      "advertiser": "Credit Key",
+      "title": "Credit Key",
+      "subtitle": "Buy Now, Pay On Your Terms",
+      "rating": 4.5,
+      "ctaText": "Learn more",
+      "bgFrom": "#0b1450",
+      "bgTo": "#1e3a8a",
+      "streamUrl": "ad-creditkey-banner.png",
+      "clickUrl": "",
+      "placements": [
+        "banner"
+      ],
+      "imageUrl": "ad-creditkey-banner.png",
+      "bgBottom": "#070d59"
+    },
+    {
+      "id": "pm-rail-creditkey-2",
+      "adType": "image",
+      "advertiser": "Credit Key",
+      "title": "Credit Key",
+      "subtitle": "Buy Now, Pay On Your Terms",
+      "ctaText": "Learn more",
+      "bgFrom": "#0b1450",
+      "bgTo": "#1e3a8a",
+      "streamUrl": "ad-creditkey-banner-2.png",
+      "clickUrl": "",
+      "placements": [
+        "banner"
+      ],
+      "imageUrl": "ad-creditkey-banner-2.png",
+      "adSize": "VERTICAL_BANNER",
+      "bgBottom": "#091148"
+    },
+    {
+      "id": "pm-rail-creditkey-3",
+      "adType": "image",
+      "advertiser": "Credit Key",
+      "title": "Credit Key",
+      "subtitle": "Buy Now, Pay On Your Terms",
+      "ctaText": "Learn more",
+      "bgFrom": "#0b1450",
+      "bgTo": "#1e3a8a",
+      "streamUrl": "ad-creditkey-banner-3.png",
+      "clickUrl": "",
+      "placements": [
+        "banner"
+      ],
+      "imageUrl": "ad-creditkey-banner-3.png",
+      "adSize": "VERTICAL_BANNER",
+      "bgBottom": "#0d1a6b"
+    },
+    {
+      "id": "pm-leader-creditkey",
+      "adType": "image",
+      "adSize": "LEADER_BOARD",
+      "advertiser": "Credit Key",
+      "title": "Credit Key",
+      "subtitle": "Buy Now, Pay On Your Terms",
+      "ctaText": "Learn more",
+      "bgFrom": "#0b1450",
+      "bgTo": "#1e3a8a",
+      "streamUrl": "ad-creditkey-leaderboard.png",
+      "clickUrl": "",
+      "placements": [
+        "leaderboard"
+      ],
+      "imageUrl": "ad-creditkey-leaderboard.png"
+    },
+    {
+      "id": "pm-leader-creditkey-2",
+      "adType": "image",
+      "advertiser": "Credit Key",
+      "title": "Credit Key",
+      "subtitle": "Buy Now, Pay On Your Terms",
+      "ctaText": "Learn more",
+      "bgFrom": "#0b1450",
+      "bgTo": "#1e3a8a",
+      "streamUrl": "ad-creditkey-leaderboard-2.png",
+      "clickUrl": "",
+      "placements": [
+        "leaderboard"
+      ],
+      "imageUrl": "ad-creditkey-leaderboard-2.png",
+      "adSize": "LEADER_BOARD"
+    },
+    {
+      "id": "pm-leader-creditkey-3",
+      "adType": "image",
+      "advertiser": "Credit Key",
+      "title": "Credit Key",
+      "subtitle": "Buy Now, Pay On Your Terms",
+      "ctaText": "Learn more",
+      "bgFrom": "#0b1450",
+      "bgTo": "#1e3a8a",
+      "streamUrl": "ad-creditkey-leaderboard-3.png",
+      "clickUrl": "",
+      "placements": [
+        "leaderboard"
+      ],
+      "imageUrl": "ad-creditkey-leaderboard-3.png",
+      "adSize": "LEADER_BOARD"
+    }
+  ]
+}

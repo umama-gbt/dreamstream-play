@@ -1,0 +1,197 @@
+{
+  "_comment": "Minesweeper ad catalogue, same format and creatives as Pac-Man's sponsor-media.json. 'continue' plays on Game Over's Watch Ad & Continue (once per level attempt). 'level_gate' plays after Congratulations when the player presses Next Level on every 3rd level (3, 6, 9 ...). 'restart' plays when the player presses Restart in the game bar (Pac-Man: one ad-gated restart per level attempt; no ad shown = no restart). 'recover' plays 5 times in a row when, after a 24-hour reset, the player unlocks a locked level with ads (Level Select, or the in-game Prev / Next / popup level buttons); skippable after 10 seconds, and each finished or skipped ad moves straight on to the next of the 5. 'level_complete_banner' is the MREC 300x250 inside the Congratulations popup. 'banner' is the VERTICAL_BANNER 300x600 shown beside the board during play, 'leaderboard' the LEADER_BOARD 970x90 shown above it. Every image placement rotates every 5 seconds. All creatives are bundled locally in assets/ads/ - swap in your own files (same names) or edit the entries. When index.html is opened from file:// this file cannot be fetched; routines.js then uses its built-in copy of the same catalogue.",
+  "ads": [
+    {
+      "id": "ms-continue-1",
+      "adType": "video",
+      "advertiser": "Continue Sponsor",
+      "duration": 67,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "assets/ads/ad-continue-2.mp4",
+      "placements": [
+        "continue"
+      ]
+    },
+    {
+      "id": "ms-continue-2",
+      "adType": "video",
+      "advertiser": "Continue Sponsor",
+      "duration": 16,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "assets/ads/ad-continue-3.mp4",
+      "placements": [
+        "continue"
+      ]
+    },
+    {
+      "id": "ms-restart-1",
+      "adType": "video",
+      "advertiser": "Restart Sponsor",
+      "duration": 30,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "assets/ads/ad-restart-2.mp4",
+      "placements": [
+        "restart"
+      ]
+    },
+    {
+      "id": "ms-restart-2",
+      "adType": "video",
+      "advertiser": "Restart Sponsor",
+      "duration": 36,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "assets/ads/ad-restart-3.mp4",
+      "placements": [
+        "restart"
+      ]
+    },
+    {
+      "id": "ms-recover-1",
+      "adType": "video",
+      "advertiser": "Unlock Sponsor",
+      "duration": 25,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "assets/ads/ad-recover-2.mp4",
+      "placements": [
+        "recover"
+      ]
+    },
+    {
+      "id": "ms-levelgate-1",
+      "adType": "video",
+      "advertiser": "Level Sponsor",
+      "duration": 27,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "assets/ads/ad-levelgate-2.mp4",
+      "placements": [
+        "level_gate"
+      ]
+    },
+    {
+      "id": "ms-mrec-creditkey",
+      "adType": "image",
+      "adSize": "MREC",
+      "advertiser": "Credit Key",
+      "bgFrom": "#0b1450",
+      "streamUrl": "assets/ads/ad-creditkey-mrec.png",
+      "imageUrl": "assets/ads/ad-creditkey-mrec.png",
+      "clickUrl": "",
+      "placements": [
+        "level_complete_banner"
+      ]
+    },
+    {
+      "id": "ms-mrec-creditkey-2",
+      "adType": "image",
+      "adSize": "MREC",
+      "advertiser": "Credit Key",
+      "bgFrom": "#0b1450",
+      "streamUrl": "assets/ads/ad-creditkey-mrec-2.png",
+      "imageUrl": "assets/ads/ad-creditkey-mrec-2.png",
+      "clickUrl": "",
+      "placements": [
+        "level_complete_banner"
+      ]
+    },
+    {
+      "id": "ms-mrec-creditkey-3",
+      "adType": "image",
+      "adSize": "MREC",
+      "advertiser": "Credit Key",
+      "bgFrom": "#0b1450",
+      "streamUrl": "assets/ads/ad-creditkey-mrec-3.png",
+      "imageUrl": "assets/ads/ad-creditkey-mrec-3.png",
+      "clickUrl": "",
+      "placements": [
+        "level_complete_banner"
+      ]
+    },
+    {
+      "id": "ms-rail-creditkey",
+      "adType": "image",
+      "adSize": "VERTICAL_BANNER",
+      "advertiser": "Credit Key",
+      "bgFrom": "#0b1450",
+      "bgBottom": "#070d59",
+      "streamUrl": "assets/ads/ad-creditkey-banner.png",
+      "imageUrl": "assets/ads/ad-creditkey-banner.png",
+      "clickUrl": "",
+      "placements": [
+        "banner"
+      ]
+    },
+    {
+      "id": "ms-rail-creditkey-2",
+      "adType": "image",
+      "adSize": "VERTICAL_BANNER",
+      "advertiser": "Credit Key",
+      "bgFrom": "#0b1450",
+      "bgBottom": "#091148",
+      "streamUrl": "assets/ads/ad-creditkey-banner-2.png",
+      "imageUrl": "assets/ads/ad-creditkey-banner-2.png",
+      "clickUrl": "",
+      "placements": [
+        "banner"
+      ]
+    },
+    {
+      "id": "ms-rail-creditkey-3",
+      "adType": "image",
+      "adSize": "VERTICAL_BANNER",
+      "advertiser": "Credit Key",
+      "bgFrom": "#0b1450",
+      "bgBottom": "#0d1a6b",
+      "streamUrl": "assets/ads/ad-creditkey-banner-3.png",
+      "imageUrl": "assets/ads/ad-creditkey-banner-3.png",
+      "clickUrl": "",
+      "placements": [
+        "banner"
+      ]
+    },
+    {
+      "id": "ms-leader-creditkey",
+      "adType": "image",
+      "adSize": "LEADER_BOARD",
+      "advertiser": "Credit Key",
+      "bgFrom": "#0b1450",
+      "streamUrl": "assets/ads/ad-creditkey-leaderboard.png",
+      "imageUrl": "assets/ads/ad-creditkey-leaderboard.png",
+      "clickUrl": "",
+      "placements": [
+        "leaderboard"
+      ]
+    },
+    {
+      "id": "ms-leader-creditkey-2",
+      "adType": "image",
+      "adSize": "LEADER_BOARD",
+      "advertiser": "Credit Key",
+      "bgFrom": "#0b1450",
+      "streamUrl": "assets/ads/ad-creditkey-leaderboard-2.png",
+      "imageUrl": "assets/ads/ad-creditkey-leaderboard-2.png",
+      "clickUrl": "",
+      "placements": [
+        "leaderboard"
+      ]
+    },
+    {
+      "id": "ms-leader-creditkey-3",
+      "adType": "image",
+      "adSize": "LEADER_BOARD",
+      "advertiser": "Credit Key",
+      "bgFrom": "#0b1450",
+      "streamUrl": "assets/ads/ad-creditkey-leaderboard-3.png",
+      "imageUrl": "assets/ads/ad-creditkey-leaderboard-3.png",
+      "clickUrl": "",
+      "placements": [
+        "leaderboard"
+      ]
+    }
+  ]
+}

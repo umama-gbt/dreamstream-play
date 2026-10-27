@@ -1,0 +1,72 @@
+/* =======================================================================
+   INTER, BUNDLED LOCALLY
+   -----------------------------------------------------------------------
+   This used to be a Google Fonts <link> in index.html (a preconnect to
+   fonts.googleapis.com/fonts.gstatic.com plus a stylesheet request). That
+   is a network fetch the game has no business making: this is meant to be
+   a fully offline game, and a page load with no connection does not fail
+   quietly here — the browser still spends time on the DNS lookup and
+   connection attempt for both preconnects before giving up, and every
+   piece of text on the very first frame is laid out in the fallback stack
+   (system-ui) and then possibly reflows into Inter if the request
+   eventually succeeds. Offline, it never succeeds, so every session
+   without a connection was silently rendering in a different typeface
+   than the one this file was designed against — not a visible crash, but
+   exactly the kind of "looks a bit off, not sure why" gap that a purely
+   offline game should not have.
+
+   The five weights actually used anywhere in style.css (400/500/600/700/
+   800 — the same set the old Google Fonts request asked for) are now
+   shipped as local .woff2 files in fonts/, one HTTP request each, all of
+   them same-origin, so they load (or fail to load, on a truly broken
+   filesystem) exactly the same way whether the device is online or not.
+   Only the "latin" subset is included (plain ASCII + the punctuation and
+   symbols this UI actually uses) — Inter also ships cyrillic, greek,
+   vietnamese and latin-ext subsets for characters that never appear here,
+   and shipping those would be five times the font weight for zero visible
+   difference. Woff2 only, no woff fallback: every engine this game
+   targets (the last several years of Chrome, Safari, Firefox, and the
+   Android/iOS webviews the game runs in) has supported woff2 since long
+   before it supported the CSS this game already relies on elsewhere
+   (Grid, custom properties), so a second, larger file format for browsers
+   that do not exist here would just be dead weight. */
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("/wp-content/uploads/gcm-games/15/b20261020095000-dyhhk6/fonts/inter-latin-400-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url("/wp-content/uploads/gcm-games/15/b20261020095000-dyhhk6/fonts/inter-latin-500-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url("/wp-content/uploads/gcm-games/15/b20261020095000-dyhhk6/fonts/inter-latin-600-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url("/wp-content/uploads/gcm-games/15/b20261020095000-dyhhk6/fonts/inter-latin-700-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 800;
+  src: url("/wp-content/uploads/gcm-games/15/b20261020095000-dyhhk6/fonts/inter-latin-800-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}

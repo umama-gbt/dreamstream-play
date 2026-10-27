@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head><meta charset="UTF-8">
+    
+    <!-- Same viewport declaration as Pac-Man: full screen on notched phones,
+         no double-tap zoom on the control buttons. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Breakout - Level Master</title>
+
+    <link rel="icon" type="image/png" href="/wp-content/uploads/gcm-games/15/b20261020095000-dyhhk6/logo.png">
+    <!-- Shared UI standard (same files as Pac-Man): one bundled typeface,
+         the shared layout stylesheet, and SVG icons that look the same on
+         every device. Breakout's own colours live at the end of style.css. -->
+    <link rel="stylesheet" href="/wp-content/uploads/gcm-games/15/b20261020095000-dyhhk6/fonts.css">
+    <link rel="stylesheet" href="/wp-content/uploads/gcm-games/15/b20261020095000-dyhhk6/style.css">
+    <link rel="stylesheet" href="/wp-content/uploads/gcm-games/15/b20261020095000-dyhhk6/icons.css">
+  </head>
+  <body>
+    <!-- ===== SIDE AD CARDS (IAB VERTICAL_BANNER 300x600) =====
+         Shown beside the board during play on landscape screens, scaled as a
+         whole by fitSideRails() in script.js. Rotate every 5s. -->
+    <aside class="ad-rail" id="adRailLeft" aria-hidden="true"></aside>
+    <aside class="ad-rail" id="adRailRight" aria-hidden="true"></aside>
+
+    <!-- ===== LEADER_BOARD 970x90 =====
+         Portrait screens (and cramped landscape ones) show this single wide
+         banner above the board instead of the side cards. -->
+    <aside class="ad-leaderboard" id="adLeaderboard" aria-hidden="true"></aside>
+
+    <div class="wrapper">
+
+      <!-- ===================== MAIN MENU ===================== -->
+      <section id="menuScreen" class="screen active">
+        <div class="menu-top-bar">
+          <div class="coin-pill" title="Your coins"><span class="coin-icon">🪙</span><span id="coinCountMenu">0</span></div>
+          <button id="menuMuteBtn" class="ctrl-btn mute-btn menu-mute-btn" aria-pressed="false" title="Sound on/off" aria-label="Sound on/off">🔊</button>
+        </div>
+        <img class="logo" src="/wp-content/uploads/gcm-games/15/b20261020095000-dyhhk6/logo.png" alt="Breakout Logo">
+        <h1 class="title">BREAKOUT</h1>
+        <p class="subtitle">35 Levels • Bounce • Break • Win</p>
+        <div class="menu-buttons">
+          <button id="playBtn" class="menu-btn primary">▶ Play</button>
+          <button id="levelSelectBtn" class="menu-btn">
+            <span class="menu-btn-icon"><svg viewbox="0 0 24 24" width="1em" height="1em" style="width:1em;height:1em;display:block" fill="none" aria-hidden="true"><path d="M7.5 10.2V7.6a4.5 4.5 0 0 1 9 0v2.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path><rect x="4.5" y="10.2" width="15" height="11" rx="3" fill="currentColor"></rect><circle cx="12" cy="14.9" r="1.6" fill="#fff"></circle><rect x="11.15" y="14.9" width="1.7" height="3.2" rx="0.6" fill="#fff"></rect></svg></span><span class="menu-btn-label">Select Level</span>
+          </button>
+          <button id="shopBtn" class="menu-btn">
+            <span class="menu-btn-icon"><svg viewbox="0 0 24 24" width="1em" height="1em" style="width:1em;height:1em;display:block" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8h12l-1.2 12.4a2 2 0 0 1-2 1.6H9.2a2 2 0 0 1-2-1.6L6 8Z"></path><path d="M9 8V6a3 3 0 0 1 6 0v2"></path></svg></span><span class="menu-btn-label">Shop</span>
+          </button>
+          <button id="howToPlayBtn" class="menu-btn">
+            <span class="menu-btn-icon">❓</span><span class="menu-btn-label">How to Play</span>
+          </button>
+        </div>
+        <p class="start-caption">35 levels · unlock the next as you clear each one</p>
+      </section>
+
+      <!-- ===================== HOW TO PLAY ===================== -->
+      <section id="howToPlayScreen" class="screen">
+        <div class="screen-top-bar">
+          <h2 class="section-title">How to Play</h2>
+          <button class="close-btn back-btn" data-target="menu" title="Close">✖</button>
+        </div>
+        <div class="howto-content">
+          <ul class="howto-list">
+            <li><strong>Goal:</strong> break every brick on screen to clear the level.</li>
+            <li><strong>Move:</strong> ← → or A / D — or drag on the board, or hold the ◀ ▶ buttons in the bar below it. <strong>Space</strong> or a tap on the board launches the ball.</li>
+            <li><strong>Lives:</strong> you start with <strong>3 lives</strong>. Each missed ball costs one.</li>
+            <li><strong>Power-ups:</strong> catch the falling capsules with your paddle — Multi-ball, Bigger Paddle, Slow Ball, Fireball and Bomb. Chain brick hits without touching the paddle in between for <strong>combo coins</strong>.</li>
+            <li><strong>Bricks:</strong> darker ones take several hits; dashed ones slide. Brick coins are lost if you give up at Game Over.</li>
+            <li>There are <strong>35 levels</strong>. Clearing one unlocks the next; no continue earns <strong>3 stars</strong>.</li>
+            <li>Lose all 3 lives and it is Game Over — you can watch a short ad to continue where you were with <strong>3 fresh lives, as many times as you like</strong>.</li>
+            <li><strong>Shop:</strong> spend coins on paddle and ball skins, brick themes and backgrounds.</li>
+          </ul>
+        </div>
+        <button class="menu-btn primary back-btn" data-target="menu">✔ Got it</button>
+      </section>
+
+      <!-- ===================== LEVEL SELECT ===================== -->
+      <section id="levelSelectScreen" class="screen">
+        <div class="screen-top-bar">
+          <button class="close-btn back-btn" data-target="menu" title="Back to Menu">‹</button>
+          <h2 class="section-title">Select Level</h2>
+          <button type="button" id="levelHelpBtn" class="close-btn" title="How to play">?</button>
+        </div>
+        <p id="levelProgressLine" class="level-progress-line"></p>
+        <div id="levelGrid" class="level-grid"></div>
+      </section>
+
+      <!-- ===================== SHOP ===================== -->
+      <section id="shopScreen" class="screen">
+        <div class="screen-top-bar">
+          <button class="close-btn back-btn" data-target="menu" title="Back to Menu">‹</button>
+          <h2 class="section-title">Shop</h2>
+          <div class="coin-pill shop-coin-pill" title="Your coins"><span class="coin-icon">🪙</span><span id="coinCountShop">0</span></div>
+        </div>
+        <div class="shop-tabs" id="shopTabs">
+          <button type="button" class="shop-tab active" data-cat="paddle">Paddle</button>
+          <button type="button" class="shop-tab" data-cat="ball">Ball</button>
+          <button type="button" class="shop-tab" data-cat="brick">Bricks</button>
+          <button type="button" class="shop-tab" data-cat="background">Background</button>
+        </div>
+        <div id="shopGrid" class="shop-grid"></div>
+      </section>
+
+      <!-- ===================== GAME SCREEN ===================== -->
+      <section id="gameScreen" class="screen" data-bar="xl">
+        <!-- ONE bar for every screen size, a 3-column grid
+             [ stats | paddle buttons | controls ] — sized by the FINAL GAME BAR
+             block in style.css, exactly as in Pac-Man. -->
+        <header class="header">
+          <div class="bar-left">
+            <div class="header-title-group">
+              <span class="brand-tag-sm">Breakout</span>
+              <h1 class="title" id="levelTitle"><span class="lvl-word">Level</span><span class="lvl-num">1</span></h1>
+            </div>
+            <div class="scoreboard">
+              <div class="score-label">
+                <span class="stat-word">Score:</span>
+                <span id="score">0</span>
+              </div>
+              <div class="lives-label">
+                <span class="stat-word">Lives:</span>
+                <span id="lives">3</span>
+              </div>
+              <div class="coin-pill game-coin-pill" title="Your coins">
+                <span class="coin-icon">🪙</span><span id="coinCountGame">0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Paddle buttons: hold to move left / right. They take the centre
+               of the bar, the slot Pac-Man gives its move control, so the bar
+               keeps Pac-Man's height and the board keeps its size. -->
+          <div class="paddle-pad" id="paddlePad" role="group" aria-label="Move paddle">
+            <button type="button" id="paddleLeftBtn" class="paddle-btn" aria-label="Move paddle left" title="Hold to move left"><svg viewbox="0 0 24 24" aria-hidden="true"><path d="M15.5 4.5 7 12l8.5 7.5z" fill="currentColor"></path></svg></button>
+            <button type="button" id="paddleRightBtn" class="paddle-btn" aria-label="Move paddle right" title="Hold to move right"><svg viewbox="0 0 24 24" aria-hidden="true"><path d="M8.5 4.5 17 12l-8.5 7.5z" fill="currentColor"></path></svg></button>
+          </div>
+
+          <div class="game-controls">
+            <button id="pauseBtn" class="ctrl-btn pause-btn" aria-pressed="false" title="Pause"><span class="ico">⏸</span><span class="lbl">Pause</span></button>
+            <button id="muteBtn" class="ctrl-btn mute-btn icon-only" aria-pressed="false" title="Sound on/off" aria-label="Sound on/off">🔊</button>
+            <button id="prevLevelBtn" class="ctrl-btn" title="Previous level"><span class="ico">⬅</span><span class="lbl">Prev</span></button>
+            <button id="restartBtn" class="ctrl-btn" title="Restart"><span class="lbl">Restart</span><span class="ico">🔁</span></button>
+            <button id="nextLevelBtn" class="ctrl-btn" title="Next level"><span class="lbl">Next</span><span class="ico">➡</span></button>
+            <button id="exitBtn" class="ctrl-btn exit-btn" title="Exit"><span class="lbl">Exit</span><span class="ico">✖</span></button>
+          </div>
+        </header>
+
+        <main class="game-container">
+          <canvas id="gameCanvas" width="750" height="460"></canvas>
+          <p class="hint">
+            Use ← → or A / D to move, Space to launch. Break every brick!
+          </p>
+        </main>
+      </section>
+
+      <!-- ===================== OVERLAYS / MODALS ===================== -->
+      <div id="overlay" class="overlay hidden">
+        <div class="modal">
+          <button class="close-x" id="modalCloseX" title="Close">✕</button>
+          <h2 id="modalTitle">Congratulations!</h2>
+          <p id="modalMessage">Great job!</p>
+          <p id="modalCoins" class="modal-coins hidden"></p>
+          <!-- IAB MREC 300x250, Congratulations popup only. Rotates through
+               the "level_complete_banner" creatives every 5s. -->
+          <div id="modalBannerAd" class="banner-ad-card hidden"></div>
+          <div class="modal-buttons">
+            <button id="continueAdBtn" class="menu-btn continue-btn hidden">▶ Watch Ad &amp; Continue</button>
+            <button id="modalPrimaryBtn" class="menu-btn primary">Next Level ➡</button>
+            <button id="modalPrevBtn" class="menu-btn hidden">⬅ Previous Level</button>
+            <button id="modalSecondaryBtn" class="menu-btn">🗺 Level Select</button>
+          </div>
+          <p id="continueNote" class="continue-note hidden"></p>
+        </div>
+      </div>
+
+      <!-- ===================== CONFIRMATION DIALOG =====================
+           "Watch 5 ads to unlock Level X?" — shown before any video rolls. -->
+      <div id="confirmOverlay" class="overlay confirm-overlay hidden">
+        <div class="modal confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+          <h2 id="confirmTitle" class="confirm-title">📺 Unlock Level</h2>
+          <p id="confirmMessage" class="confirm-message"></p>
+          <p id="confirmSubMessage" class="confirm-submessage hidden"></p>
+          <div class="modal-buttons confirm-buttons">
+            <button type="button" id="confirmOkBtn" class="menu-btn primary confirm-ok-btn">✔ OK</button>
+            <button type="button" id="confirmCancelBtn" class="menu-btn confirm-cancel-btn">✖ Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== VIDEO AD OVERLAY ===================== -->
+      <div id="adOverlay" class="ad-overlay hidden">
+        <div class="ad-stage">
+          <div class="ad-topbar">
+            <span class="ad-badge">● Ad Playing</span>
+            <span class="ad-advertiser" id="adAdvertiser"></span>
+            <span class="ad-countdown" id="adCountdown"></span>
+          </div>
+          <div class="ad-video-wrap">
+            <video id="adVideo" playsinline preload="auto"></video>
+            <p class="ad-status" id="adStatus">Loading ad…</p>
+          </div>
+          <div class="ad-actions">
+            <button type="button" id="adUnmuteBtn" class="menu-btn ad-hidden">🔇 Tap for sound</button>
+            <button type="button" id="adSkipBtn" class="menu-btn ad-hidden">Skip ▶</button>
+          </div>
+          <p class="ad-reward-note" id="adRewardNote"></p>
+        </div>
+      </div>
+
+    </div>
+
+    <script src="/wp-content/uploads/gcm-games/15/b20261020095000-dyhhk6/icons.js"></script>
+    <script src="/wp-content/uploads/gcm-games/15/b20261020095000-dyhhk6/script.js"></script>
+  </body>
+</html>

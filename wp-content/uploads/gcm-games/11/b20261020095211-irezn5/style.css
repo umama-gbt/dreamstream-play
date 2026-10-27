@@ -1,0 +1,4752 @@
+/* =======================================================================
+   ONE TYPEFACE, DECLARED ONCE
+   -----------------------------------------------------------------------
+   --font is the only place a font is named in this file, and it names ONE
+   family. It used to be declared ~2000 lines further down as
+   "Inter", "Poppins", system-ui, ... while body up here separately set a
+   bare system-ui stack of its own — so the page had two different font
+   rules and body's won for everything that did not appear in the short
+   opt-in list next to the old declaration (headings, list items, popup
+   text, the hint line, the ad cards). That is what "alag alag font" was:
+   not a wrong family, two families.
+   Moved to the top so it is declared before anything can use it, cut to a
+   single face, and applied by the universal rule below instead of by an
+   element list that has to be kept in step with the markup. system-ui is
+   kept behind Inter purely as an offline / blocked-request safety net.
+   The canvas score popups name the same family in script.js
+   (makeTextSprite) — that is the one place outside this file. */
+:root {
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  /* Every element, including the ones that do not inherit type by default:
+     button, input, select and textarea all start from a UA font rather
+     than from body, which is why those needed font-family:inherit written
+     out one at a time before. */
+  font-family: var(--font);
+}
+
+html,
+body {
+  /* dvh follows the viewport the page can actually see, so it does not jump
+     every time a mobile toolbar slides away. 100% stays as the fallback for
+     anything that does not know dvh. */
+  height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 15% 0%, #fff3d6 0%, transparent 45%),
+    radial-gradient(circle at 90% 10%, #dcefff 0%, transparent 50%),
+    linear-gradient(160deg, #fdf7ff 0%, #eef4ff 55%, #eafaf3 100%);
+  /* The family comes from --font via the universal rule at the top of the
+     file; body no longer states a second, different stack of its own. */
+  color: #1b2437;
+}
+
+.wrapper {
+  width: 100%;
+  max-width: 1400px;
+  height: 100%;
+  max-height: 100dvh;
+  /* 6px, was 10px. This frame sits outside every other measurement in the
+     file — the board, the bar, the ad rails are all sized from what's left
+     once this padding is taken out — so every pixel trimmed here is a pixel
+     the maze gets back on EVERY screen, not just one breakpoint. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.wrapper::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+/* ===================== SCREENS ===================== */
+.screen {
+  position: relative;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(90, 120, 160, 0.14);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(90, 120, 170, 0.12);
+  animation: fadeIn 0.2s ease;
+}
+
+.menu-mute-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+}
+
+.screen.active {
+  display: flex;
+}
+
+#menuScreen.active,
+#howToPlayScreen.active,
+#shopScreen.active {
+  justify-content: flex-start;
+  margin: auto 0;
+}
+
+#levelSelectScreen.active {
+  justify-content: flex-start;
+  width: 100%;
+  max-width: 900px;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  max-height: 100%;
+  margin: auto;
+  overflow: hidden;
+}
+
+#gameScreen.active {
+  width: 100%;
+  /* --game-max is set by fitSideRails(): the width left once the two
+     300x600 cards have had their space reserved. Without a cap the maze
+     stretched edge to edge and there was no gutter to put them in. */
+  max-width: min(1360px, var(--game-max, 1360px));
+  height: 100%;
+  max-height: 100%;
+  margin: auto;
+  /* Overridden to 0 by fitSideRailsInner() whenever the ad is single-side
+     (see --game-edge-margin's note below #gameScreen.active) — pushes any
+     leftover from the BOARD_WIDE_STRETCH_MAX cap to the FAR side instead of
+     splitting it, so the maze stays flush against the ad's gutter rather
+     than leaving a gap there too. Everywhere else (two-card desktop, or no
+     ad) this stays `auto` and #gameScreen centres as it always did. */
+  margin-right: var(--game-edge-margin, auto);
+  /* Score / lives / coins and the Sound-Prev-Restart-Next-Exit buttons sit in
+     a bar ACROSS THE TOP rather than in a rail down the left. As a side rail
+     it took 170px out of the width on every screen, and since the maze is
+     nearly square its height had to shrink to match — so the whole board came
+     out small. On top, the bar costs ~85px of height once and the maze gets
+     the full width of the column. */
+  /* column-reverse: the bar is FIRST in the markup but sits UNDER the board,
+     so the maze starts at the top of the screen and the controls sit along the
+     bottom edge where a thumb reaches them. Change this one word back to
+     `column` to put the bar above the maze again — nothing else depends on
+     which way round they are. */
+  flex-direction: column-reverse;
+  align-items: stretch;
+  justify-content: flex-end;
+  gap: 10px;
+  /* --ad-band is the strip placeLeaderboardTop() holds along the TOP when
+     the board has to give up height for the leaderboard rather than width
+     for the side rails. Zero the rest of the time. */
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===================== MENU ===================== */
+.logo {
+  width: 190px;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 18px rgba(245, 195, 59, 0.4));
+}
+
+.title {
+  color: #223047;
+}
+
+.subtitle {
+  opacity: 0.65;
+  font-size: 0.9rem;
+  text-align: center;
+  margin-top: -6px;
+}
+
+/* Play takes the full width of the block and the three secondary actions
+   share the row beneath it, rather than four equal buttons in a stack. */
+.menu-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+  max-width: 620px;
+  margin-top: 10px;
+}
+
+.menu-buttons .menu-btn.primary {
+  grid-column: 1 / -1;
+  padding: 18px 18px;
+  font-size: 1.25rem;
+  font-weight: 800;
+  border-radius: 22px;
+}
+
+.menu-buttons .menu-btn:not(.primary) {
+  border-radius: 20px;
+  padding: 14px 10px;
+  font-size: 0.92rem;
+  line-height: 1.25;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+@media (max-width: 420px) {
+  .menu-buttons { gap: 8px; }
+  .menu-buttons .menu-btn:not(.primary) { font-size: 0.8rem; padding: 12px 6px; }
+}
+
+.menu-btn {
+  border-radius: 999px;
+  padding: 12px 18px;
+  background: #ffffff;
+  border: 1px solid rgba(90, 120, 160, 0.18);
+  color: #223047;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(90, 120, 170, 0.12);
+  transition: transform 0.1s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.menu-btn:hover {
+  background: #f5f9ff;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(90, 120, 170, 0.18);
+}
+
+.menu-btn:active {
+  transform: translateY(1px);
+}
+
+.menu-btn.primary {
+  background: linear-gradient(135deg, #ffd54a, #f5c33b);
+  color: #3a2a05;
+  border: none;
+  box-shadow: 0 4px 14px rgba(245, 195, 59, 0.45);
+}
+
+.menu-btn.primary:hover {
+  background: linear-gradient(135deg, #ffdd66, #ffc94a);
+  box-shadow: 0 6px 16px rgba(245, 195, 59, 0.55);
+}
+
+.back-btn {
+  margin-top: 6px;
+  max-width: 220px;
+}
+
+/* ===================== HOW TO PLAY ===================== */
+.screen-top-bar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.close-btn {
+  background: rgba(217, 67, 67, 0.1);
+  border: 1px solid rgba(217, 67, 67, 0.4);
+  color: #d94343;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  padding: 0;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.close-btn:hover {
+  background: rgba(217, 67, 67, 0.2);
+}
+
+.section-title {
+  font-size: 1.4rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #223047;
+}
+
+.howto-content {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid rgba(90, 120, 160, 0.16);
+  border-radius: 12px;
+  padding: 16px 18px;
+  box-shadow: 0 3px 10px rgba(90, 120, 170, 0.1);
+}
+
+.howto-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.howto-list li::before {
+  content: "• ";
+  color: #e2a422;
+  font-weight: 700;
+}
+
+/* ===================== LEVEL SELECT ===================== */
+.level-grid {
+  display: grid;
+  /* Five per row, on every screen. It used to step 8 / 5 / 4 across the
+     breakpoints, so a level sat in a different place depending on the window. */
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2px 4px;
+  align-content: start;
+}
+
+.level-btn {
+  aspect-ratio: 1;
+  border-radius: 10px;
+  border: 1px solid rgba(90, 120, 160, 0.18);
+  background: #ffffff;
+  color: #223047;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  box-shadow: 0 2px 8px rgba(90, 120, 170, 0.1);
+  transition: transform 0.1s ease, background 0.15s ease;
+}
+
+.level-btn .level-num {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.level-btn .level-lock {
+  font-size: 0.95rem;
+}
+
+.level-btn .level-diff {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  line-height: 1.15;
+  text-align: center;
+  padding: 0 3px;
+  opacity: 0.9;
+}
+
+.level-btn.diff-easy:not(.locked) .level-diff { color: #1f9d6f; }
+.level-btn.diff-medium:not(.locked) .level-diff { color: #c98a12; }
+.level-btn.diff-hard:not(.locked) .level-diff { color: #d9534f; }
+.level-btn.diff-expert:not(.locked) .level-diff { color: #7c4dff; }
+
+.level-btn.unlocked {
+  background: #e3f8ee;
+  border-color: #2ee6a6;
+  color: #0f5a44;
+}
+
+.level-btn.unlocked:hover {
+  background: #cdf3e1;
+  transform: translateY(-1px);
+}
+
+.level-btn.completed {
+  background: linear-gradient(135deg, #ffd54a, #f5c33b);
+  color: #3a2a05;
+  border-color: #f5c33b;
+}
+
+.level-btn.locked {
+  background: #e8ebf1;
+  border-color: rgba(90, 120, 160, 0.22);
+  color: #7c8aa0;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.level-btn.locked .level-lock {
+  opacity: 0.85;
+}
+
+.level-btn.locked .level-diff {
+  color: #8b97ab;
+  opacity: 0.85;
+}
+
+/* A level the 24-hour reset took back, but the player had reached before —
+   tappable again (5 ads) rather than a dead padlock, so it gets its own
+   color instead of the flat locked-gray. */
+.level-btn.locked.recoverable {
+  background: #eef1ff;
+  border-color: #7c8cff;
+  color: #3d3ea8;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(90, 120, 170, 0.1);
+}
+
+.level-btn.locked.recoverable:hover {
+  background: #e1e5ff;
+  transform: translateY(-1px);
+}
+
+.level-btn.locked.recoverable .level-lock {
+  opacity: 1;
+}
+
+/* ===================== GAME SCREEN ===================== */
+/* Score / lives / coins and the Sound-Prev-Restart-Next-Exit buttons, in a bar
+   ACROSS THE TOP of the game screen. It used to be a 170px rail down the left:
+   that took the same 170px out of the width on every screen, and because the
+   maze is nearly square, losing width meant losing height too — which is why
+   the board came out small. Horizontal, it costs ~85px of height once and the
+   maze keeps the full width of the column. */
+.header {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: auto;
+  flex: 0 0 auto;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(90, 120, 160, 0.14);
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(90, 120, 170, 0.08);
+}
+
+.header .title {
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  text-align: center;
+  flex: 0 0 auto;
+}
+
+.header-title-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 0 0 auto;
+}
+
+.brand-tag-sm {
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #e2a422;
+}
+
+.scoreboard {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  flex: 1 1 auto;
+}
+
+.score-label,
+.lives-label {
+  background: #ffffff;
+  border: 1px solid rgba(90, 120, 160, 0.18);
+  box-shadow: 0 2px 6px rgba(90, 120, 170, 0.1);
+  white-space: nowrap;
+}
+
+.game-controls {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.ctrl-btn {
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ffd54a, #f5c33b);
+  color: #3a2a05;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(245, 195, 59, 0.4);
+  transition: transform 0.1s ease, box-shadow 0.1s ease,
+    background 0.15s ease;
+}
+
+.ctrl-btn:hover {
+  background: linear-gradient(135deg, #ffdd66, #ffc94a);
+}
+
+.ctrl-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 5px rgba(245, 195, 59, 0.4);
+}
+
+.ctrl-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  background: #dfe4ec;
+  color: #5b6577;
+  box-shadow: none;
+}
+
+.ctrl-btn.exit-btn {
+  background: linear-gradient(135deg, #ff8080, #ff5c5c);
+  color: #400e0e;
+  box-shadow: 0 3px 8px rgba(255, 92, 92, 0.4);
+}
+
+.ctrl-btn.exit-btn:hover {
+  background: linear-gradient(135deg, #ff9494, #ff6b6b);
+}
+
+.ctrl-btn.mute-btn.is-muted {
+  background: linear-gradient(135deg, #dfe4ec, #c7cedb);
+  color: #454f61;
+  box-shadow: 0 3px 8px rgba(120, 130, 150, 0.35);
+}
+
+.ctrl-btn.mute-btn.is-muted:hover {
+  background: linear-gradient(135deg, #e7ebf2, #d2d8e3);
+}
+
+.game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  height: 100%;
+}
+
+canvas {
+  border-radius: 8px;
+  border: 2px solid #35c9e0;
+  background: #0d2c52;
+  box-shadow: 0 8px 24px rgba(53, 201, 224, 0.35);
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  aspect-ratio: 31 / 30;
+  flex: 0 1 auto;
+}
+
+.hint {
+  opacity: 0.65;
+  text-align: center;
+  flex: 0 0 auto;
+}
+
+/* ===================== OVERLAY / MODAL ===================== */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 40, 70, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 16px;
+}
+
+.overlay.hidden {
+  display: none;
+}
+
+.modal {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid rgba(53, 201, 224, 0.5);
+  border-radius: 14px;
+  padding: 26px 22px;
+  max-width: 380px;
+  width: 100%;
+  max-height: 88vh;
+  overflow-y: auto;
+  text-align: center;
+  box-shadow: 0 12px 40px rgba(20, 40, 70, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.close-x {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid rgba(90, 120, 160, 0.25);
+  background: #f7f8fd;
+  color: #5b6a8c;
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-x:hover {
+  background: #ffe2e2;
+  color: #d94343;
+  border-color: rgba(217, 67, 67, 0.4);
+}
+
+.modal-buttons {
+  display: flex;
+}
+
+/* Stacked layout for narrow windows AND anything taller than it is wide.
+   A tablet in portrait is 768-1024px across — too wide for the old 720px
+   breakpoint, so it kept the desktop side-rail header and squeezed the maze
+   into the leftover strip. Keying off the aspect ratio too puts the header on
+   top wherever the screen is portrait, whatever its width. */
+@media (max-width: 720px), (max-aspect-ratio: 1/1) {
+  #gameScreen.active {
+    flex-direction: column-reverse;
+    aspect-ratio: auto;
+    height: 100%;
+    /* Still capped by --game-max. A flat 100% here was why a tablet in
+       portrait showed no side cards at all: the column took the whole width,
+       fitSideRails() found nothing left to put them in, and hid them. */
+    max-width: min(100%, var(--game-max, 100%));
+  }
+
+  #levelSelectScreen.active {
+    aspect-ratio: auto;
+    height: auto;
+    max-width: 100%;
+  }
+
+  .level-grid {
+    max-height: 55vh;
+  }
+
+}
+
+@media (max-width: 520px) {
+
+  .logo {
+    width: 120px;
+    height: auto;
+  }
+
+}
+
+@media (max-height: 560px) {
+  .hint {
+    display: none;
+  }
+}
+
+/* ===================== ORIENTATION: NATIVE, NEVER FORCED =====================
+   What used to be here: on every portrait viewport <html> was rotated -90deg
+   so the maze was always played sideways. That is the thing the phone
+   recording shows going wrong. In portrait the 300x600 card was laid on its
+   side across the top of the screen with its text running vertically, the
+   maze was drawn into a box whose axes were swapped and came out stretched,
+   and every popup, menu and scroll gesture in the file needed a patch to
+   survive a page whose width was the screen's height.
+
+   Nothing is rotated any more. Portrait device -> portrait layout, landscape
+   device -> landscape layout, phone and tablet alike, and the ad that suits
+   each shape is picked in script.js: a LEADER_BOARD 970x90 above the board in
+   portrait (the strip left above a 28x31 maze is wide and short, which is
+   exactly that unit's shape), a 300x600 in the gutter in landscape (where
+   there is a real gutter, because the board is roughly square and the screen
+   is not).
+   ========================================================================= */
+
+/* ---------- PORTRAIT: phone or tablet held upright ----------
+   The board is 28 cells across and 31 deep, so seen from above it is very
+   nearly square — a portrait screen suits it. It takes the full width, the
+   control bar sits under it where a thumb reaches (#gameScreen is
+   column-reverse and the bar is first in the markup, so that order is
+   already right), and the ad band goes under that. */
+@media screen and (orientation: portrait) {
+  .wrapper {
+    align-items: stretch;
+  }
+
+  #gameScreen.active {
+    gap: 6px;
+    /* --ad-band is the LEADER_BOARD placeLeaderboardTop() puts above the
+       board — see script.js. */
+  }
+
+  /* A keyboard hint costs two lines of board on a device with no keyboard. */
+  .hint {
+    display: none;
+  }
+
+  /* Same single-row layout as landscape now uses: title-group + scoreboard
+     packed left, game-controls with no margin of its own, and the
+     joystick centred via margin: 0 auto in whatever gap flexbox leaves
+     between them — see the LANDSCAPE JOYSTICK block below for the full
+     reasoning. Portrait used to send the joystick to its own row under
+     the stats (flex: 0 0 100%); that read as an extra row of height and
+     put the joystick further from the thumb than the stats row itself.
+     One row, same as landscape, instead.
+     #gameScreen[data-bar].active repeats the class selector .active a
+     second time, which is the cheapest way in plain CSS to outrank a
+     same-specificity rule regardless of which one comes later in the
+     file, without reaching for !important — needed here because another
+     rule elsewhere also targets #gameScreen[data-bar].active .header. */
+  #gameScreen[data-bar].active .header {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+  }
+  #gameScreen.active .scoreboard { margin-left: 6px; flex: 0 0 auto; }
+  #gameScreen.active .game-controls { margin-left: 0; flex: 0 0 auto; }
+  #gameScreen .joystick {
+    order: 0;
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 64px;
+    margin: 0 auto;
+  }
+  /* The base keeps its fixed circular size; without this override it would
+     stretch to fill the flex item and the joystick would become an ellipse. */
+  #gameScreen .joystick-base {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+/* ---------- LANDSCAPE on a short screen: a phone lying on its side ----------
+   360-430px of height for the bar, the board and everything else, so the bar
+   is one thin row and the board gets the rest. */
+@media screen and (orientation: landscape) and (max-height: 560px) {
+
+  #gameScreen.active {
+    gap: 5px;
+  }
+
+  .header {
+    border-radius: 10px;
+  }
+
+  .hint {
+    display: none;
+  }
+}
+
+/* ===================== COINS ===================== */
+.hidden { display: none !important; }
+
+.coin-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #fff3c4;
+  border: 1.5px solid #ffd670;
+  color: #7a5b00;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 5px 12px;
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.coin-icon {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.menu-top-bar {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  right: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.shop-coin-pill {
+  margin: 2px 0 4px;
+}
+
+.game-coin-pill {
+  margin-left: 4px;
+}
+
+/* ===================== SHOP ===================== */
+.shop-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.shop-tab {
+  border: 2px solid #b8c0ff;
+  background: #f8f9fa;
+  color: #495057;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.82rem;
+  padding: 7px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.shop-tab.active {
+  background: #b8c0ff;
+  color: #2b2d42;
+}
+
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2px 4px 8px;
+}
+
+.shop-item {
+  border: 2px solid rgba(90, 120, 160, 0.18);
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.shop-item.equipped-item {
+  border-color: #35c9e0;
+  box-shadow: 0 0 0 2px rgba(53, 201, 224, 0.25);
+}
+
+.shop-item-swatch {
+  width: 100%;
+  height: 46px;
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+
+.shop-item-name {
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: #223047;
+}
+
+.shop-item-btn {
+  width: 100%;
+  border: none;
+  border-radius: 999px;
+  padding: 7px 6px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.74rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.shop-item-btn.buy {
+  background: #ffd670;
+  color: #7a5b00;
+}
+.shop-item-btn.buy:hover { background: #ffc94d; }
+.shop-item-btn.buy:disabled {
+  background: #e9ecef;
+  color: #adb5bd;
+  cursor: not-allowed;
+}
+
+.shop-item-btn.equip {
+  background: #b8c0ff;
+  color: #2b2d42;
+}
+.shop-item-btn.equip:hover { background: #a3abff; }
+
+.shop-item-btn.equipped {
+  background: #95d5b2;
+  color: #1b4332;
+  cursor: default;
+}
+
+/* ===================== MODAL: coins / continue / banner ad ===================== */
+.modal-coins {
+  font-weight: 700;
+  color: #7a5b00;
+  background: #fff3c4;
+  display: inline-block;
+  align-self: center;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+}
+
+.menu-btn.continue-btn {
+  background: linear-gradient(135deg, #ff8a65, #e2493e);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 14px rgba(226, 74, 62, 0.4);
+}
+.menu-btn.continue-btn:hover {
+  background: linear-gradient(135deg, #ff9d7d, #ef5a4d);
+}
+
+.continue-note {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #6c757d;
+  text-align: center;
+}
+
+/* Compact horizontal ad card — icon, title/stars, CTA button in a row.
+   Used both for the Level Complete banner ad and (if ever needed) any
+   other in-modal static ad slot. */
+.banner-ad-card {
+  position: relative;
+  align-items: center;
+  gap: 0.65rem;
+  border-radius: 14px;
+  overflow: hidden;
+  text-align: left;
+}
+
+/* ===================== VIDEO AD OVERLAY ===================== */
+.ad-overlay {
+  position: fixed;
+  inset: 0;
+  /* Solid, not translucent. At 0.92 alpha the game board and its header —
+     including the header's OWN sound button — still showed through, dimmed
+     but readable, behind the ad. Once the ad's "Tap for sound" prompt
+     appears, that put two different sound controls on screen at once: the
+     dim real one behind the overlay and the bright one in the ad stage —
+     which is what "sound icon do dafa dikh raha hai" was. A solid
+     background removes the one that shouldn't be reachable during an ad
+     anyway (this overlay sits above it and would swallow its clicks), so
+     only the ad's own controls are ever visible while it plays. */
+  background: #0c0f18;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.ad-overlay.hidden { display: none; }
+
+.ad-stage {
+  width: 100%;
+  max-width: 520px;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.ad-topbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #eaf0fd;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.ad-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(226, 74, 62, 0.9);
+  color: #fff;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.65rem;
+}
+
+.ad-advertiser {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.85;
+}
+
+.ad-countdown {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.9;
+}
+
+.ad-video-wrap {
+  position: relative;
+  flex: 0 1 auto;
+  min-height: 120px; /* keeps the box from collapsing to near-nothing for the
+                          moment before the video's metadata arrives and it
+                          gets its real intrinsic size */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #05070c;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* width:100% + height:auto is what actually makes this responsive to
+   EITHER a landscape (16:9) or a portrait (9:16) source. width:auto (the
+   old value) sized the <video> from its own INTRINSIC resolution — the
+   bundled creatives are small (~480px on their long edge, see the
+   "Roomy desktop" note below) — and CSS never grows a replaced element
+   past its intrinsic size on its own, only shrinks it via max-*. So on
+   any stage wider than that intrinsic size (most phones, tablets, and
+   every landscape width above ~480px) the video sat rendered small and
+   centred, with the extra stage width just showing as empty space on
+   both sides — responsive in that it never overflowed, but never
+   actually filling the room it had either.
+   width:100% makes it claim the full stage width by default; height:auto
+   keeps it proportional to that width. max-height then only kicks in
+   when 100%-width would make it too tall (a portrait source, or a very
+   short screen) — at that point the browser scales BOTH dimensions down
+   together to fit the height cap, which is what keeps every creative,
+   whatever shape it was recorded in, at its own aspect ratio with no
+   stretch or crop. */
+#adVideo {
+  max-width: 100%;
+  max-height: 60vh;
+  width: 100%;
+  height: auto;
+  display: block;
+  background: #05070c;
+}
+
+.ad-status {
+  position: absolute;
+  margin: 0;
+  color: #cdd8f0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 0 1rem;
+}
+
+.ad-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+  min-height: 40px;
+}
+
+.ad-actions .menu-btn {
+  width: auto;
+  margin: 0;
+  padding: 9px 16px;
+  font-size: 0.85rem;
+}
+
+.ad-reward-note {
+  margin: 0;
+  text-align: center;
+  color: rgba(234, 240, 253, 0.82);
+  font-size: 0.78rem;
+  font-weight: 600;
+  min-height: 1rem;
+}
+
+.ad-hidden { display: none !important; }
+
+/* ---------- Ad overlay on short / landscape screens ----------
+   A rotated phone or a landscape tablet has very little vertical room.
+   92vh of stage height plus a 60vh video cap used to be the two biggest
+   things fighting for that room, so the badge row, the skip/mute row and
+   the reward line could get pushed off-screen or force the whole stage to
+   overflow its centered box. Shrinking the video cap and every row around
+   it here keeps the entire ad — badge, video, buttons, reward line — inside
+   the viewport at once, the same "short-screen" treatment the rest of the
+   game already gets (see the game-screen and modal rules elsewhere in this
+   file for the same max-height breakpoints). */
+@media screen and (orientation: landscape) and (max-height: 560px) {
+  .ad-overlay { padding: 0.5rem; }
+  .ad-stage { max-width: 78vw; gap: 0.35rem; }
+  .ad-topbar { font-size: 0.68rem; gap: 6px; }
+  .ad-badge { padding: 3px 8px; font-size: 0.58rem; }
+  #adVideo { max-height: 44vh; }
+  .ad-video-wrap { min-height: 80px; }
+  .ad-actions { min-height: 32px; gap: 6px; }
+  .ad-actions .menu-btn { padding: 6px 12px; font-size: 0.75rem; }
+  .ad-reward-note { font-size: 0.68rem; }
+}
+
+@media screen and (orientation: landscape) and (max-height: 380px) {
+  #adVideo { max-height: 38vh; }
+  .ad-topbar { font-size: 0.62rem; }
+  .ad-reward-note { display: none; } /* the countdown/skip button already says enough in this little room */
+}
+
+/* ---------- Narrow phones (portrait) ----------
+   Same idea sideways: on a ~320-360px wide phone the badge + advertiser
+   name + countdown were tight enough to wrap or clip, and the Skip/Mute
+   buttons could crowd each other. Nothing here touches sizing logic, just
+   gives everything a smaller footprint so it all fits one row/line. */
+@media (max-width: 380px) {
+  .ad-topbar { font-size: 0.68rem; gap: 6px; }
+  .ad-badge { padding: 3px 8px; font-size: 0.58rem; }
+  .ad-actions .menu-btn { padding: 7px 12px; font-size: 0.78rem; }
+  .ad-reward-note { font-size: 0.7rem; }
+}
+
+/* ---------- Roomy desktop / tablet ----------
+   The bundled creatives are encoded small (≈480px on their long edge) for
+   fast local loading, so this stays a modest bump rather than matching the
+   ~90% of the browser width free real screens like this actually have —
+   past this point the video starts visibly softening if it's stretched
+   further than its own source resolution. */
+@media (min-width: 900px) and (min-height: 700px) {
+  .ad-stage { max-width: 620px; }
+}
+
+/* ===================== SESSION TOAST ===================== */
+.session-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translate(-50%, 20px);
+  background: #223047;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 10px 20px;
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  z-index: 300;
+  /* FIX: the toast now also carries longer "ad couldn't load" messages, so
+     it wraps instead of running off a phone screen. */
+  white-space: normal;
+  max-width: calc(100vw - 32px);
+  text-align: center;
+}
+
+.session-toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* =======================================================================
+   SIDE AD CARDS — VERTICAL_BANNER 300x600 (half-page / skyscraper)
+   App-install style cards that sit in the empty space either side of the
+   maze while a level is being played, and nowhere else. The box is the
+   creative's exact pixel size; fitSideRails() scales the whole thing when
+   the window is too small for the real 300x600, so the proportions never
+   change.
+   ======================================================================= */
+.ad-rail {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 300px;
+  transform-origin: top left;
+  transform: scale(var(--ad-scale, 1));
+  flex-direction: column;
+  z-index: 40; /* above the board, below the ad overlay (50) and modals */
+}
+
+.ad-rail.is-shown { display: flex; }
+
+.ad-rail-art {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 26px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 6px;
+}
+
+.ad-rail-tag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 3px 7px;
+  border-radius: 5px;
+}
+
+.ad-rail-icon {
+  width: 132px;
+  height: 132px;
+  border-radius: 30px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  margin-bottom: 10px;
+}
+
+.ad-rail-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.ad-rail-title {
+  color: #fff;
+  font-weight: 800;
+  font-size: 24px;
+  line-height: 1.2;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.ad-rail-stars { color: #ffd257; font-size: 18px; letter-spacing: 0.05em; }
+
+.ad-rail-subtitle {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.ad-rail-sponsored {
+  margin-top: 10px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.ad-rail-cta {
+  display: block;
+  width: 100%;
+  flex: 0 0 58px;
+  border: none;
+  background: #1f9d55;
+  color: #fff;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: default;
+}
+
+.ad-rail.clickable, .ad-rail.clickable .ad-rail-cta { cursor: pointer; }
+
+/* =======================================================================
+   LEADER_BOARD 970x90 — shown above the board instead of the two side
+   cards whenever there is no gutter to put them in (see placeLeaderboardTop()
+   in script.js). Wide and short is exactly this band's shape, so one
+   970x90 unit reads far better there than two 300x600 cards squeezed down
+   to a sliver. Same fixed-box + transform:scale(--ad-scale) pattern as
+   .ad-rail, so it scales as a whole and the 970:90 shape never changes.
+   ======================================================================= */
+.ad-leaderboard {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 970px;
+  height: 90px;
+  transform-origin: top left;
+  transform: scale(var(--ad-scale, 1));
+  align-items: center;
+  gap: 18px;
+  padding: 0 22px;
+  box-sizing: border-box;
+  border-radius: 14px;
+  overflow: hidden;
+  z-index: 40; /* above the board, below the ad overlay (50) and modals */
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.3);
+}
+
+.ad-leaderboard.is-shown { display: flex; }
+
+/* A whole-unit static image (imageUrl) is already the full 970x90 —
+   the assembled layout's side padding would inset it instead of letting
+   it fill the box edge-to-edge, so it's dropped for this state only. */
+.ad-leaderboard.has-image-ad { padding: 0; }
+
+.ad-leaderboard-tag {
+  flex: 0 0 auto;
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 4px 8px;
+  border-radius: 5px;
+}
+
+.ad-leaderboard-icon {
+  flex: 0 0 auto;
+  width: 58px;
+  height: 58px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.ad-leaderboard-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.ad-leaderboard-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ad-leaderboard-title {
+  color: #fff;
+  font-weight: 800;
+  font-size: 20px;
+  line-height: 1.15;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ad-leaderboard-subtitle {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ad-leaderboard-cta {
+  flex: 0 0 auto;
+  border: none;
+  background: #1f9d55;
+  color: #fff;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0 22px;
+  height: 44px;
+  border-radius: 10px;
+  cursor: default;
+  white-space: nowrap;
+}
+
+.ad-leaderboard.clickable, .ad-leaderboard.clickable .ad-leaderboard-cta { cursor: pointer; }
+
+/* ---------- Top-bar control tweaks ---------- */
+
+/* Sound is icon-only in the bar, so it doesn't need button-width padding. */
+.ctrl-btn.icon-only {
+  line-height: 1;
+}
+
+/* Pause sits first in the group and is the one control the player reaches for
+   mid-game, so it reads as the primary action there. */
+.ctrl-btn.pause-btn {
+  background: #35c9e0;
+  color: #05263c;
+  font-weight: 800;
+}
+
+.ctrl-btn.pause-btn.is-paused {
+  background: #ffd257;
+  color: #4a3200;
+}
+
+/* Controls sit hard right; everything else about the bar — including the
+   title group's width — is sized once, in the TOP BAR block at the very end
+   of this file. It used to be spread over three separate appended patches
+   here and further down, each re-declaring .header, .ctrl-btn and
+   .scoreboard. A later declaration of equal specificity simply wins, so
+   whichever patch happened to come last silently decided the size and the
+   earlier ones did nothing at all. */
+.game-controls { margin-left: auto; }
+
+/* Every pixel above and below the board is a pixel of board, and because the
+   maze is nearly square, height lost is width lost too — so the padding and
+   the hint line are kept to a minimum. */
+.wrapper { padding: 6px; }
+#gameScreen.active { padding: calc(4px + var(--ad-band, 0px)) 4px 4px; }
+.game-container { gap: 4px; }
+.hint { font-size: 0.72rem; line-height: 1.2; }
+
+/* ---------- MREC 300x250 inside the Congratulations / Game Over popup ----
+   The old card here was a free-form horizontal strip; this is the standard
+   IAB medium rectangle, built at its exact size. */
+.banner-ad-card {
+  display: flex;
+  justify-content: center;
+  padding: 0;
+  background: none !important;
+  box-shadow: none;
+  height: calc(250px * var(--mrec-scale, 1));
+  margin: 0.6rem 0 0.2rem;
+}
+
+.ad-mrec {
+  position: relative;
+  width: 300px;
+  height: 250px;
+  flex: 0 0 auto;
+  border-radius: 14px;
+  overflow: hidden;
+  transform: scale(var(--mrec-scale, 1));
+  /* top left (was top center) — the #modalBannerAd container now sets its
+     own width with width:min(300px,50vmin) and clips with overflow:hidden,
+     so the .ad-mrec has to scale FROM the same corner the container clips
+     from, otherwise it would be partially cut off on one side. */
+  transform-origin: top left;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 4px;
+  padding: 16px 16px 0;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+}
+
+.ad-mrec-tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 3px 7px;
+  border-radius: 5px;
+}
+
+.ad-mrec-icon {
+  width: 74px;
+  height: 74px;
+  border-radius: 17px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.24);
+  margin-bottom: 6px;
+}
+
+.ad-mrec-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.ad-mrec-title {
+  color: #fff;
+  font-weight: 800;
+  font-size: 20px;
+  line-height: 1.15;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.22);
+}
+
+.ad-mrec-stars { color: #ffd257; font-size: 15px; letter-spacing: 0.05em; }
+
+.ad-mrec-sub { color: rgba(255, 255, 255, 0.9); font-size: 13px; font-weight: 600; }
+
+.ad-mrec-cta {
+  margin-top: auto;
+  width: calc(100% + 32px);
+  flex: 0 0 46px;
+  border: none;
+  background: #1f9d55;
+  color: #fff;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: default;
+}
+
+.banner-ad-card.clickable, .banner-ad-card.clickable .ad-mrec-cta { cursor: pointer; }
+
+/* The close X must stay on top of the card and always be reachable. */
+.close-x { z-index: 5; }
+
+/* =======================================================================
+   TOP BAR — the single place the in-game bar is sized
+   -----------------------------------------------------------------------
+   Two things pull against each other here.
+   The text has to be big enough to read at a glance mid-game: the level,
+   the score, the lives and the coin count are the whole point of the bar.
+   But the bar also has to stay on ONE line. A second row costs ~50px of
+   height, and the board is fitted to the box it is given, so height it
+   loses is width it loses too — the maze shrinks away from the sides.
+   The way out is to spend the width on the READOUTS and take it back from
+   the CONTROLS: as the column narrows the buttons drop their words and
+   keep their icons, which frees enough room for the text to stay large.
+   The word is removed with font-size:0 and put back as an ::before glyph,
+   so the accessible label on the button itself is untouched.
+   ======================================================================= */
+/* The bar is as wide as the BOARD, not as wide as the column. --bar-w is
+   measured off the canvas by syncBarToMaze(); the fallback keeps the bar
+   full-width for the moment before the first measurement lands. */
+/* No one-sided margin any more: the bar sits under the board, and the space
+   between the two is the game screen's own column gap. A margin-bottom here
+   only pushed the bar off the bottom edge. */
+.header { padding: 7px 14px; margin-bottom: 0; gap: 6px 12px; }
+#gameScreen .header {
+  width: var(--bar-w, 100%);
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+.header-title-group { min-width: 0; gap: 0; }
+.header .brand-tag-sm { display: block; font-size: 0.66rem; }
+.header .title { font-size: 1.32rem; line-height: 1.15; }
+
+.scoreboard { font-size: 1rem; font-weight: 600; }
+.score-label span,
+.lives-label span { font-weight: 800; }
+
+.game-controls { gap: 7px; }
+.ctrl-btn { padding: 7px 13px; font-size: 0.9rem; }
+.ctrl-btn.icon-only { min-width: 38px; font-size: 1.05rem; padding-left: 10px; padding-right: 10px; }
+
+/* Step 1 — the level arrows drop their words first: the glyph already says
+   everything the word did. font-size:0 hides the label without touching the
+   button's own accessible name. */
+#gameScreen[data-bar="lg"] #prevLevelBtn,
+#gameScreen[data-bar="lg"] #nextLevelBtn,
+#gameScreen[data-bar="md"] #prevLevelBtn,
+#gameScreen[data-bar="md"] #nextLevelBtn,
+#gameScreen[data-bar="sm"] #prevLevelBtn,
+#gameScreen[data-bar="sm"] #nextLevelBtn,
+#gameScreen[data-bar="xs"] #prevLevelBtn,
+#gameScreen[data-bar="xs"] #nextLevelBtn { font-size: 0; padding: 7px 12px; }
+#gameScreen #prevLevelBtn::before { content:""; /* was "\2B05": SVG icon "arrow-left-bold", see icons.css */ display:inline-block;width:0.838em;height:1em;margin-top:-0.05em;margin-bottom:-0.05em;vertical-align:-0.1em;flex:none;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20.11 24'%3E%3Cpath d='M2 12 9.4 4.6V9H18.2V15H9.4V19.4Z'/%3E%3C/svg%3E") center/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20.11 24'%3E%3Cpath d='M2 12 9.4 4.6V9H18.2V15H9.4V19.4Z'/%3E%3C/svg%3E") center/100% 100% no-repeat; font-size: 1rem; }
+#gameScreen #nextLevelBtn::before { content:""; /* was "\27A1": SVG icon "arrow-right-bold", see icons.css */ display:inline-block;width:0.838em;height:1em;margin-top:-0.05em;margin-bottom:-0.05em;vertical-align:-0.1em;flex:none;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20.11 24'%3E%3Cpath d='M18.1 12 10.7 4.6V9H1.9V15H10.7V19.4Z'/%3E%3C/svg%3E") center/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20.11 24'%3E%3Cpath d='M18.1 12 10.7 4.6V9H1.9V15H10.7V19.4Z'/%3E%3C/svg%3E") center/100% 100% no-repeat; font-size: 1rem; }
+#gameScreen[data-bar="xl"] #prevLevelBtn::before,
+#gameScreen[data-bar="xl"] #nextLevelBtn::before { content: none; }
+
+/* Step 2 — Pause, Restart and Exit follow, and the brand tag above the level
+   name goes. The readouts have still given up nothing. */
+#gameScreen[data-bar="md"] .brand-tag-sm,
+#gameScreen[data-bar="sm"] .brand-tag-sm,
+#gameScreen[data-bar="xs"] .brand-tag-sm { font-size: 0.62rem; }
+
+#gameScreen[data-bar="md"] #pauseBtn,
+#gameScreen[data-bar="md"] #restartBtn,
+#gameScreen[data-bar="md"] #exitBtn,
+#gameScreen[data-bar="sm"] #pauseBtn,
+#gameScreen[data-bar="sm"] #restartBtn,
+#gameScreen[data-bar="sm"] #exitBtn,
+#gameScreen[data-bar="xs"] #pauseBtn,
+#gameScreen[data-bar="xs"] #restartBtn,
+#gameScreen[data-bar="xs"] #exitBtn { font-size: 0; padding: 7px 11px; }
+#gameScreen[data-bar="md"] #pauseBtn::before,
+#gameScreen[data-bar="sm"] #pauseBtn::before,
+#gameScreen[data-bar="xs"] #pauseBtn::before { content:""; /* was "\23F8": SVG icon "pause", see icons.css */ display:inline-block;width:0.5em;height:1em;margin-top:-0.05em;margin-bottom:-0.05em;vertical-align:-0.1em;flex:none;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12.0 24'%3E%3Crect x='1.6' y='6' width='3.3' height='12' rx='0.9'/%3E%3Crect x='7.1' y='6' width='3.3' height='12' rx='0.9'/%3E%3C/svg%3E") center/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12.0 24'%3E%3Crect x='1.6' y='6' width='3.3' height='12' rx='0.9'/%3E%3Crect x='7.1' y='6' width='3.3' height='12' rx='0.9'/%3E%3C/svg%3E") center/100% 100% no-repeat; font-size: 1rem; }
+#gameScreen[data-bar="md"] #pauseBtn.is-paused::before,
+#gameScreen[data-bar="sm"] #pauseBtn.is-paused::before,
+#gameScreen[data-bar="xs"] #pauseBtn.is-paused::before { content:""; /* was "\25B6": SVG icon "play", see icons.css */ display:inline-block;width:0.7691em;height:1em;margin-top:-0.05em;margin-bottom:-0.05em;vertical-align:-0.1em;flex:none;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18.46 24'%3E%3Cpath d='M2.6 5.2 16.2 12 2.6 18.8Z'/%3E%3C/svg%3E") center/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18.46 24'%3E%3Cpath d='M2.6 5.2 16.2 12 2.6 18.8Z'/%3E%3C/svg%3E") center/100% 100% no-repeat; }
+#gameScreen[data-bar="md"] #restartBtn::before,
+#gameScreen[data-bar="sm"] #restartBtn::before,
+#gameScreen[data-bar="xs"] #restartBtn::before { content:""; /* was "\1F501": SVG icon "repeat", see icons.css */ display:inline-block;width:1.25em;height:1.2em;margin-top:-0.15em;margin-bottom:-0.15em;vertical-align:-0.1em;flex:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='3 0 24 24'%3E%3Crect x='4' y='1.2' width='22' height='22' rx='4.4' fill='%23f59f1b'/%3E%3Cg fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 11.2V9.9A2.3 2.3 0 0 1 11.3 7.6H20.4M18 5.2 20.4 7.6 18 10M21 13.2V14.5A2.3 2.3 0 0 1 18.7 16.8H9.6M12 14.4 9.6 16.8 12 19.2'/%3E%3C/g%3E%3C/svg%3E") center/auto 100% no-repeat; font-size: 1rem; }
+#gameScreen[data-bar="md"] #exitBtn::before,
+#gameScreen[data-bar="sm"] #exitBtn::before,
+#gameScreen[data-bar="xs"] #exitBtn::before { content:""; /* was "\2716": SVG icon "close-bold", see icons.css */ display:inline-block;width:0.838em;height:1em;margin-top:-0.05em;margin-bottom:-0.05em;vertical-align:-0.1em;flex:none;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20.11 24'%3E%3Cpath fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round' stroke-width='3.4' d='M5 7 15.1 17.1M15.1 7 5 17.1'/%3E%3C/svg%3E") center/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20.11 24'%3E%3Cpath fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round' stroke-width='3.4' d='M5 7 15.1 17.1M15.1 7 5 17.1'/%3E%3C/svg%3E") center/100% 100% no-repeat; font-size: 1rem; }
+
+#gameScreen[data-bar="md"] .header,
+#gameScreen[data-bar="sm"] .header,
+#gameScreen[data-bar="xs"] .header { padding: 6px 12px; gap: 5px 10px; }
+#gameScreen[data-bar="md"] .game-controls,
+#gameScreen[data-bar="sm"] .game-controls,
+#gameScreen[data-bar="xs"] .game-controls { gap: 6px; }
+
+/* Step 3 — only now does the text itself step down, and only slightly. The
+   readouts also trade their words for an icon: "Score: 120" becomes a trophy
+   and the number. The NUMBERS keep their size — they are what has to be
+   readable mid-game — and dropping the two words buys back around 85px,
+   which is usually the difference between one row and two. */
+#gameScreen[data-bar="sm"] .stat-word,
+#gameScreen[data-bar="xs"] .stat-word { display: none; }
+#gameScreen[data-bar="sm"] .score-label::before,
+#gameScreen[data-bar="xs"] .score-label::before { content:""; /* was "\1F3C6 ": SVG icon "trophy", see icons.css */ display:inline-block;width:1.25em;height:1.2em;margin-top:-0.15em;margin-bottom:-0.15em;vertical-align:-0.1em;flex:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='3 0 24 24'%3E%3Cpath d='M9.6 5.4H6.6A3.2 3.2 0 0 0 9.8 10.8M20.4 5.4H23.4A3.2 3.2 0 0 1 20.2 10.8' fill='none' stroke='%23e0a020' stroke-width='1.9'/%3E%3Cpath d='M9.2 2.6H20.8V8.6A5.8 5.8 0 0 1 9.2 8.6Z' fill='%23f5b82e'/%3E%3Cpath d='M11 3.8V8.4A4 4 0 0 0 12.6 11.6' fill='none' stroke='%23fbd877' stroke-width='1.2' stroke-linecap='round'/%3E%3Crect x='13.5' y='14.2' width='3' height='3.8' fill='%23e0a020'/%3E%3Crect x='10' y='18' width='10' height='3.8' rx='1' fill='%238d5a2b'/%3E%3C/svg%3E") center/auto 100% no-repeat; }
+#gameScreen[data-bar="sm"] .lives-label::before,
+#gameScreen[data-bar="xs"] .lives-label::before { content:""; /* was "\2764\FE0F ": SVG icon "heart", see icons.css */ display:inline-block;width:1.25em;height:1.2em;margin-top:-0.15em;margin-bottom:-0.15em;vertical-align:-0.1em;flex:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='3 0 24 24'%3E%3Cpath d='M15 20.8C8.4 16.2 5 12.9 5 9.2A4.6 4.6 0 0 1 15 7.4 4.6 4.6 0 0 1 25 9.2C25 12.9 21.6 16.2 15 20.8Z' fill='%23e53935'/%3E%3Cpath d='M8.6 7.4A2.4 2.4 0 0 1 11 6' fill='none' stroke='%23f28b87' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E") center/auto 100% no-repeat; }
+
+#gameScreen[data-bar="sm"] .header .title,
+#gameScreen[data-bar="xs"] .header .title { font-size: 1.12rem; }
+#gameScreen[data-bar="sm"] .scoreboard,
+#gameScreen[data-bar="xs"] .scoreboard { font-size: 0.88rem; }
+#gameScreen[data-bar="sm"] .ctrl-btn.icon-only,
+#gameScreen[data-bar="xs"] .ctrl-btn.icon-only { min-width: 30px; }
+
+/* The readouts stop STRETCHING here. .scoreboard is flex:1 1 auto, so on a
+   narrow bar it swallowed all the slack — 419px of bar for 192px of content —
+   and that alone was enough to shove the controls onto a second row. Sized to
+   its content, the controls sit right after it and the row holds. */
+#gameScreen[data-bar="sm"] .scoreboard,
+#gameScreen[data-bar="xs"] .scoreboard { flex: 0 1 auto; }
+
+/* The icon-only rules above are written with an ID (#restartBtn), which beats
+   the .ctrl-btn padding set for these tiers — so the buttons kept desktop
+   padding and stayed ~40px wide each. Restating the padding at matching
+   strength brings all six down together. */
+#gameScreen[data-bar="sm"] #pauseBtn,
+#gameScreen[data-bar="sm"] #restartBtn,
+#gameScreen[data-bar="sm"] #exitBtn,
+#gameScreen[data-bar="sm"] #prevLevelBtn,
+#gameScreen[data-bar="sm"] #nextLevelBtn { padding: 5px 8px; }
+#gameScreen[data-bar="xs"] #pauseBtn,
+#gameScreen[data-bar="xs"] #restartBtn,
+#gameScreen[data-bar="xs"] #exitBtn,
+#gameScreen[data-bar="xs"] #prevLevelBtn,
+#gameScreen[data-bar="xs"] #nextLevelBtn { padding: 4px 7px; }
+
+/* Short windows: the hint line under the board is the first thing to go. */
+@media (max-height: 700px) {
+  .hint { display: none; }
+}
+
+/* Very short windows, where the bar's own height is what is squeezing the
+   board. This is the only place the readouts are allowed to get small. */
+@media (max-height: 560px) {
+  .header { padding: 4px 9px; margin-bottom: 4px; }
+  .header .title { font-size: 0.92rem; }
+  .scoreboard { font-size: 0.76rem; }
+  .ctrl-btn { padding: 5px 9px; font-size: 0.76rem; }
+}
+
+/* ---------- Tablet ----------
+   In portrait the leftover height was collecting as one dead band above the
+   board; centring the container puts it evenly above and below instead. */
+@media (max-aspect-ratio: 1/1) and (min-width: 601px) {
+  /* Top-aligned, not centred. On a portrait tablet the board is bounded by
+     the narrow column the ad cards leave, so there is a lot of height it
+     cannot use — and centring split that leftover evenly, which pushed the
+     board a long way down and left a wide empty band under the bar (297px on
+     a 768x1024 tablet). The board now sits directly beneath the bar and the
+     leftover collects at the bottom, where it reads as margin. */
+  .game-container { justify-content: flex-start; }
+  #gameScreen.active { justify-content: flex-start; }
+  .header { flex: 0 0 auto; }
+}
+
+/* =======================================================================
+   STATIC IMAGE AD UNITS
+   -----------------------------------------------------------------------
+   A whole-unit creative is one image at its exact IAB size. The rail is
+   already built at 300x600 and scaled as a block by fitSideRails(), so the
+   image just fills it; the MREC scales down as a whole on narrow popups and
+   keeps its 6:5 shape rather than being cropped.
+   ======================================================================= */
+.ad-unit-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#modalBannerAd {
+  /* MREC 300x250 (IAB Medium Rectangle) — the standard size on desktop,
+     scaled down as a whole on smaller screens. The container's width is
+     capped by min(300px, 50vmin, 100%), and aspect-ratio:6/5 keeps the
+     height in lock-step, so the unit is ALWAYS exactly the IAB 6:5 shape
+     — never cropped, never stretched — and the popup's other content
+     (title, message, coins, buttons) always fits, even on the shortest
+     landscape phones. */
+  display: block;
+  width: min(300px, 50vmin);
+  max-width: 100%;
+  aspect-ratio: 6 / 5;
+  /* height:auto + line-height:0 override the older .banner-ad-card rule
+     further up that pinned this slot to calc(250px * --mrec-scale). That
+     fixed height fought the responsive image inside and produced a
+     250px-tall box with a 6:5 image floating in only part of it. */
+  height: auto;
+  line-height: 0;
+  padding: 0;
+  margin: 0 auto;
+  border-radius: 14px;
+  overflow: hidden;
+  flex: 0 0 auto;
+  background: none !important;
+  box-shadow: none;
+}
+
+#modalBannerAd.hidden { display: none; }
+
+/* The image fills the container. With the container's aspect-ratio:6/5
+   matching the image's natural 300x250 (which is also 6:5), object-fit:
+   contain never letterboxes — it just renders the image edge-to-edge at
+   whatever width the container currently is. */
+#modalBannerAd .ad-unit-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* ---------- Congratulations buttons on one row ----------
+   They were stacked full-width, so three of them filled most of the popup
+   and pushed the ad unit up out of view. On one row they read as what they
+   are: three equal choices. They still stack if the popup gets too narrow
+   to give each button a sensible width. */
+.modal-buttons {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.modal-buttons .menu-btn {
+  flex: 1 1 0;
+  /* Three of these plus two gaps have to fit the 300px the MREC above sets,
+     so the floor is 90px, not the usual comfortable button width. */
+  min-width: 90px;
+  padding: 9px 8px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+/* The continue-ad button is a different kind of action, so it keeps its own
+   full-width row above the other three rather than competing with them. */
+.modal-buttons .continue-btn { flex: 1 1 100%; }
+
+@media (max-width: 430px) {
+  .modal-buttons .menu-btn { flex: 1 1 100%; }
+}
+
+/* The word and the number are separate spans so the number can survive on
+   its own. A pseudo-element space collapses in a flex/heading context, so
+   the gap is a real margin instead. */
+.lvl-num { margin-left: 0.32em; }
+#gameScreen[data-bar="xxs"] .lvl-num { margin-left: 0; }
+
+/* =======================================================================
+   TOP BAR, xxs — portrait tablets and phones
+   -----------------------------------------------------------------------
+   At the xs tier the bar still needs about 408px of content, and a portrait
+   tablet's column is 340-394px once the two ad cards have taken their share.
+   That gap is why the bar kept breaking onto a second row, and a second row
+   costs the board height.
+   Three things give way here, in order of how little they are missed:
+   the word "Level" (the number carries the meaning), the coin count (it is
+   on the menu and the shop screens too), and then the general tightening.
+   Together they bring the bar under 300px, which fits every portrait tablet
+   and phone in one row.
+   ======================================================================= */
+#gameScreen[data-bar="xxs"] .lvl-word { display: none; }
+#gameScreen[data-bar="xxs"] .lvl-num::before { content: "L"; }
+
+#gameScreen[data-bar="xxs"] .stat-word { display: none; }
+#gameScreen[data-bar="xxs"] .score-label::before { content:""; /* was "\1F3C6 ": SVG icon "trophy", see icons.css */ display:inline-block;width:1.25em;height:1.2em;margin-top:-0.15em;margin-bottom:-0.15em;vertical-align:-0.1em;flex:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='3 0 24 24'%3E%3Cpath d='M9.6 5.4H6.6A3.2 3.2 0 0 0 9.8 10.8M20.4 5.4H23.4A3.2 3.2 0 0 1 20.2 10.8' fill='none' stroke='%23e0a020' stroke-width='1.9'/%3E%3Cpath d='M9.2 2.6H20.8V8.6A5.8 5.8 0 0 1 9.2 8.6Z' fill='%23f5b82e'/%3E%3Cpath d='M11 3.8V8.4A4 4 0 0 0 12.6 11.6' fill='none' stroke='%23fbd877' stroke-width='1.2' stroke-linecap='round'/%3E%3Crect x='13.5' y='14.2' width='3' height='3.8' fill='%23e0a020'/%3E%3Crect x='10' y='18' width='10' height='3.8' rx='1' fill='%238d5a2b'/%3E%3C/svg%3E") center/auto 100% no-repeat; }
+#gameScreen[data-bar="xxs"] .lives-label::before { content:""; /* was "\2764\FE0F ": SVG icon "heart", see icons.css */ display:inline-block;width:1.25em;height:1.2em;margin-top:-0.15em;margin-bottom:-0.15em;vertical-align:-0.1em;flex:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='3 0 24 24'%3E%3Cpath d='M15 20.8C8.4 16.2 5 12.9 5 9.2A4.6 4.6 0 0 1 15 7.4 4.6 4.6 0 0 1 25 9.2C25 12.9 21.6 16.2 15 20.8Z' fill='%23e53935'/%3E%3Cpath d='M8.6 7.4A2.4 2.4 0 0 1 11 6' fill='none' stroke='%23f28b87' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E") center/auto 100% no-repeat; }
+
+#gameScreen[data-bar="xxs"] .header { margin-bottom: 4px; }
+#gameScreen[data-bar="xxs"] #pauseBtn,
+#gameScreen[data-bar="xxs"] #restartBtn,
+#gameScreen[data-bar="xxs"] #exitBtn,
+#gameScreen[data-bar="xxs"] #prevLevelBtn,
+#gameScreen[data-bar="xxs"] #nextLevelBtn { padding: 3px 4px; font-size: 0; }
+#gameScreen[data-bar="xxs"] #pauseBtn::before { content:""; /* was "\23F8": SVG icon "pause", see icons.css */ display:inline-block;width:0.5em;height:1em;margin-top:-0.05em;margin-bottom:-0.05em;vertical-align:-0.1em;flex:none;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12.0 24'%3E%3Crect x='1.6' y='6' width='3.3' height='12' rx='0.9'/%3E%3Crect x='7.1' y='6' width='3.3' height='12' rx='0.9'/%3E%3C/svg%3E") center/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12.0 24'%3E%3Crect x='1.6' y='6' width='3.3' height='12' rx='0.9'/%3E%3Crect x='7.1' y='6' width='3.3' height='12' rx='0.9'/%3E%3C/svg%3E") center/100% 100% no-repeat; font-size: 0.85rem; }
+#gameScreen[data-bar="xxs"] #pauseBtn.is-paused::before { content:""; /* was "\25B6": SVG icon "play", see icons.css */ display:inline-block;width:0.7691em;height:1em;margin-top:-0.05em;margin-bottom:-0.05em;vertical-align:-0.1em;flex:none;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18.46 24'%3E%3Cpath d='M2.6 5.2 16.2 12 2.6 18.8Z'/%3E%3C/svg%3E") center/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18.46 24'%3E%3Cpath d='M2.6 5.2 16.2 12 2.6 18.8Z'/%3E%3C/svg%3E") center/100% 100% no-repeat; }
+#gameScreen[data-bar="xxs"] #restartBtn::before { content:""; /* was "\1F501": SVG icon "repeat", see icons.css */ display:inline-block;width:1.25em;height:1.2em;margin-top:-0.15em;margin-bottom:-0.15em;vertical-align:-0.1em;flex:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='3 0 24 24'%3E%3Crect x='4' y='1.2' width='22' height='22' rx='4.4' fill='%23f59f1b'/%3E%3Cg fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 11.2V9.9A2.3 2.3 0 0 1 11.3 7.6H20.4M18 5.2 20.4 7.6 18 10M21 13.2V14.5A2.3 2.3 0 0 1 18.7 16.8H9.6M12 14.4 9.6 16.8 12 19.2'/%3E%3C/g%3E%3C/svg%3E") center/auto 100% no-repeat; font-size: 0.85rem; }
+#gameScreen[data-bar="xxs"] #exitBtn::before { content:""; /* was "\2716": SVG icon "close-bold", see icons.css */ display:inline-block;width:0.838em;height:1em;margin-top:-0.05em;margin-bottom:-0.05em;vertical-align:-0.1em;flex:none;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20.11 24'%3E%3Cpath fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round' stroke-width='3.4' d='M5 7 15.1 17.1M15.1 7 5 17.1'/%3E%3C/svg%3E") center/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20.11 24'%3E%3Cpath fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round' stroke-width='3.4' d='M5 7 15.1 17.1M15.1 7 5 17.1'/%3E%3C/svg%3E") center/100% 100% no-repeat; font-size: 0.85rem; }
+#gameScreen[data-bar="xxs"] #prevLevelBtn::before { content:""; /* was "\2B05": SVG icon "arrow-left-bold", see icons.css */ display:inline-block;width:0.838em;height:1em;margin-top:-0.05em;margin-bottom:-0.05em;vertical-align:-0.1em;flex:none;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20.11 24'%3E%3Cpath d='M2 12 9.4 4.6V9H18.2V15H9.4V19.4Z'/%3E%3C/svg%3E") center/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20.11 24'%3E%3Cpath d='M2 12 9.4 4.6V9H18.2V15H9.4V19.4Z'/%3E%3C/svg%3E") center/100% 100% no-repeat; font-size: 0.85rem; }
+#gameScreen[data-bar="xxs"] #nextLevelBtn::before { content:""; /* was "\27A1": SVG icon "arrow-right-bold", see icons.css */ display:inline-block;width:0.838em;height:1em;margin-top:-0.05em;margin-bottom:-0.05em;vertical-align:-0.1em;flex:none;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20.11 24'%3E%3Cpath d='M18.1 12 10.7 4.6V9H1.9V15H10.7V19.4Z'/%3E%3C/svg%3E") center/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20.11 24'%3E%3Cpath d='M18.1 12 10.7 4.6V9H1.9V15H10.7V19.4Z'/%3E%3C/svg%3E") center/100% 100% no-repeat; font-size: 0.85rem; }
+
+/* =======================================================================
+   CONGRATULATIONS POPUP ON SHORT SCREENS
+   -----------------------------------------------------------------------
+   Two cases have very little height to give the popup:
+     - a phone in portrait, where <html> is rotated, so the height the popup
+       actually has is the screen's SHORT side (425px, 375px, ...)
+     - a phone in landscape, which is short to begin with
+   At full size the popup needs about 425px — title, message, coin chip, a
+   300x250 MREC and the button row — so on a 375px screen the buttons fell
+   off the bottom. The MREC scales as a whole (still 6:5, still one image)
+   and the text tightens around it.
+   ======================================================================= */
+@media (max-width: 600px) and (orientation: portrait), (max-height: 520px) {
+  .modal {
+    max-height: 94%;
+    overflow-y: auto;
+    padding: 14px 16px;
+  }
+
+  .modal h2,
+  #modalTitle { font-size: 1.05rem; margin-bottom: 6px; }
+
+  #modalMessage { font-size: 0.78rem; line-height: 1.35; margin-bottom: 6px; }
+
+  .modal-buttons { gap: 6px; }
+  .modal-buttons .menu-btn {
+    min-width: 74px;
+    padding: 7px 6px;
+    font-size: 0.72rem;
+  }
+}
+
+/* ---------- Board sits under the bar, not floating below it ----------
+   Wherever the board is bounded by the width of its column rather than by
+   height — which is every screen narrow enough for the ad cards to take a
+   real share — the leftover height was being split above and below the
+   board. Half of it landed between the bar and the board as a dead band:
+   131px on a 1024x768 tablet. Top-aligned, that band closes and the leftover
+   collects underneath, where it reads as margin instead of a gap. */
+@media (max-width: 1199px) {
+  .game-container { justify-content: flex-start; }
+  #gameScreen.active { justify-content: flex-start; }
+}
+
+/* ---------- Popup content must FIT, not just scroll ----------
+   The popup box was the right size but its CONTENT ran to 413px against
+   320px of room, so overflow:auto quietly clipped the button row off the
+   end — the buttons were laid out, just past the edge. Measuring the box
+   rather than its scrollHeight is what hid that.
+   The ad unit (now sized by min(300px, 50vmin) in the base rule) is the
+   largest single block, so the rest of the cut comes from the popup's
+   padding and the message paragraph's line spacing. */
+@media (max-width: 430px) and (orientation: portrait), (max-height: 400px) {
+  .modal { padding: 10px 14px; max-height: 96%; }
+  #modalTitle { font-size: 0.92rem; margin-bottom: 4px; }
+  #modalMessage { font-size: 0.72rem; line-height: 1.3; margin-bottom: 4px; }
+  .modal-buttons { gap: 5px; }
+  .modal-buttons .menu-btn { min-width: 62px; padding: 5px 4px; font-size: 0.66rem; }
+}
+
+/* The smallest phones need one more step. 375px was still 6px over and
+   320px was 32px over, and the shortfall is mostly the message paragraph
+   wrapping to more lines as the popup narrows — so the cut comes from its
+   line spacing and the padding. The ad unit itself is already scaled by
+   50vmin from the base rule, so no width override is needed here. */
+@media (max-width: 400px) and (orientation: portrait), (max-height: 400px) {
+  #modalMessage { font-size: 0.68rem; line-height: 1.25; margin-bottom: 3px; }
+  #modalTitle { font-size: 0.86rem; margin-bottom: 3px; }
+  .modal { padding: 8px 12px; max-height: 98%; }
+  .modal-buttons .menu-btn { padding: 4px 4px; font-size: 0.64rem; min-width: 58px; }
+}
+
+@media (max-width: 340px) and (orientation: portrait), (max-height: 340px) {
+  .modal { padding: 6px 10px; }
+}
+
+/* =======================================================================
+   TOP BAR — one row, always
+   -----------------------------------------------------------------------
+   The bar is allowed to wrap, and on a phone it did: the level name, three
+   readouts and six controls came to a little more than the bar was wide, so
+   the controls dropped onto a second row and the bar went from ~38px to
+   ~68px. Every one of those pixels comes straight off the board.
+   From `sm` down the bar is told not to wrap at all and the pieces are sized
+   so they do not have to: the readouts stop stretching, the controls hold
+   their icons, and the level name shortens to "L1". `min-width: 0` on the
+   flex children is the part that makes nowrap safe — without it a child
+   refuses to shrink below its content and the row overflows instead.
+   ======================================================================= */
+#gameScreen[data-bar="lg"] .header,
+#gameScreen[data-bar="md"] .header,
+#gameScreen[data-bar="sm"] .header,
+#gameScreen[data-bar="xs"] .header,
+#gameScreen[data-bar="xxs"] .header { flex-wrap: nowrap; }
+
+#gameScreen[data-bar="lg"] .scoreboard,
+#gameScreen[data-bar="md"] .scoreboard { flex: 0 1 auto; min-width: 0; }
+#gameScreen[data-bar="lg"] .game-controls,
+#gameScreen[data-bar="md"] .game-controls { flex-wrap: nowrap; }
+
+#gameScreen[data-bar="sm"] .scoreboard,
+#gameScreen[data-bar="xs"] .scoreboard,
+#gameScreen[data-bar="xxs"] .scoreboard,
+#gameScreen[data-bar="sm"] .game-controls,
+#gameScreen[data-bar="xs"] .game-controls,
+#gameScreen[data-bar="xxs"] .game-controls { flex-wrap: nowrap; min-width: 0; }
+
+#gameScreen[data-bar="sm"] .header-title-group,
+#gameScreen[data-bar="xs"] .header-title-group,
+#gameScreen[data-bar="xxs"] .header-title-group { min-width: 0; flex: 0 1 auto; }
+
+/* The level name is the one piece that can be shortened without losing
+   anything: the number is what matters mid-game, not the word in front of
+   it. Applied from `xs` down, not just `xxs`. */
+#gameScreen[data-bar="xs"] .lvl-word { display: none; }
+#gameScreen[data-bar="xs"] .lvl-num::before { content: "L"; }
+#gameScreen[data-bar="xs"] .lvl-num { margin-left: 0; }
+#gameScreen[data-bar="xs"] .header .title { font-size: 0.95rem; }
+#gameScreen[data-bar="xs"] .scoreboard { font-size: 0.78rem; }
+#gameScreen[data-bar="xs"] .ctrl-btn.icon-only { min-width: 25px; }
+
+/* ---------- Menu and level select: a card, not a full-width band ----------
+   Both screens stretch to the wrapper's 1400px on a desktop, which left the
+   Play button a metre wide and blew the level tiles up to 160px squares.
+   Capped and centred, they keep the proportions they were designed at. */
+#menuScreen.active,
+#howToPlayScreen.active {
+  max-width: 660px;
+  margin: auto;
+  padding: 26px 22px 30px;
+  gap: 12px;
+}
+#menuScreen .subtitle { margin-top: -2px; }
+
+.level-grid {
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+/* Round icon button for sound, to match the coin pill opposite it. */
+.menu-mute-btn {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.menu-mute-btn::before { content:""; /* was "\1F50A": SVG icon "speaker", see icons.css */ display:inline-block;width:1.25em;height:1.2em;margin-top:-0.15em;margin-bottom:-0.15em;vertical-align:-0.1em;flex:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='3 0 24 24'%3E%3Crect x='4.5' y='9' width='4.6' height='6.4' rx='1' fill='%237d8a9c'/%3E%3Cpath d='M9.1 9 14.6 4.6V19.8L9.1 15.4Z' fill='%23a9b5c4'/%3E%3Cpath d='M17.6 9.2Q19.6 12.2 17.6 15.2M20.4 6.6Q24.4 12.2 20.4 17.8' fill='none' stroke='%233f9be0' stroke-width='1.9' stroke-linecap='round'/%3E%3C/svg%3E") center/auto 100% no-repeat; font-size: 1.1rem; }
+.menu-mute-btn.is-muted::before { content:""; /* was "\1F507": SVG icon "speaker-muted", see icons.css */ display:inline-block;width:1.25em;height:1.2em;margin-top:-0.15em;margin-bottom:-0.15em;vertical-align:-0.1em;flex:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='3 0 24 24'%3E%3Crect x='4.5' y='9' width='4.6' height='6.4' rx='1' fill='%237d8a9c'/%3E%3Cpath d='M9.1 9 14.6 4.6V19.8L9.1 15.4Z' fill='%23a9b5c4'/%3E%3Ccircle cx='15' cy='12.2' r='9.4' fill='none' stroke='%23e53935' stroke-width='2.3'/%3E%3Cpath d='M8.4 5.6 21.6 18.8' stroke='%23e53935' stroke-width='2.3'/%3E%3C/svg%3E") center/auto 100% no-repeat; }
+
+/* ---------- The bottom bar on the small phones ----------
+   `xxs` was the one tier that never dropped the "PAC-MAN" tag above the level
+   name (md, sm and xs all did). On a 320 phone that tag has no room to sit on
+   one line, so it broke to "PAC-" / "MAN", the title group went two lines
+   tall, and the whole bar with it — which is the bar looking a mess. */
+#gameScreen[data-bar="xxs"] .brand-tag-sm { font-size: 0.52rem; }
+#gameScreen[data-bar="xxs"] .header-title-group,
+#gameScreen[data-bar="xs"] .header-title-group { white-space: nowrap; }
+#gameScreen[data-bar="xxs"] .header .title,
+#gameScreen[data-bar="xs"] .header .title { white-space: nowrap; }
+
+/* On the very smallest bar there is not room for the level arrows as well as
+   pause, sound, restart and exit. They are the two the player needs least
+   mid-level — Level Select does the same job — so they are the ones that go,
+   rather than the whole row overflowing and clipping the level number off the
+   front of the bar. */
+/* Kept visible (not hidden) at every tier now — see the xxs block below for
+   how they are squeezed down to fit instead. */
+
+/* =======================================================================
+   TOP BAR, xxs — one row, and readable in it
+   -----------------------------------------------------------------------
+   The bar was already `nowrap`, so the three groups WERE on one line — but
+   with min-width:0 on the title group the flexbox was free to crush it to
+   fit, and it did: 30px on a 375 phone, 20px on a 320 one. "PAC-MAN" and
+   "L1" were being clipped mid-word inside that, which is the half-up
+   half-down mess — not a second row, a squashed first one.
+   Two changes fix it. The title group stops being shrinkable, so it always
+   gets the width its text actually needs; and the controls and readouts are
+   tightened enough to pay for that out of their own budget instead.
+   ======================================================================= */
+#gameScreen[data-bar="xxs"] .header-title-group {
+  flex: 0 0 auto;
+  min-width: auto;
+  white-space: nowrap;
+}
+/* The brand tag is the one thing in the bar that carries no information —
+   it says "Pac-Man" on the Pac-Man screen. At this size it costs 24px of a
+   ~283px budget, which is the difference between everything fitting and the
+   row overflowing, so it is what goes. Every functional item — score, lives,
+   coins, and the controls — stays visible at every size. */
+#gameScreen[data-bar="xxs"] .brand-tag-sm { display: none; }
+#gameScreen[data-bar="xxs"] .header .title { font-size: 0.8rem; line-height: 1.1; }
+
+#gameScreen[data-bar="xxs"] .scoreboard { flex: 0 0 auto; font-size: 0.6rem; }
+
+#gameScreen[data-bar="xxs"] .game-controls { flex: 0 0 auto; }
+#gameScreen[data-bar="xxs"] .ctrl-btn.icon-only { min-width: 19px; }
+#gameScreen[data-bar="xxs"] .ctrl-btn::before { font-size: 0.78rem; }
+
+/* The 320-class phones are the one size where even that does not add up —
+   the bar there is about 246px and the content still wants ~260. The level
+   arrows are what go, because Level Select reaches the same place and they
+   are the only two controls that are not needed mid-level.
+   Originally scoped to max-width:340px on the theory that only a narrow
+   phone would ever need this. Measured live, a 504x504 square also lands
+   on data-bar="xxs" — its own bar width comes out under 430 once the board
+   and a single side ad have taken their share, the same way a phone's does,
+   just by a different route — and clipped its Exit button by over 50px
+   with these still showing. Gating on data-bar="xxs" alone, with no width
+   query, is what actually matches the condition that causes the overflow;
+   every wider screen that never drops to xxs still keeps the full set. */
+#gameScreen[data-bar="xxs"] #prevLevelBtn,
+#gameScreen[data-bar="xxs"] #nextLevelBtn { display: none; }
+
+/* =======================================================================
+   MINESWEEPER STANDARD — fonts, menu metrics, stat pills, ad units
+   -----------------------------------------------------------------------
+   Appended at the end of the file so these win the cascade over the rules
+   they replace without those having to be hunted down and edited in place.
+   Every number here was read off Minesweeper side by side with this game,
+   not estimated. The PALETTE is deliberately untouched: matching the
+   sizing is what was asked for, and repainting Pac-Man in Minesweeper's
+   green would make it a reskin rather than a sibling.
+   ======================================================================= */
+
+/* ---------- Menu card ----------
+   One fixed size, not a content-sized one. Sized to its content the panel
+   grows and shrinks between Menu, Level Select and Shop, so the whole card
+   visibly jumps on every screen change. One size for all of them holds
+   still — this is what .wrapper.menu-mode does in Minesweeper. */
+#menuScreen.screen,
+#levelSelectScreen.screen,
+#shopScreen.screen,
+#howToPlayScreen.screen {
+  width: min(500px, 96vw);
+  height: min(700px, calc(100dvh - 2rem));
+  max-height: min(700px, calc(100dvh - 2rem));
+  padding: 1.25rem;
+  border-radius: 22px;
+  background: #fff;
+}
+
+#menuScreen.screen {
+  /* justify-content: center centres the whole stack — top bar, logo,
+     title, subtitle, Play, the three small buttons — as one block. On a
+     card short enough that the stack is TALLER than the card (a real
+     phone in Safari, with its address bar eating into 100dvh, hits this
+     often enough to matter), centring an overflowing flex column pushes
+     the START of the content above the scrollable area rather than the
+     END below it — so the logo, being first, is what disappears, and
+     there is no way to scroll UP to reach it because the browser never
+     considers that space part of the scrollable range.
+     The fix is the "safe" keyword: safe center behaves exactly like
+     center while everything fits, and falls back to start-alignment
+     (flex-start) the moment it doesn't, so the logo is always the first
+     thing in view instead of the thing that silently loses the fight for
+     space. flex-start above it is the fallback for a browser that does
+     not know "safe" yet — an unsupported value is ignored outright, never
+     applied half-way, so the second declaration only ever REPLACES the
+     first, it can't corrupt it. */
+  justify-content: safe center;
+  gap: 0;
+  overflow-y: auto;
+}
+
+/* The column inside the card is capped at 420px in Minesweeper, so Play
+   and the three cards do not stretch the full width of the panel. The top
+   bar is exempt — it is absolutely positioned at the card's corners — and
+   so is the logo, which is an <img>: width:100% would stretch it to the
+   full column and drag its height up with it. */
+#menuScreen > *:not(.menu-top-bar):not(.logo) {
+  width: 100%;
+  max-width: 420px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#menuScreen .title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  margin-top: 0.5rem;
+  /* Centred, as Minesweeper's wordmark is.
+     It USED to centre for free: .screen sets align-items:center, so an
+     auto-width heading was placed in the middle of the card by the flex
+     layout. Capping the column at 420px changed that — the heading became a
+     full-width block, and a full-width block with no text-align falls back
+     to the default, which is left. The subtitle and the caption were
+     unaffected because both already carry text-align:center of their own,
+     so only the title moved and it looked like a one-off rather than a
+     consequence of the column cap. */
+  text-align: center;
+}
+
+/* A label rather than a sentence: small, uppercase, letter-spaced. */
+#menuScreen .subtitle {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.75;
+  margin: 0.6rem 0 1.75rem;
+}
+
+#menuScreen .menu-buttons {
+  margin-top: 0;
+}
+
+#menuScreen .menu-buttons .menu-btn.primary {
+  padding: 1rem 1.5rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+  border-radius: 999px;
+  margin-bottom: 0.45rem;
+}
+
+#menuScreen .menu-buttons .menu-btn:not(.primary) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#menuScreen .menu-btn-icon { line-height: 1; }
+
+#menuScreen .menu-btn-label {
+  /* One line each, all three the same size. */
+  max-width: 100%;
+}
+
+#menuScreen .start-caption {
+  margin: 1.1rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  opacity: 0.7;
+  text-align: center;
+}
+
+#menuScreen .menu-mute-btn { min-height: 44px; }
+
+/* Short windows: the card scrolls its own content rather than rescaling
+   the type, so the sizes above hold everywhere. Only the logo gives
+   ground, being the one element that costs nothing to shrink. */
+@media (max-height: 700px) {
+  #menuScreen.screen { padding: 1rem; }
+  #menuScreen .subtitle { margin-bottom: 1.1rem; }
+}
+
+/* ---------- Stat pills ----------
+   Side by side the two games disagreed on every number: 16px against
+   0.82rem, weight 600 against 700, a full pill radius against 20px,
+   padding 5/12 against 4.8/8.8. They also had no tabular-nums, so the
+   score nudged its neighbours sideways on every digit that changed width —
+   which reads as the bar being slightly unstable without it being obvious
+   why. */
+.scoreboard { gap: 0.3rem; }
+
+.score-label,
+.lives-label,
+.game-coin-pill {
+  padding: 0.3rem 0.55rem;
+  gap: 0.22rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border-radius: 20px;
+  font-variant-numeric: tabular-nums;
+  line-height: normal;
+}
+
+.score-label .stat-word,
+.lives-label .stat-word { font-size: 1em; }
+
+.game-coin-pill .coin-icon { font-size: 1rem; line-height: normal; }
+
+/* ---------- Static image ad units ----------
+   Both games serve the same IAB VERTICAL_BANNER (300x600) at exactly 1:2,
+   so the creative was never the problem — when it steps down and when it
+   gives up were. The three caps that decide the size now live in
+   fitSideRailsInner(); this is the surface treatment: Minesweeper's 12px
+   radius and its lighter shadow, replacing square corners and a heavier
+   drop. */
+.ad-rail {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(50, 60, 110, 0.10), 0 2px 8px rgba(50, 60, 110, 0.10);
+}
+
+/* Below 1025px two cards would take more width than the maze has to spare,
+   so they are dropped outright — the same line Minesweeper draws. The MREC
+   in the result dialog still carries an impression on those screens. */
+/* No blanket hide below 1024 any more — fitSideRailsInner() runs a single
+   card on one side there instead of dropping both, and it adds/removes
+   .is-shown itself. A display:none here would override that and the tablet
+   and phone placement would never appear. */
+
+/* The single-card gutter. fitSideRailsInner() sets --ad-gutter-right while
+   one rail is running on a tablet or a phone; padding it onto the frame is
+   what moves the game column off that edge, so the card's width comes out
+   of ONE side instead of being split between both. Zero everywhere else, so
+   this rule is inert on desktop and on the menus. */
+.wrapper {
+  padding-right: calc(6px + var(--ad-gutter-right, 0px));
+}
+
+/* The maze pinned to the TOP of a tall column, with everything it cannot
+   use collecting in one band underneath it. On a wide screen there is barely
+   any and it never showed; on a portrait tablet, where the board is limited
+   by the width the ad card leaves it, that band was ~570px of empty page.
+   .game-container already asks for justify-content:center, but the canvas
+   still sat at the top — the centring has to be stated against the canvas
+   itself, which resize3D() sizes to the board's own aspect rather than to
+   the box. Centring does not create height the board can use (a square maze
+   in a tall column cannot fill it), but it stops the whole remainder pooling
+   in one place under the board, which is what read as half an empty screen. */
+#gameScreen .game-container { justify-content: center; }
+#gameScreen .game-container > canvas { margin-top: auto; margin-bottom: auto; }
+
+/* =======================================================================
+   JOYSTICK — analog movement control for touch / coarse pointers
+   -----------------------------------------------------------------------
+   Replaces the four-button arrow cluster (▲ ◀ ▼ ▶) with a single virtual
+   joystick. One thumb-driven control instead of four discrete presses, in
+   the shape a thumb already knows: push toward the wall you want to head
+   into. Kept small on purpose — base ring 64px on tablets, 56px on
+   phones, 48px at the tightest tier — so it does not eat bar height the
+   way a 140px+ joystick would. Same trigger the move-pad used: hidden
+   on keyboard/mouse, shown from tablet width down or any coarse pointer.
+   ======================================================================= */
+.joystick {
+  display: none;
+  flex: 0 0 auto;
+  width: 64px;
+  height: 64px;
+  align-self: center;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.joystick-base {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  pointer-events: auto;
+}
+
+.joystick-knob {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 26px;
+  height: 26px;
+  margin-top: -13px;
+  margin-left: -13px;
+  border-radius: 50%;
+  /* transform is driven by JS — keep the snap-back smooth on release. */
+  transition: transform 90ms ease-out;
+  will-change: transform;
+}
+
+.joystick.is-dragging .joystick-knob {
+  transition: none;
+}
+
+@media (max-width: 1024px), (pointer: coarse) {
+  /* In portrait the joystick is a flex container (display:flex) so it can
+     centre its base on a full-width row; in landscape it stays absolute
+     positioned. block is the fallback for non-flex contexts. */
+  .joystick { display: flex; }
+}
+
+/* Tightest phones: the joystick gives up a few pixels so the rest of the
+   bar does not have to. Both the container height (portrait flex item) and
+   the base circle drop together. */
+@media (max-width: 480px) {
+  .joystick { width: 56px; height: 56px; }
+  .joystick-base { width: 56px; height: 56px; }
+  .joystick-knob {
+    width: 22px; height: 22px;
+    margin-top: -11px; margin-left: -11px;
+  }
+}
+
+/* "Use arrow keys or WASD to move" — a phone has neither, and there is now
+   a movement pad in the bar two centimetres away. It was costing a line of
+   height inside the board's own box, and on a phone that height is the
+   board: the maze is square and height-bound there, so every pixel the hint
+   takes comes straight off the width as well. */
+@media (max-width: 1024px), (pointer: coarse) {
+  #gameScreen .hint { display: none; }
+}
+
+/* =======================================================================
+   COMPACT BAR ON PHONES AND TABLETS
+   -----------------------------------------------------------------------
+   On a phone the control bar's THICKNESS is maze. The page is turned a
+   quarter turn there, so the bar runs down one edge of the screen and every
+   pixel of its thickness is a pixel of screen width the board cannot have —
+   and because the maze is square, width it loses is height it loses too.
+   Measured before this block: the bar was 66-68px thick against a maze of
+   264-332px, on screens 360-430px wide. About a fifth of the screen, spent
+   on chrome.
+
+   The tallest thing in the bar was setting that thickness, and it was the
+   movement pad: two rows of buttons, ~54px, where everything else in the
+   bar is one row of ~30. That is why the pad used to flatten to a single
+   row — left, up, down, right — on every small tier.
+
+   It does not any more. The pad is the KEYBOARD ARROW CLUSTER at every
+   size now: up alone on the top row, left/down/right underneath it, which
+   is the inverted-T an arrow key block has and the shape a hand already
+   knows without looking. A flat row of four is the same four buttons but
+   it has to be READ before it can be pressed — up and down sitting side by
+   side are two arrows that differ only by which way a small glyph points,
+   and in a game where a wrong direction costs a life that is the wrong
+   thing to make someone check.
+
+   The height that saved is bought back rather than simply spent: the
+   cluster is three columns wide where the flat row was four, so each
+   button gets more width at the same total, and the sizes below are cut
+   on the axis the shape costs (height) while keeping — on the phone tiers,
+   growing — the axis it gains (width). Net cost to the bar is roughly one
+   button-row; everything else in the bar steps down with it: pills,
+   buttons, gaps.
+   ======================================================================= */
+#gameScreen[data-bar="sm"] .joystick,
+#gameScreen[data-bar="xs"] .joystick,
+#gameScreen[data-bar="xxs"] .joystick {
+  /* Smaller at the tight tiers so the joystick does not own the bar.
+     Below this and the knob loses enough travel that the dead-zone
+     swallows light taps; 56px keeps the knob reachable. */
+  width: 56px;
+  height: 56px;
+}
+
+#gameScreen[data-bar="sm"] .joystick-base,
+#gameScreen[data-bar="xs"] .joystick-base,
+#gameScreen[data-bar="xxs"] .joystick-base {
+  width: 56px;
+  height: 56px;
+}
+
+#gameScreen[data-bar="sm"] .joystick-knob,
+#gameScreen[data-bar="xs"] .joystick-knob,
+#gameScreen[data-bar="xxs"] .joystick-knob {
+  width: 22px; height: 22px;
+  margin-top: -11px; margin-left: -11px;
+}
+
+/* The readouts and the six controls come down with the pad, or the bar
+   simply keeps its old thickness from whichever of them is now tallest. */
+#gameScreen[data-bar="sm"] .score-label,
+#gameScreen[data-bar="sm"] .lives-label,
+#gameScreen[data-bar="sm"] .game-coin-pill,
+#gameScreen[data-bar="xs"] .score-label,
+#gameScreen[data-bar="xs"] .lives-label,
+#gameScreen[data-bar="xs"] .game-coin-pill,
+#gameScreen[data-bar="xxs"] .score-label,
+#gameScreen[data-bar="xxs"] .lives-label,
+#gameScreen[data-bar="xxs"] .game-coin-pill {
+  padding: 0.15rem 0.4rem;
+  font-size: 0.72rem;
+  gap: 0.15rem;
+  line-height: 1.15;
+}
+
+#gameScreen[data-bar="sm"] .ctrl-btn,
+#gameScreen[data-bar="xs"] .ctrl-btn,
+#gameScreen[data-bar="xxs"] .ctrl-btn {
+  padding: 4px 7px;
+  font-size: 0.78rem;
+  min-height: 24px;
+}
+
+#gameScreen[data-bar="sm"] .header,
+#gameScreen[data-bar="xs"] .header,
+#gameScreen[data-bar="xxs"] .header {
+  padding: 3px 5px;
+  gap: 4px;
+}
+
+#gameScreen[data-bar="sm"] .scoreboard,
+#gameScreen[data-bar="xs"] .scoreboard,
+#gameScreen[data-bar="xxs"] .scoreboard,
+#gameScreen[data-bar="sm"] .game-controls,
+#gameScreen[data-bar="xs"] .game-controls,
+#gameScreen[data-bar="xxs"] .game-controls { gap: 4px; }
+
+/* The frame's own padding is the last of it — 8px a side on a 390px screen
+   is another 4% of the board, for a margin nobody is looking at. */
+#gameScreen[data-bar="xs"].active,
+#gameScreen[data-bar="xxs"].active { padding: calc(4px + var(--ad-band, 0px)) 4px 4px; }
+
+/* The tier attribute is the wrong hook for a phone and it took a
+   measurement to see why: the tier is chosen from the bar's LAYOUT width,
+   and after the page's quarter turn that width is the phone's LONG side. A
+   430px phone therefore reports 704 and lands on "md" — the desktop-ish
+   tier — so none of the compacting above applied to the largest phones, the
+   ones it was written for. Mobile L kept a 68px bar and a 332px maze while
+   M and S dropped to 41-43px.
+   A media query sees the real viewport, not the rotated layout, so it
+   catches every phone regardless of which way the page is turned. */
+@media (max-width: 500px) {
+  /* Joystick matches the sm/xs/xxs tier sizing — 56px base, 22px knob. */
+  #gameScreen .joystick {
+    width: 56px;
+    height: 56px;
+  }
+  #gameScreen .joystick-base {
+    width: 56px;
+    height: 56px;
+  }
+  #gameScreen .joystick-knob {
+    width: 22px; height: 22px;
+    margin-top: -11px; margin-left: -11px;
+  }
+
+  #gameScreen .score-label,
+  #gameScreen .lives-label,
+  #gameScreen .game-coin-pill {
+    padding: 0.15rem 0.4rem;
+    font-size: 0.72rem;
+    gap: 0.15rem;
+    line-height: 1.15;
+  }
+
+  #gameScreen .ctrl-btn {
+    padding: 4px 7px;
+    font-size: 0.78rem;
+    min-height: 24px;
+  }
+
+  #gameScreen .header { padding: 3px 5px; gap: 4px; }
+  #gameScreen .scoreboard,
+  #gameScreen .game-controls { gap: 4px; }
+  #gameScreen.active { padding: calc(4px + var(--ad-band, 0px)) 4px 4px; }
+}
+
+/* =======================================================================
+   TABLET STATS BAR — let it wrap instead of clipping
+   -----------------------------------------------------------------------
+   The bar is synced to the maze, and on a portrait tablet the maze is
+   narrow (the ad card takes 310px of the width), so 16 items were being
+   asked to fit into ~490px on one line. The tier logic responded by
+   stripping labels off everything and the level readout still came out
+   clipped — "Level 1" showing as "L1" with the word cut off mid-glyph.
+   Wrapping to a second row costs height, and on a portrait tablet height is
+   the one thing there is a surplus of: the maze is square and bounded by
+   width there, so it cannot use that height anyway. Trading spare height
+   for legible readouts is free in a way it would not be on a phone.
+   ======================================================================= */
+@media (min-width: 501px) and (max-width: 1024px) {
+  /* .active on the selector on purpose: the base rule that sets nowrap is
+     #gameScreen.active .header, and a plain #gameScreen .header here loses
+     to it on specificity. Written without it first, and the computed value
+     stayed nowrap — the readouts went on being squeezed and the wrap never
+     happened. */
+  /* One line. Wrapping was tried and it did keep every value readable, but
+     two rows of bar is two rows of height taken off the board, so the row
+     has to be made to FIT rather than allowed to break. Everything in it
+     steps down together below, and the readouts keep flex-shrink:0 so the
+     saving comes out of padding rather than out of the numbers. */
+  #gameScreen.active .header {
+    flex-wrap: nowrap;
+    justify-content: center;
+  }
+
+  /* The readouts stop shrinking. They were flex-shrink:1 against a
+     fixed-size move pad and control group, so when the bar ran out of room
+     they were the only things that gave — the three of them compressed into
+     111px and the coin count was clipped inside its own pill. Held at their
+     natural size, the row wraps instead and every value stays readable,
+     which is the whole point of a stats bar. */
+  #gameScreen.active .scoreboard,
+  #gameScreen.active .header-title-group { flex-shrink: 0; }
+
+  /* Sized to fit the one row rather than to fill it. Measured at 820px: the
+     four groups plus their gaps came to ~520 against a 490px bar, so ~40px
+     had to come out of padding somewhere. Taking it from the readouts alone
+     would have clipped them again; spread across the readouts, the movement
+     pad and the six controls, none of them is squeezed. */
+  #gameScreen.active .score-label,
+  #gameScreen.active .lives-label,
+  #gameScreen.active .game-coin-pill {
+    font-size: 0.74rem;
+    padding: 0.2rem 0.4rem;
+    gap: 0.15rem;
+  }
+
+  #gameScreen.active .joystick {
+    width: 60px;
+    height: 60px;
+  }
+  #gameScreen.active .joystick-knob {
+    width: 24px; height: 24px;
+    margin-top: -12px; margin-left: -12px;
+  }
+
+  #gameScreen.active .ctrl-btn {
+    padding: 4px 6px;
+    min-height: 26px;
+    font-size: 0.8rem;
+  }
+
+  #gameScreen.active .header { gap: 3px; padding: 4px 4px; }
+  #gameScreen.active .scoreboard,
+  #gameScreen.active .game-controls { gap: 3px; }
+
+  /* The last few pixels, and they had to come from the level readout rather
+     than from anything else. Measured after the step-down above, the row
+     still came to 493 against a 490px bar — three pixels over, and three
+     pixels over is the whole right-hand end of the bar hanging off: the
+     Exit button and the PAC-MAN tag were both reported outside it.
+     The brand tag is the one item in the bar that carries no live
+     information — the level number beside it says everything the player
+     needs — so it is what gives way on the narrowest tablets. */
+  #gameScreen.active .brand-tag-sm { display: none; }
+
+  #gameScreen .header-title-group { flex: 0 0 auto; }
+
+  /* The level word is left as the tier put it — hidden at "xs" and "xxs",
+     showing above that. Forcing it back on was tried and reverted: the
+     header does not reflow its title group, so a wider "LEVEL 1" simply ran
+     underneath the score pill instead of pushing it along. "L1" beside the
+     PAC-MAN tag is legible and it does not collide with anything, which is
+     the better of the two outcomes on a 490px bar. */
+  #gameScreen[data-bar="xs"] #prevLevelBtn,
+  #gameScreen[data-bar="xs"] #nextLevelBtn { padding: 5px 10px; }
+}
+
+/* The narrowest tablets need one more step. At 768px the bar is only 438px
+   wide and the row still came to ~470 after the trim above — enough that
+   the Exit button hung off the right-hand end and the level number was
+   pushed out of view. Everything tightens once more here; nothing is
+   dropped that carries live information. */
+@media (min-width: 501px) and (max-width: 840px) {
+  #gameScreen.active .score-label,
+  #gameScreen.active .lives-label,
+  #gameScreen.active .game-coin-pill {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.3rem;
+  }
+  #gameScreen.active .joystick {
+    width: 56px;
+    height: 56px;
+  }
+  #gameScreen.active .joystick-knob {
+    width: 23px; height: 23px;
+    margin-top: -11.5px; margin-left: -11.5px;
+  }
+  #gameScreen.active .ctrl-btn {
+    padding: 3px 5px;
+    min-height: 24px;
+    font-size: 0.74rem;
+  }
+  #gameScreen.active .header { gap: 2px; padding: 3px; }
+  #gameScreen.active .scoreboard,
+  #gameScreen.active .game-controls { gap: 2px; }
+}
+
+/* =======================================================================
+   MENU CARD: TOP BAR, LOGO AND TILES — MATCHED TO TETRIS
+   ======================================================================= */
+
+/* ---------- 1. The coin pill and the sound button ----------
+   Two positioning systems for two things that are meant to be a pair.
+   .menu-top-bar is absolute at 14px from the card's corners and lays its
+   two children out with space-between; .menu-mute-btn (declared way up at
+   the top of this file, next to .screen) then took itself OUT of that flow
+   with its own position:absolute at 16px. So the coin pill sat at top 48,
+   right edge 810, and the sound button at top 64, right edge 794 — 16px
+   lower and 16px further in than the thing it is supposed to line up with,
+   which is exactly what "align nahi hai" looks like.
+   Back into the bar, and both given the same height so they line up by
+   their boxes and not just by their centres. */
+#menuScreen .menu-top-bar .menu-mute-btn {
+  position: static;
+  top: auto;
+  right: auto;
+}
+
+#menuScreen .menu-top-bar {
+  top: 1rem;
+  left: 1rem;
+  right: 1rem;
+  align-items: center;
+}
+
+#menuScreen .menu-top-bar .coin-pill,
+#menuScreen .menu-top-bar .menu-mute-btn {
+  height: 40px;
+  min-height: 40px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#menuScreen .menu-top-bar .coin-pill { padding: 0 0.85rem; font-size: 0.95rem; }
+#menuScreen .menu-top-bar .menu-mute-btn { width: 40px; padding: 0; }
+
+/* ---------- 2. The logo ----------
+   width:140px was copied straight from Tetris, whose logo file is square —
+   140x140. This one is 291x152, so the same 140 of WIDTH came out 73 tall:
+   half the block, which is why it reads as small next to the same-sized
+   title beneath it. Height is the dimension to match when the two files
+   are different shapes; the width then follows the artwork. */
+#menuScreen .logo {
+  width: auto;
+  height: 120px;
+  max-width: 78%;
+  margin: 0 auto;
+}
+
+@media (max-height: 700px) {
+  #menuScreen .logo { width: auto; height: 88px; }
+}
+
+/* ---------- 3. The action tiles ----------
+   Tetris's tile metrics, and — the part that matters — no cropping.
+   .menu-btn-label carried overflow:hidden + white-space:nowrap +
+   text-overflow:ellipsis, the same combination that was slicing "Achievements"
+   into "chievement" over in Tetris. It happens not to be biting here yet
+   because three labels fit in three columns; it would the moment a label got
+   longer or a column got narrower, and it would do it silently. Removed
+   rather than left as a trap: with room to fit, a label that still cannot
+   should wrap, not lose its middle. */
+#menuScreen .menu-buttons { gap: 0.55rem; }
+
+#menuScreen .menu-buttons .menu-btn:not(.primary) {
+  min-height: 78px;
+  padding: 0.8rem 0.6rem;
+  border-radius: 16px;
+  gap: 0.35rem;
+}
+
+#menuScreen .menu-btn-icon { font-size: 1.5rem; }
+
+#menuScreen .menu-btn-label {
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+@media (max-height: 620px) {
+  #menuScreen .menu-buttons .menu-btn:not(.primary) {
+    min-height: 58px;
+    padding: 0.5rem;
+    gap: 0.25rem;
+  }
+  #menuScreen .menu-btn-icon { font-size: 1.15rem; }
+  #menuScreen .menu-btn-label { font-size: 0.76rem; }
+}
+
+/* =======================================================================
+   THE IN-GAME BAR ON A PHONE: READOUTS THAT LINE UP AND STAY INSIDE
+   -----------------------------------------------------------------------
+   Measured on a 390 phone (rotated to landscape, so the bar is 366px
+   across), tier xxs:
+
+     bar            366x53 @10,781
+     title group    14x12  @6,802   <- left of the bar's own left edge
+     scoreboard     78x45  @24,785
+       score  20x43   lives 20x39   coins 32x45
+     controls       169x30 @211,793 <- right edge 380 vs the bar's 376
+
+   Two separate things, and both are visible in the same glance.
+
+   OUT OF THE BAR: the row's content wants ~370px in a 366px bar, so the
+   title group hangs off the left and the controls off the right. The bar
+   is nowrap with no padding to give, so there is nothing to absorb it —
+   the ends simply stick out. Tightened here rather than by hiding a
+   control: at four pixels over, tightening is enough.
+
+   NOT LINED UP: the three readouts came out 43, 39 and 45px tall. Nothing
+   sets their height, so each one is as tall as its own content makes it —
+   and the coin pill, the tallest, is a rounded pill sitting proud of a
+   53px bar, which is the one that reads as "bahar nikal raha hai". Same
+   fix as the Tetris header: state the height instead of deriving it, and
+   give the emoji a fixed box so the glyph stops deciding.
+   ======================================================================= */
+#gameScreen .scoreboard .score-label,
+#gameScreen .scoreboard .lives-label,
+#gameScreen .scoreboard .game-coin-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  min-height: 30px;
+  box-sizing: border-box;
+  line-height: 1;
+}
+
+#gameScreen .scoreboard .coin-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+
+#gameScreen[data-bar="sm"] .scoreboard .score-label,
+#gameScreen[data-bar="sm"] .scoreboard .lives-label,
+#gameScreen[data-bar="sm"] .scoreboard .game-coin-pill { height: 27px; min-height: 27px; }
+
+#gameScreen[data-bar="xs"] .scoreboard .score-label,
+#gameScreen[data-bar="xs"] .scoreboard .lives-label,
+#gameScreen[data-bar="xs"] .scoreboard .game-coin-pill { height: 24px; min-height: 24px; }
+
+#gameScreen[data-bar="xxs"] .scoreboard .score-label,
+#gameScreen[data-bar="xxs"] .scoreboard .lives-label,
+#gameScreen[data-bar="xxs"] .scoreboard .game-coin-pill {
+  height: 21px;
+  min-height: 21px;
+  padding: 0 4px;
+}
+
+/* The four pixels. Everything in the row gives a little rather than one
+   item giving a lot, so nothing changes shape — and the bar gets a hair of
+   side padding so the ends have something to stop against instead of
+   running past the rounded corner. */
+#gameScreen[data-bar="xxs"] .header { padding-left: 5px; padding-right: 5px; gap: 3px; }
+#gameScreen[data-bar="xxs"] .scoreboard { gap: 2px; }
+#gameScreen[data-bar="xxs"] .game-controls { gap: 2px; }
+#gameScreen[data-bar="xxs"] .ctrl-btn { padding: 2px; }
+
+/* The level arrows used to come off in two separate steps — one at 340px,
+   a second at 380px, both scoped to the real viewport width — because the
+   bar's needed width was measured against a handful of phone sizes rather
+   than derived from anything. Both are folded into the single, unscoped
+   data-bar="xxs" rule above now (see the note there): it fires exactly
+   when the bar itself is short of room, on any device, phone or not. */
+
+/* The 320-class phones come out 2px over at each end even without the
+   arrows — 296px of bar against ~300 of content. Two pixels, so two pixels
+   are taken: the bar's own side padding, which exists to keep the ends off
+   the rounded corner and can go back to zero at the one size where the
+   corner is the lesser problem. */
+@media (max-width: 340px) {
+  #gameScreen[data-bar="xxs"] .header { padding-left: 2px; padding-right: 2px; gap: 2px; }
+  #gameScreen[data-bar="xxs"] .scoreboard { gap: 1px; }
+  #gameScreen[data-bar="xxs"] .game-controls { gap: 1px; }
+}
+
+/* ---------- Mute and the move-pad at the xxs tier: not just a width thing
+   ----------
+   The two fixes below used to live inside the max-width:340px query above,
+   sized against a 320-class phone specifically. But the header can run out
+   of room at the xxs tier from screen HEIGHT alone, independent of the raw
+   viewport width — measured live: a 504x504 square and a 390x390 square
+   both land on data-bar="xxs" the ordinary way (the bar's own width comes
+   out under 430 once the board has taken its share, not through the forced
+   phone override), and both clipped their Exit button by 17-54px despite
+   being 340px+ wide. Gating these on data-bar="xxs" alone, with no width
+   query, is what actually matches the condition that causes the overflow. */
+/* Every OTHER icon-only control in this bar hides its text label with
+   font-size:0 and shows a smaller icon through a ::before pseudo-element,
+   so pause/restart/exit all render at ~15-25px on this axis. Mute has no
+   such pseudo-element — the speaker emoji IS the button's own text — so it
+   keeps the base .ctrl-btn.icon-only sizing (1rem font, 4px/7px padding,
+   19-21px min-width) all the way down to this tier, and comes out at 30px
+   against its neighbours' 15-25px. That mismatch was most of a 320-class
+   phone's ~17px header overflow — measured, the topmost control (Exit) was
+   clipped by almost exactly that much. Matching pause/restart/exit's own
+   padding and dropping the min-width closes it without touching anything a
+   real word is still displayed in. */
+#gameScreen[data-bar="xxs"] .ctrl-btn.mute-btn.icon-only {
+  font-size: 0.68rem;
+  padding: 3px 4px;
+  min-width: auto;
+}
+/* Still short after the mute fix above on the tightest screens, so the
+   joystick drops to its smallest size. 48px keeps the knob reachable and
+   the dead-zone meaningful (a smaller base makes small presses look like
+   noise); anything below starts costing the player turns to misreads. */
+#gameScreen[data-bar="xxs"] .joystick { width: 48px; height: 48px; }
+#gameScreen[data-bar="xxs"] .joystick-base { width: 48px; height: 48px; }
+#gameScreen[data-bar="xxs"] .joystick-knob {
+  width: 20px; height: 20px;
+  margin-top: -10px; margin-left: -10px;
+}
+
+/* ---------- The Shop / Level Select title row ----------
+   Same fix as the Tetris header row: the back button, the title and the
+   spacer are three boxes of three different heights, so centring them by
+   their midpoints still leaves their tops and bottoms stepped — measured,
+   the title sat 4px above the back button's centre. Giving all three the
+   same box height lines them up by their edges, which is what the eye
+   compares. */
+#shopScreen .screen-top-bar,
+#levelSelectScreen .screen-top-bar,
+#howToPlayScreen .screen-top-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+#shopScreen .screen-top-bar > *,
+#levelSelectScreen .screen-top-bar > *,
+#howToPlayScreen .screen-top-bar > * {
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  margin: 0;
+}
+
+#shopScreen .close-btn,
+#levelSelectScreen .close-btn,
+#howToPlayScreen .close-btn {
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0;
+  justify-content: center;
+}
+
+/* =======================================================================
+   LEVEL SELECT AND SHOP — TETRIS'S METRICS
+   -----------------------------------------------------------------------
+   Measured side by side at 1150x765, both games in a 500x700 card:
+
+                    Tetris                  Pac-Man (before)
+     content cap    420px                   none — grid ran to 458
+     title row      back button beside a    back pinned to the far left,
+                    centred title           title centred on its own
+     title case     "Shop"                  "SHOP"
+     level grid     6 cols, 59x59, gap 10   5 cols, 82x82, gap 10
+     level type     13.3px                  16px
+     shop grid      3 cols, 145 wide,       3 cols, ~137 wide,
+                    gap 12, radius 12       gap 10
+
+   The 420 cap is the one that matters most: it is what makes the menu, the
+   level grid and the shop all sit on the same invisible column inside the
+   card, which is why Tetris's three screens look like one screen with
+   different contents. Without it Pac-Man's grids ran 38px wider than its
+   own menu did, so the card's contents shifted outward every time you
+   moved between them.
+   ======================================================================= */
+
+/* ---------- The shared column ---------- */
+#levelSelectScreen > *,
+#shopScreen > * {
+  width: 100%;
+  max-width: 420px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ---------- Title row: the button travels WITH the title ----------
+   Tetris centres the back button and the heading together as one group,
+   rather than pinning the button to the corner and centring the heading in
+   what is left. The spacer exists only to balance a corner-pinned button,
+   so with the group centred it has nothing to balance. */
+#levelSelectScreen .screen-top-bar,
+#shopScreen .screen-top-bar {
+  gap: 0.6rem;
+}
+
+#levelSelectScreen .section-title,
+#shopScreen .section-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  text-transform: none;   /* "Shop", not "SHOP" */
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+/* ---------- Level grid ---------- */
+#levelSelectScreen #levelGrid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.6rem;
+  max-width: 420px;
+  margin: 0.9rem auto 0;
+}
+
+#levelSelectScreen .level-btn {
+  /* width:100%, not auto, and this is the whole reason the rows collapsed.
+     A grid track is sized from its items BEFORE the items are stretched
+     into it, and `width: auto` gives aspect-ratio nothing definite to
+     work from at that moment — so the row was sized from the content
+     instead (a padlock and a number, 36px) while the tile went on to
+     compute its height from its stretched width (70px). Every row was
+     34px shorter than the tiles standing in it, which is why they piled
+     up on each other with no gap.
+     width:100% resolves against the column, aspect-ratio turns that into a
+     definite height, and the row is sized from a square that already knows
+     how big it is. */
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  padding: 0.2rem;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  font-size: 0.83rem;
+}
+
+/* Six across leaves ~59px a tile, so the caption goes to the size Tetris
+   uses for the same caption in the same box rather than staying at the one
+   it had when there were five bigger tiles. */
+#levelSelectScreen .level-btn .level-diff {
+  white-space: nowrap;
+}
+
+/* ---------- Shop ---------- */
+/* The coin count used to be its own centred row under this bar (see the
+   dated note that WAS here). Moved into the top bar itself, at the side
+   opposite the back button — the same corner Level Select gives its help
+   button — so Shop gets a title row exactly like every other screen instead
+   of a second header stacked under the first.
+   That means THIS bar can no longer share Level Select's "back+title
+   centred as one group" treatment (the pattern right above, at
+   #levelSelectScreen .screen-top-bar): with a pill on the far side too, a
+   centred group would leave the coin pill's own width tipping the whole
+   cluster off-centre. space-between instead pins the back button and the
+   coin pill to their corners and lets the title alone take the middle, which
+   is what actually keeps "Shop" centred with a wider, uneven pill opposite
+   the back button. */
+#shopScreen .screen-top-bar {
+  justify-content: space-between;
+}
+
+#shopScreen .section-title {
+  flex: 1 1 auto;
+  justify-content: center;
+  text-align: center;
+}
+
+#shopScreen .screen-top-bar .shop-coin-pill {
+  flex: 0 0 auto;
+  margin: 0;
+  white-space: nowrap;
+}
+
+/* ---------- Level Select: match Shop's corner layout ----------
+   The grouped/centred treatment above (back button + title travelling
+   together as one cluster) put the back button in the middle of the bar
+   instead of its own corner, and left the "?" help button riding along
+   next to the title rather than sitting opposite the back button. Shop
+   already solves this the way this screen wants: back button pinned to
+   its corner, title alone centred in what's left, and the far corner held
+   by its own control (there, the coin pill; here, help). Same pattern. */
+#levelSelectScreen .screen-top-bar {
+  justify-content: space-between;
+}
+
+#levelSelectScreen .section-title {
+  flex: 1 1 auto;
+  justify-content: center;
+  text-align: center;
+}
+
+#levelSelectScreen #levelHelpBtn {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+#shopScreen .shop-tabs {
+  gap: 0.35rem;
+  margin: 0.6rem auto 0.2rem;
+  max-width: 420px;
+}
+
+#shopScreen .shop-tab {
+  padding: 0.34rem 0.7rem;
+  font-size: 0.78rem;
+  border-radius: 999px;
+}
+
+#shopScreen #shopGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  max-width: 420px;
+  margin: 0.6rem auto 0;
+}
+
+#shopScreen #shopGrid > * {
+  border-radius: 12px;
+  padding: 0.85rem;
+}
+
+/* =======================================================================
+   THE RESULT POPUPS — TETRIS'S BOX
+   -----------------------------------------------------------------------
+   Congratulations and Game Over, measured against Tetris's at 1150x765:
+
+                Tetris          Pac-Man (before)
+     box        360x532         380x515
+     padding    28.8 / 19.2     26 / 22
+     radius     16px            14px
+     buttons    ~100x36         ~106x38
+     ad         MREC 300x250    MREC 300x250   (already matching)
+
+   The width is the one worth explaining. Both popups are built around the
+   same 300px MREC, so 360 is "the unit plus a comfortable margin" and 380
+   is twenty pixels of nothing — it made the message text run to a longer
+   line than Tetris's for the same two sentences. Coming down to 360 with
+   Tetris's asymmetric padding (more above and below than at the sides)
+   gives the same measure and the same breathing room.
+   ======================================================================= */
+#overlay .modal {
+  max-width: 360px;
+  padding: 1.8rem 1.2rem;
+  border-radius: 16px;
+  gap: 0.55rem;
+}
+
+#overlay .modal-buttons { gap: 0.5rem; }
+
+#overlay .modal-buttons .menu-btn {
+  padding: 0.6rem 0.35rem;
+  font-size: 0.78rem;
+  border-radius: 999px;
+}
+
+/* The ad's own breathing room, matched to the Tetris slot rather than
+   inherited from the modal's flat 14px gap.
+   auto on the sides, and that is a fix not a detail: the unit is a fixed
+   300px block inside a ~322px content box, so with 0 side margins it sat
+   hard against the left edge — 20px of gap on one side and 40px on the
+   other. It was my own rule that took the auto off; the shorthand replaced
+   the whole margin, not just the top and bottom I meant to set. */
+#overlay .banner-ad-card { margin: 0.85rem auto 1rem; }
+
+/* Short windows keep taking padding off, as they did before — the numbers
+   above are the full-size ones and must not undo those. */
+@media (max-height: 520px) {
+  #overlay .modal { padding: 0.8rem 0.9rem; max-width: 340px; gap: 0.4rem; }
+  #overlay .banner-ad-card { margin: 0.4rem auto 0.5rem; }
+}
+
+/* The short-window padding tiers, re-stated at #overlay specificity.
+   The block above raised .modal's padding to Tetris's 1.8/1.2rem with a
+   #overlay prefix, which outranks the plain `.modal { padding: 12px 14px }`
+   rules further up the file — so the phones quietly lost their trims and
+   the Congratulations popup started scrolling on every one of them.
+   The guards are copied from those rules rather than rewritten: on a phone
+   <html> is rotated, so a max-height query reads the REAL (unrotated)
+   viewport and never matches. Orientation + max-width is what works here,
+   which is why the originals were written that way. */
+@media (max-width: 600px) and (orientation: portrait), (max-height: 520px) {
+  #overlay .modal { padding: 12px 14px; gap: 0.4rem; }
+  #overlay .banner-ad-card { margin: 0.4rem auto 0.5rem; }
+  #overlay .modal-buttons { gap: 0.35rem; }
+}
+
+@media (max-width: 430px) and (orientation: portrait), (max-height: 400px) {
+  #overlay .modal { padding: 10px 14px; }
+}
+
+@media (max-width: 340px) and (orientation: portrait) {
+  #overlay .modal { padding: 8px 12px; }
+}
+
+/* The two smallest phones were scrolling this popup before any of this
+   (checked against the previous build: 360 and 320 both scrolled there
+   too), because on a rotated phone the popup's height budget is the
+   phone's WIDTH — 360px for title, message, coins, a 300x250 unit and
+   three buttons. Tetris's equivalent does not scroll at any size, so the
+   last of the slack is taken here: the ad's margins, the modal's row gap
+   and the coins line, in that order — the ad is what has the most to give
+   and is already scaled as a whole, so its 6:5 is untouched. */
+@media (max-width: 380px) and (orientation: portrait) {
+  #overlay .modal { gap: 0.28rem; padding: 8px 12px; }
+  #overlay .banner-ad-card { margin: 0.25rem auto 0.3rem; }
+  /* The three buttons were the biggest item in the box — 108px of it,
+     because they were wrapping to two rows. Held to one row (they have
+     ~336px to share on these phones, which is plenty for three) that comes
+     down to ~34px, which is more than the 11px and 34px the two phones
+     were over by. flex-basis 0 keeps the three equal instead of letting
+     the longest label decide. */
+  #overlay .modal-buttons { gap: 0.3rem; flex-wrap: nowrap; }
+  #overlay .modal-buttons .menu-btn {
+    padding: 0.45rem 0.25rem;
+    font-size: 0.68rem;
+    flex: 1 1 0;
+    min-width: 0;
+    white-space: nowrap;
+  }
+  #overlay .modal-coins { margin: 0; font-size: 0.8rem; }
+  #overlay #modalTitle { font-size: 1.1rem; }
+  #overlay #modalMessage { font-size: 0.78rem; }
+}
+
+/* =======================================================================
+   HOW TO PLAY — TETRIS'S SHAPE
+   -----------------------------------------------------------------------
+   Tetris puts the list straight on the panel: a title row, then bullets,
+   nothing else. This screen wrapped its list in a second white card
+   (.howto-content — its own border, radius, shadow) sitting inside the
+   white panel, so the content read as a box inside a box and the inner
+   padding ate 36px of a 420px measure for no reason.
+   The list stays on the 420px column the menu, level grid and shop all
+   use, so all four screens share one measure inside the card.
+   ======================================================================= */
+#howToPlayScreen > * {
+  width: 100%;
+  max-width: 420px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#howToPlayScreen .section-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  text-transform: none;   /* "How to Play", not "HOW TO PLAY" */
+  letter-spacing: 0;
+}
+
+/* Card inside a card, removed. */
+#howToPlayScreen .howto-content {
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+  overflow-y: auto;
+  min-height: 0;
+  text-align: left;
+}
+
+#howToPlayScreen .howto-list {
+  gap: 0.75rem;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  padding: 0.2rem 0 0.6rem;
+}
+
+#howToPlayScreen .howto-list li { padding-left: 1rem; text-indent: -1rem; }
+
+/* "Got it" sits under the last bullet, not at the bottom of the card.
+   .howto-content carries flex:1 1 auto so it can scroll when the list is
+   long — but with the list trimmed to eight bullets it no longer needs to,
+   and the grow half of that shorthand stretched the empty list box to fill
+   the 700px card and pushed the button ~180px clear of the text. flex:0 1
+   auto keeps the ability to SHRINK and scroll on a short screen, and drops
+   the ability to grow when there is nothing to fill. */
+#howToPlayScreen .howto-content { flex: 0 1 auto; }
+
+#howToPlayScreen .back-btn.menu-btn.primary {
+  margin-top: 0.9rem;
+  flex: 0 0 auto;
+  align-self: center;
+  width: auto;
+  min-width: 140px;
+}
+
+/* The card stops being 700px of mostly nothing and takes the height its
+   contents need, up to the same cap the other screens use. */
+#howToPlayScreen.screen {
+  height: auto;
+  max-height: min(700px, calc(100dvh - 2rem));
+  justify-content: flex-start;
+}
+
+@media (max-width: 600px) and (orientation: portrait), (max-height: 520px) {
+  #howToPlayScreen .howto-list { font-size: 0.78rem; gap: 0.55rem; }
+  #howToPlayScreen .section-title { font-size: 1.2rem; }
+}
+
+/* Title left, close on the right — the shape Tetris's How to play uses, and
+   the right one here: there is no back button to pair the heading with, so
+   centring it just centres it in whatever the × leaves over, which lands it
+   slightly left of the true centre and looks like a mistake rather than a
+   choice. */
+#howToPlayScreen .screen-top-bar { justify-content: space-between; }
+#howToPlayScreen .section-title { flex: 1 1 auto; justify-content: flex-start; }
+
+/* =======================================================================
+   THE MENU CARDS ON A PHONE
+   -----------------------------------------------------------------------
+   These used to be broken twice over and the first fix was the wrong one.
+
+   The symptom: on a 390px phone all four cards came out 374 wide by 700
+   TALL in a space that was 844 wide and 390 tall, so the visual box ran
+   316px off the right of the screen; and the ones that did fit could not
+   be scrolled, because inside a rotated element a swipe UP maps to the
+   element's horizontal axis — you push the content the way it does not
+   move. Level select was the worst, 30 tiles in a box whose usable height
+   was the phone's width.
+
+   The first attempt rewrote these rules in percentages so they would
+   survive the rotation. That fixed the geometry and not the scrolling,
+   because the scrolling was never a sizing problem. The actual answer is
+   that these screens should not be rotated at all: force-landscape exists
+   so the MAZE can be played sideways, and a menu, a level grid, a shop and
+   a page of text are portrait columns that were fine before it existed.
+   The rotation is now scoped to the game screen (see showScreen() in
+   script.js), so on a phone these four are upright, sized by the same
+   vw/dvh rules everything else uses, and scroll the way a phone expects.
+   Nothing left to override here.
+   ======================================================================= */
+
+/* ---------- The level grid on a narrow card ----------
+   Six tracks of 1fr in a 332px card should be 47px each, but the tiles
+   were measuring 48 and the grid overflowed by 13px — the sixth column ran
+   past the card's edge. Cause: a grid item's default `min-width: auto`
+   means it will not shrink below its own min-content, and min-content here
+   is the width of "LEVEL 30" plus the tile's padding. The track was being
+   pushed wider than its share by its own caption.
+   min-width:0 lets the track win that argument, and five columns instead
+   of six on these cards puts the tile back at ~58px — the size Tetris's
+   are, rather than the ~47 six would leave. */
+#levelSelectScreen #levelGrid { width: 100%; }
+
+#levelSelectScreen .level-btn {
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Same guard for the shop's three columns. */
+#shopScreen #shopGrid { width: 100%; }
+#shopScreen #shopGrid > * { min-width: 0; box-sizing: border-box; }
+
+/* ---------- Level tiles: the number is the tile ----------
+   With the "Level N" caption gone (see buildLevelGrid), the number is the
+   only thing in the box and can have the whole box. The padlock sits above
+   it as a mark rather than as the content. */
+#levelSelectScreen .level-btn .level-num {
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+#levelSelectScreen .level-btn .level-lock {
+  font-size: 0.72rem;
+  line-height: 1;
+  opacity: 0.85;
+}
+
+@media (max-width: 480px) {
+  #levelSelectScreen .level-btn .level-num { font-size: 1rem; }
+  #levelSelectScreen .level-btn .level-lock { font-size: 0.68rem; }
+}
+
+/* ---------- Shop cards: one shape, whatever the words are ----------
+   The cards were different heights because the NAMES wrap differently —
+   "Neon Green" takes two lines where "Fire" takes one, so its card grew
+   and the row went ragged. And the buy button broke mid-label. Neither is
+   a sizing accident to be nudged; both are the content being allowed to
+   decide the box.
+   The name gets a two-line box whether it uses it or not, so every card is
+   the same height; the button is pinned to the bottom of the card so the
+   buttons line up across a row; and the label never wraps. */
+#shopScreen .shop-item {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+#shopScreen .shop-item-name {
+  min-height: 2.4em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.2;
+}
+
+#shopScreen .shop-item-btn {
+  margin-top: auto;
+  white-space: nowrap;
+  font-size: 0.76rem;
+  padding: 0.4rem 0.3rem;
+}
+
+@media (max-width: 480px) {
+  #shopScreen .shop-item-btn { font-size: 0.68rem; padding: 0.35rem 0.2rem; }
+  #shopScreen .shop-item-name { font-size: 0.8rem; }
+}
+
+/* Three columns stop working below about a 380px phone: the card comes out
+   78px wide, its inner width is ~51px after padding, and "Buy · 220 🪙" is
+   ~70px however small the type gets. Shrinking the font further would make
+   the price unreadable to save a column, so the column goes instead — two
+   across gives ~128-148px cards and the label fits at a size you can read.
+   Above this the three columns Tetris uses are kept. */
+@media (max-width: 380px) {
+  #shopScreen #shopGrid { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
+  #shopScreen #shopGrid > * { padding: 0.7rem 0.6rem; }
+  #shopScreen .shop-item-btn { font-size: 0.72rem; }
+}
+
+/* ---------- Level select: four across on a phone, with room to breathe ----
+   Five columns at an 8px gap put 55px tiles almost edge to edge — the grid
+   read as one block rather than thirty buttons ("boxes ek saath lage hue").
+   Four columns and a 10px gap on a 375px phone gives ~70px tiles with
+   visible space between them, which is the proportion the reference has.
+   Six stays above 480px, where the card is wide enough for it. */
+@media (max-width: 480px) {
+  #levelSelectScreen #levelGrid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.65rem;
+    margin-top: 0.75rem;
+  }
+}
+
+.level-progress-line {
+  margin: 0.35rem auto 0;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  opacity: 0.75;
+}
+
+@media (max-width: 480px) {
+  .level-progress-line { font-size: 0.78rem; }
+}
+
+/* The difficulty word only appears on the startable tile now, so it gets
+   room rather than being squeezed under thirty numbers. */
+#levelSelectScreen .level-btn .level-diff {
+  display: block;
+  font-size: 0.5rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.1;
+  margin-top: 0.1rem;
+}
+
+#levelSelectScreen #levelHelpBtn {
+  font-weight: 800;
+  font-size: 1rem;
+}
+
+/* The grid scrolls, not the card. Thirty tiles do not fit a 635px card on a
+   phone, and with nothing marked as the scroller the grid was simply cut
+   off after row five with empty card below it — the last fourteen levels
+   were unreachable. min-height:0 is the part that matters: without it a
+   flex child refuses to shrink below its content and never scrolls. */
+#levelSelectScreen #levelGrid {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 0.4rem;
+  align-content: start;
+}
+
+/* =======================================================================
+   GAME OVER — TETRIS'S STACK
+   -----------------------------------------------------------------------
+   Tetris's Game Over is a 340px box with the three choices stacked full
+   width: Watch Ad & Continue, Play Again, Select Level, then the note.
+   This one had the ad button full width and then Retry / Level Select
+   side by side, so the two that matter equally were half the size of the
+   one above them and read as secondary.
+   Selected with :has() on the continue button, which is the one element
+   that is only present on Game Over — the Congratulations popup shares
+   this markup and keeps its three-across row, exactly as Tetris's does.
+   ======================================================================= */
+#overlay .modal:has(#continueAdBtn:not(.hidden)) {
+  max-width: 340px;
+  padding: 2rem;
+}
+
+#overlay .modal:has(#continueAdBtn:not(.hidden)) #continueAdBtn,
+#overlay .modal:has(#continueAdBtn:not(.hidden)) .modal-buttons .menu-btn {
+  width: 100%;
+  flex: 0 0 auto;
+  font-size: 0.9rem;
+  padding: 0.7rem 1rem;
+}
+
+#overlay .modal:has(#continueAdBtn:not(.hidden)) .modal-buttons {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 0.55rem;
+  width: 100%;
+}
+
+@media (max-width: 600px) and (orientation: portrait), (max-height: 520px) {
+  #overlay .modal:has(#continueAdBtn:not(.hidden)) { padding: 12px 14px; }
+  #overlay .modal:has(#continueAdBtn:not(.hidden)) #continueAdBtn,
+  #overlay .modal:has(#continueAdBtn:not(.hidden)) .modal-buttons .menu-btn {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.8rem;
+  }
+  #overlay .modal:has(#continueAdBtn:not(.hidden)) .modal-buttons { gap: 0.4rem; }
+}
+
+/* ---------- The empty band under the level grid ----------
+   Measured on Mobile M: card 635 tall, of which the grid was using 367 and
+   128px sat empty below it — while the grid was scrolling, holding 639px of
+   tiles in 367px of box. Free space below a scrollbar is the giveaway that
+   something is capping the box rather than the box running out of room.
+
+   It was `max-height: 55vh` on .level-grid, from a media query further up.
+   55% of 667 is 366.85, which is exactly the height the grid came out. That
+   cap made sense when the grid was the last thing on a page that could grow
+   past the fold; it does not now that the card is a fixed-height flex column
+   and the grid is its `flex: 1 1 auto` child — flex already knows how much
+   room is left, and the cap was overruling it with a number that has nothing
+   to do with this card.
+   Removed for this screen only, so the grid takes the height that is
+   actually there and the scrollbar only appears when the tiles genuinely
+   outgrow it. */
+#levelSelectScreen #levelGrid { max-height: none; }
+
+/* ---------- The coin readout was drawn bigger than its own pill ----------
+   The trophy and the heart are ::before content on their pills, so they take
+   the pill's font-size and shrink with it down every tier. The coin icon did
+   not: it was pinned at a flat `1rem`, which is 16px whatever else happens.
+   On a phone the pill is 21px tall with 11.5px text in it, and an emoji is
+   drawn about 1.17x its em box — so a 16px coin came out ~19px against three
+   other glyphs at ~13px, and it sat over the pill's own rounded edge instead
+   of inside it. That is the coin looking cut in half.
+   `1em` is the same 16px everywhere the pill is already at 1rem, so the
+   desktop bar is unchanged; it only starts mattering at the tiers that shrink
+   the pill, which is exactly where the problem was. */
+#gameScreen .scoreboard .coin-icon { font-size: 1em; }
+
+/* ---------- Two-up portrait: dormant, kept for reference ----------
+   --maze-max was the cap used when a card sat in EACH gutter (two-up
+   portrait): with no single side to push the column toward, #gameScreen
+   was left at full width so the bar could still run the full screen, and
+   this put the cap on the maze's own box instead so the maze still
+   narrowed for the pair.
+   Two-up portrait is dormant now (see portraitTwoUp in script.js) — a
+   rotated phone or tablet is single-side unconditionally today, and a
+   plain desktop window with two cards was always centred with no single
+   side to push toward, so fitSideRailsInner() caps #gameScreen itself
+   (--game-max) in both cases now, which is what keeps the bar's width
+   matching the maze's width rather than the full screen's whenever the ad
+   is single-side. --maze-max is simply never set any more; `none` leaves
+   this rule inert. */
+.game-container {
+  /* width:100% is load-bearing. margin-inline:auto on a flex item makes it
+     shrink-to-fit instead of stretching, which collapsed the maze to the
+     width of the hint line underneath it. The explicit width puts the
+     stretch back and the auto margins then only centre what max-width has
+     already narrowed. */
+  width: 100%;
+  max-width: var(--maze-max, none);
+  margin-inline: auto;
+}
+
+/* =======================================================================
+   THE LOGO SCREEN IN LANDSCAPE: FITS THE SCREEN, NEVER SCROLLS
+   -----------------------------------------------------------------------
+   The menu is one centred column — logo, wordmark, subtitle, Play, the
+   three tiles, the caption — and at its portrait sizes that column is about
+   570px tall. In portrait there is always more height than that, so it has
+   never had to fit. Turn the phone and the card is whatever 100dvh leaves:
+   a 360-tall landscape screen gives it 328px to hold 570px, so it scrolled
+   — and because the stack is centred, the LOGO at the top went out of view
+   first with the caption below the fold at the same time.
+
+   THE LAYOUT IS NOT CHANGED HERE. Same single centred column, same order,
+   same look — it is only made smaller, because "make it fit" and "rearrange
+   it" are different requests and only the first one was asked for. Every
+   size below is vh-relative with a clamp, so the column scales with the
+   screen instead of holding portrait sizes on a screen half that tall. The
+   clamp floors are what keep it from becoming unreadable on the shortest
+   screens; the ceilings are the portrait values, so nothing here can make
+   anything BIGGER than it already was.
+
+   What makes "no scroll" a guarantee rather than a number that happened to
+   work on one device: the logo is flex: 0 1 auto with min-height: 0, so it
+   is the item that gives way once everything else has taken its height —
+   the fixed parts add up to well under the card at every size in the range,
+   and the one flexible part absorbs the rest. overflow: hidden then states
+   the intent: there is no scroll position on this screen because there is
+   nothing out of view.
+
+   640px rather than 560px (the breakpoint the in-game bar uses): the column
+   needs ~570px plus the card padding and the absolute top bar, so anything
+   under ~640 was already overflowing even when it was not a phone.
+   Landscape-only, so a portrait tablet — which has the height for the full
+   size column — is untouched.
+   ======================================================================= */
+@media screen and (orientation: landscape) and (max-height: 640px) {
+  /* .active on the selector is load-bearing: .screen is display:none and
+     .screen.active is what turns it on. A bare #menuScreen.screen here
+     would out-specify that display:none and leave the menu painted on top
+     of the game for the whole session. */
+  #menuScreen.screen.active {
+    /* Fill the height it has instead of asking for a fixed 700px and
+       hiding the overflow behind the card's own edge. */
+    height: calc(100dvh - 12px);
+    max-height: calc(100dvh - 12px);
+    /* The top padding is the band the absolute .menu-top-bar sits in — it
+       is outside the flex flow, so without this it lands on the logo. */
+    padding: 2.4rem 0.9rem 0.6rem;
+    gap: 0;
+    /* safe center from the portrait rule stays right: centred while it
+       fits, top-aligned if it ever does not, so the logo is never the
+       thing that loses. */
+    justify-content: safe center;
+    overflow: hidden;
+  }
+
+  /* The bar comes down with everything else — 40px pills at 1rem from the
+     edge take a sixth of a 360px screen. */
+  #menuScreen.screen.active .menu-top-bar {
+    top: 0.4rem;
+    left: 0.7rem;
+    right: 0.7rem;
+  }
+
+  #menuScreen.screen.active .menu-top-bar .coin-pill,
+  #menuScreen.screen.active .menu-top-bar .menu-mute-btn {
+    height: 30px;
+    min-height: 30px;
+  }
+
+  #menuScreen.screen.active .menu-top-bar .coin-pill { font-size: 0.8rem; }
+
+  #menuScreen.screen.active .menu-top-bar .menu-mute-btn {
+    width: 30px;
+    font-size: 0;
+  }
+  #menuScreen.screen.active .menu-top-bar .menu-mute-btn::before { font-size: 0.95rem; }
+
+  #menuScreen.screen.active .logo {
+    /* The flexible item: shrinks to whatever the fixed parts leave.
+       min-height:0 is what actually permits that — without it a flex item
+       will not go below its content size and the column overflows anyway.
+       width:auto + the height cap keeps the artwork's 291x152 shape. */
+    flex: 0 1 auto;
+    min-height: 0;
+    /* 22vh, not 15: measured against the tightest screen in this range
+       (360 tall) the column comes to ~197px inside a ~300px box, so there
+       was ~100px going spare and the logo was the thing that had been
+       shrunk to create it. 22vh spends most of that on the one element
+       this screen is named after, and still leaves headroom. */
+    height: clamp(38px, 22vh, 110px);
+    width: auto;
+    max-width: 62%;
+    object-fit: contain;
+    margin: 0 auto;
+  }
+
+  #menuScreen.screen.active .title {
+    font-size: clamp(1.05rem, 4.6vh, 2.2rem);
+    line-height: 1.1;
+    margin-top: 0.3rem;
+  }
+
+  #menuScreen.screen.active .subtitle {
+    font-size: clamp(0.55rem, 2vh, 0.85rem);
+    /* Was 1.75rem of bottom margin — the single biggest piece of dead
+       height in the column, and the easiest to give back. */
+    margin: 0.3rem 0 0.5rem;
+  }
+
+  #menuScreen.screen.active .menu-buttons {
+    margin-top: 0;
+    gap: 0.35rem;
+  }
+
+  #menuScreen.screen.active .menu-buttons .menu-btn.primary {
+    padding: clamp(0.35rem, 1.8vh, 1rem) 1.5rem;
+    font-size: clamp(0.85rem, 3.4vh, 1.15rem);
+    margin-bottom: 0.2rem;
+  }
+
+  #menuScreen.screen.active .menu-buttons .menu-btn:not(.primary) {
+    /* The tallest block in the column, so it is sized from the viewport
+       rather than from the fixed min-height chosen for a portrait card. */
+    min-height: clamp(40px, 16vh, 84px);
+    padding: 0.4rem 0.3rem;
+    gap: 0.2rem;
+  }
+
+  #menuScreen.screen.active .menu-btn-icon { font-size: clamp(0.9rem, 3.4vh, 1.5rem); }
+  #menuScreen.screen.active .menu-btn-label { font-size: clamp(0.62rem, 2.2vh, 0.84rem); }
+
+  /* The caption repeats what the subtitle four lines above already says
+     ("30 Levels"), and it is the only thing on this screen that is neither
+     a control nor branding — so on the screen with the least height to
+     spend it is the one element worth dropping outright rather than
+     shrinking everything else to keep it. */
+  #menuScreen.screen.active .start-caption { display: none; }
+}
+
+/* =======================================================================
+   JOYSTICK — centered in the LANDSCAPE control bar
+   -----------------------------------------------------------------------
+   Absolute-positioning the joystick at the bar's horizontal 50% (an
+   earlier version of this rule) assumed the stats on the left and the
+   controls on the right were roughly symmetric, so the bar's true centre
+   and the empty gap between them were the same point. They are not — the
+   stats group is narrower than the controls group, so the gap's own
+   centre sits to the right of the bar's 50% mark, and a joystick pinned
+   to 50% landed on top of the stats instead of in the gap (screenshot:
+   joystick sitting over the coin pill and pause button).
+
+   Kept in normal flex flow instead, so its position is derived from the
+   OTHER items' actual widths rather than assumed:
+     a. title-group + scoreboard pack to the LEFT (justify-content:
+        flex-start).
+     b. The joystick gets margin: 0 auto — flexbox splits all of the
+        row's leftover space between its two auto margins, which both
+        centres it in whatever gap is actually left AND pushes
+        game-controls flush to the right edge as a side effect (nothing
+        else in the row claims that leftover space). game-controls keeps
+        no margin of its own so it does not compete with the joystick for
+        that space.
+   This adds no height — the joystick stays a normal item on the bar's one
+   row, it just no longer needs position:absolute to land in the middle.
+
+   Kept usable rather than shrunk to the bar's thickness — a joystick that
+   fits the row but is too small to drag reliably is not actually playable.
+   60px base, 54px on shorter phones, 46px on the very shortest. The knob
+   scales down with it.
+   ======================================================================= */
+@media screen and (orientation: landscape) and (max-width: 1024px),
+       screen and (orientation: landscape) and (pointer: coarse) {
+  #gameScreen.active .header { justify-content: flex-start; flex-wrap: nowrap; }
+  #gameScreen.active .scoreboard { margin-left: 6px; flex: 0 0 auto; }
+  #gameScreen.active .game-controls { margin-left: 0; flex: 0 0 auto; }
+
+  #gameScreen.active .joystick {
+    position: static;
+    flex: 0 0 auto;
+    margin: 0 auto;
+    width: 60px;
+    height: 60px;
+    z-index: 5;
+  }
+
+  #gameScreen.active .joystick-knob {
+    width: 24px;
+    height: 24px;
+    margin-top: -12px;
+    margin-left: -12px;
+  }
+}
+
+/* Large touch screens (tablets, touch-screen laptops/desktops) in
+   landscape — outside the <=1024px width tier above, so the header never
+   picked up any font trim and the full-size scoreboard sat wider than it
+   needed to next to the centred joystick. Smaller stat text only (no
+   width cap here — a max-width without room for the pills to shrink was
+   forcing the row onto two lines, which pushed the header taller and
+   dropped the joystick, still centred on that taller box, visibly below
+   the stats). flex-wrap stays nowrap so the row can't do that again. */
+@media screen and (orientation: landscape) and (pointer: coarse) and (min-width: 1025px) {
+  #gameScreen.active .header { flex-wrap: nowrap; }
+  #gameScreen.active .score-label,
+  #gameScreen.active .lives-label,
+  #gameScreen.active .game-coin-pill {
+    font-size: 0.82rem;
+    padding: 0.22rem 0.42rem;
+  }
+  #gameScreen.active .header .title { font-size: 1.05rem; }
+}
+
+/* Phones in landscape — the bar is shorter still, so the joystick drops
+   one notch, but stays a usable size rather than shrinking toward the
+   bar's own thickness. */
+@media screen and (orientation: landscape) and (max-height: 560px) and (max-width: 1024px),
+       screen and (orientation: landscape) and (max-height: 560px) and (pointer: coarse) {
+  #gameScreen.active .joystick {
+    width: 54px;
+    height: 54px;
+  }
+  #gameScreen.active .joystick-knob {
+    width: 22px;
+    height: 22px;
+    margin-top: -11px;
+    margin-left: -11px;
+  }
+}
+
+/* The very shortest landscape screens (320-class phones lying on their
+   side). Still kept at a size a thumb can actually drag. */
+@media screen and (orientation: landscape) and (max-height: 380px) and (max-width: 1024px),
+       screen and (orientation: landscape) and (max-height: 380px) and (pointer: coarse) {
+  #gameScreen.active .joystick {
+    width: 46px;
+    height: 46px;
+  }
+  #gameScreen.active .joystick-knob {
+    width: 19px;
+    height: 19px;
+    margin-top: -9.5px;
+    margin-left: -9.5px;
+  }
+}
+
+/* ===================== CONFIRMATION DIALOG =====================
+   "Watch 5 ads to unlock Level X?" popup that sits ABOVE the Level Select
+   screen. Higher z-index than the regular overlay so it can stack over it.
+   Built mobile / tablet first: large tap targets, no hover-only states, the
+   buttons sit side-by-side at widths where two thumbs can hit them at once,
+   and stack on top of each other on narrow phones. */
+.confirm-overlay {
+  z-index: 80;
+  padding: 12px;
+}
+
+.confirm-modal {
+  max-width: 360px;
+  padding: 22px 20px 18px;
+  gap: 12px;
+}
+
+.confirm-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.confirm-message {
+  font-size: 0.95rem;
+  line-height: 1.45;
+  margin: 0;
+  color: #1f2a44;
+}
+
+.confirm-submessage {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  margin: 0;
+  color: #5b6a8c;
+}
+
+.confirm-submessage.hidden {
+  display: none;
+}
+
+.confirm-buttons {
+  flex-direction: row;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.confirm-buttons .menu-btn {
+  flex: 1 1 0;
+  min-height: 44px;     /* iOS / Material touch target floor */
+  min-width: 120px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  padding: 10px 14px;
+  /* Stops the 300ms tap-to-zoom delay on touch devices and removes the
+     "active highlight" flash that some browsers paint over a tapped
+     button — both of which made the OK / Cancel buttons feel sluggish or
+     flicker on phones and tablets. */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+.confirm-cancel-btn {
+  background: #f0f2f7;
+  color: #4a5870;
+  border: 1px solid rgba(90, 120, 160, 0.3);
+}
+
+.confirm-cancel-btn:active {
+  background: #e3e7f0;
+}
+
+.confirm-ok-btn:active {
+  filter: brightness(0.95);
+  transform: translateY(1px);
+}
+
+/* Stacked buttons on phones — two thumbs aren't side by side on a 360px
+   screen, and a single OK button full-width is easier to hit. */
+@media (max-width: 380px) {
+  .confirm-modal {
+    padding: 18px 16px 14px;
+  }
+  .confirm-title { font-size: 1.05rem; }
+  .confirm-message { font-size: 0.88rem; }
+  .confirm-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .confirm-buttons .menu-btn {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+/* The recoverable tile itself needs to feel tappable on touch, not just on
+   desktop with a mouse hover. `:active` is the state a touch tap produces,
+   so it gets a clear press-feedback colour the same way `:hover` does for a
+   mouse. `touch-action: manipulation` and the transparent tap-highlight
+   colour keep the press from lagging or flashing. */
+.level-btn.locked.recoverable {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: background 0.12s ease, transform 0.12s ease;
+}
+
+.level-btn.locked.recoverable:active {
+  background: #d6dbff;
+  transform: translateY(1px);
+}
+
+/* =======================================================================
+   AD CAROUSEL — cross-fade + page dots
+   -----------------------------------------------------------------------
+   Every ad placement (side cards, leaderboard, Congratulations MREC) now
+   rotates through three creatives every 5s. swapAdCard() adds .ad-fading
+   to fade a card out, swaps its content, then removes it to fade back in;
+   .ad-dots is the ● ○ ○ indicator drawn on top of the creative.
+   ======================================================================= */
+.ad-rail,
+.ad-leaderboard,
+#modalBannerAd {
+  transition: opacity 0.26s ease;
+}
+.ad-rail.ad-fading,
+.ad-leaderboard.ad-fading,
+#modalBannerAd.ad-fading {
+  opacity: 0;
+}
+
+.ad-dots {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  pointer-events: none;
+  z-index: 2;
+}
+.ad-dots i {
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.38);
+  transition: width 0.25s ease, background 0.25s ease;
+}
+.ad-dots i.on {
+  width: 20px;
+  background: #ffffff;
+}
+/* Leaderboard is only 90px tall: dots tuck into the bottom edge, centred. */
+.ad-leaderboard .ad-dots { bottom: 4px; }
+.ad-leaderboard .ad-dots i { width: 5px; height: 5px; }
+.ad-leaderboard .ad-dots i.on { width: 14px; }
+/* MREC sits inside the popup: keep the dots off the CTA pill. */
+#modalBannerAd .ad-dots { bottom: 6px; }
+#modalBannerAd .ad-dots i { width: 6px; height: 6px; }
+#modalBannerAd .ad-dots i.on { width: 16px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ad-rail, .ad-leaderboard, #modalBannerAd, .ad-dots i { transition: none; }
+}
+
+/* =======================================================================
+   JOYSTICK LOOK — white disc, green ring, four arrows, pale round knob
+   -----------------------------------------------------------------------
+   Restyles the control bar's joystick to the reference design. Only
+   appearance lives here; sizes stay with the per-tier rules above. The arrows
+   are the four <i class="jarrow"> children of .joystick-base and the knob's
+   size/margins are still set per tier in px, so it stays centred.
+   ======================================================================= */
+.joystick-base {
+  background: #ffffff;
+  border: 3px solid #3f8f45;
+  box-shadow:
+    0 2px 8px rgba(30, 70, 40, 0.20),
+    0 0 0 4px rgba(63, 143, 69, 0.10);
+  transition: box-shadow 0.12s ease;
+}
+.joystick.is-dragging .joystick-base {
+  box-shadow:
+    0 2px 10px rgba(30, 70, 40, 0.28),
+    0 0 0 6px rgba(63, 143, 69, 0.22);
+}
+.joystick-knob {
+  background: radial-gradient(circle at 38% 30%, #ffffff 0%, #eef1fd 48%, #d5dcf4 100%);
+  border: 1.5px solid #c6d0ee;
+  box-sizing: border-box;
+  box-shadow:
+    0 3px 8px rgba(70, 90, 150, 0.30),
+    inset 0 -3px 6px rgba(120, 140, 210, 0.18);
+}
+.jarrow {
+  position: absolute;
+  display: block;
+  background: #5b6a8c;
+  pointer-events: none;
+}
+.jarrow.up {
+  top: 9%; left: 50%;
+  width: 20%; height: 17%;
+  transform: translateX(-50%);
+  clip-path: polygon(50% 0, 0 100%, 100% 100%);
+  background: #2f7536;
+}
+.jarrow.down {
+  bottom: 9%; left: 50%;
+  width: 20%; height: 17%;
+  transform: translateX(-50%);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+.jarrow.left {
+  left: 9%; top: 50%;
+  width: 17%; height: 20%;
+  transform: translateY(-50%);
+  clip-path: polygon(100% 0, 0 50%, 100% 100%);
+}
+.jarrow.right {
+  right: 9%; top: 50%;
+  width: 17%; height: 20%;
+  transform: translateY(-50%);
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+
+/* =======================================================================
+   TALL AD CARD + JOYSTICK ON EVERY DEVICE + COMPACT DOCK
+   ======================================================================= */
+/* The card is lengthened (--ad-h, set by fitSideRailsInner) so it runs down
+   to the maze's bottom edge. The creative stays 300x600 at the top; the box
+   below it takes the creative's own background colour, and the image's last
+   stretch fades into it so no seam shows. */
+.ad-rail { height: var(--ad-h, 600px); }
+.ad-rail.is-tall .ad-unit-img {
+  height: 600px;
+  flex: 0 0 auto;
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent);
+}
+
+/* ===================== USER REQUEST: FULL-WIDTH GAME STATS BAR =====================
+   The bottom stats/control strip should use the same horizontal span as the
+   highlighted area under the maze + side ads, while the maze itself keeps its
+   reserved central column. The joystick sits on the true centre of that bar. */
+#gameScreen.active {
+  overflow: visible;
+}
+#gameScreen.active .header {
+  width: calc(100vw - 32px);
+  max-width: none;
+  margin-left: 50%;
+  margin-right: 0;
+  transform: translateX(-50%);
+  box-sizing: border-box;
+  position: relative;
+  z-index: 45;
+}
+
+/* Desktop/tablet: pin the joystick to the exact middle of the expanded bar. */
+@media screen and (min-width: 900px) {
+  #gameScreen.active .header > .joystick {
+    display: flex;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin: 0;
+    width: 64px;
+    height: 64px;
+    transform: translate(-50%, -50%);
+    z-index: 6;
+  }
+}
+
+/* Keep the joystick visible on desktop even though the old rule only exposed
+   it for coarse pointers. */
+@media screen and (min-width: 900px) and (pointer: fine) {
+  #gameScreen.active .header > .joystick { display: flex; }
+}
+
+/* The expanded bar has enough room that the stats pills can remain readable. */
+@media screen and (min-width: 1200px) {
+  #gameScreen.active .scoreboard {
+    flex: 0 0 auto;
+    font-size: 1rem;
+    gap: 6px 9px;
+  }
+}
+
+/* ===================== SIDE AD CAROUSEL: HORIZONTAL SLIDE =====================
+   Side ads are full-bleed creatives only. On rotation the next creative enters
+   from the side like a normal carousel slide instead of fading/rebuilding the
+   card in place. */
+.ad-rail .ad-slide-track {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  width: 200%;
+  height: 100%;
+  transform: translateX(0);
+  transition: transform 0.38s cubic-bezier(.22,.61,.36,1);
+  z-index: 1;
+}
+.ad-rail .ad-slide-track.slide-next {
+  transform: translateX(-50%);
+}
+
+/* Leaderboard carousel: use the same horizontal slide motion as the side ads. */
+.ad-leaderboard.ad-sliding {
+  overflow: hidden;
+}
+.ad-leaderboard .ad-slide-track {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  width: 200%;
+  height: 100%;
+  transform: translateX(0);
+  transition: transform 0.38s cubic-bezier(.22,.61,.36,1);
+  z-index: 2;
+}
+.ad-leaderboard .ad-slide-track.slide-next {
+  transform: translateX(-50%);
+}
+.ad-leaderboard .ad-slide-track .ad-unit-img {
+  flex: 0 0 50%;
+  width: 50%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.ad-rail .ad-slide-track .ad-unit-img {
+  flex: 0 0 50%;
+  width: 50%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.ad-rail .ad-slide-track + .ad-dots,
+.ad-rail .ad-slide-track ~ .ad-dots {
+  z-index: 3;
+}
+
+/* =======================================================================
+   TABLET FINAL TUNING
+   - larger, readable stats/control targets
+   - tighter maze <-> side-ad gutter
+   - less empty space on the ad's outer edge
+   ======================================================================= */
+@media screen and (min-width: 501px) and (max-width: 1024px) {
+  /* Tablet: the stats bar belongs to the game column/maze, not the full
+     viewport. The previous 100vw width made the bar overflow the narrowed
+     maze+ad layout and pushed the stats off the left edge. */
+  #gameScreen.active .header {
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    transform: none;
+    box-sizing: border-box;
+    min-height: 64px;
+    padding: 6px 8px;
+    gap: 6px;
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+
+  #gameScreen.active .header-title-group {
+    min-width: max-content;
+  }
+  #gameScreen.active .header-title-group .title {
+    font-size: clamp(1rem, 2.1vw, 1.35rem);
+  }
+  #gameScreen.active .scoreboard {
+    gap: 6px;
+  }
+  #gameScreen.active .score-label,
+  #gameScreen.active .lives-label,
+  #gameScreen.active .game-coin-pill {
+    font-size: clamp(0.78rem, 1.55vw, 0.98rem);
+    padding: 0.28rem 0.58rem;
+    min-height: 34px;
+    gap: 0.22rem;
+  }
+
+  #gameScreen.active .ctrl-btn {
+    min-width: 40px;
+    min-height: 34px;
+    padding: 5px 9px;
+    font-size: clamp(0.82rem, 1.5vw, 0.98rem);
+  }
+
+  #gameScreen.active .joystick {
+    width: 68px;
+    height: 68px;
+  }
+  #gameScreen.active .joystick-base {
+    width: 68px;
+    height: 68px;
+  }
+  #gameScreen.active .joystick-knob {
+    width: 28px;
+    height: 28px;
+    margin-top: -14px;
+    margin-left: -14px;
+  }
+}
+
+/* Tablet side ads: remove the visible dead strip between the ad and maze. */
+@media screen and (min-width: 501px) and (max-width: 1024px) {
+  .ad-rail {
+    --ad-inner-gap: 2px;
+  }
+}
+
+/* ---------- Tablet stats / side-ad spacing ----------
+   Keep tablet readouts at the same comfortable size as the normal game bar.
+   The controls can stay icon-only, but Score, Lives and Coins should not be
+   reduced just because a side ad is using part of the width. */
+@media screen and (min-width: 601px) and (max-width: 1366px) and (pointer: coarse) {
+  #gameScreen[data-bar="md"] .header {
+    padding: 7px 14px;
+    gap: 6px 12px;
+  }
+  #gameScreen[data-bar="md"] .header .title {
+    font-size: 1.32rem;
+    line-height: 1.15;
+  }
+  #gameScreen[data-bar="md"] .scoreboard {
+    font-size: 1rem;
+    gap: 6px 9px;
+  }
+  #gameScreen[data-bar="md"] .score-label,
+  #gameScreen[data-bar="md"] .lives-label,
+  #gameScreen[data-bar="md"] .game-coin-pill {
+    padding: 5px 12px;
+    font-size: 1rem;
+  }
+  #gameScreen[data-bar="md"] .game-coin-pill .coin-icon {
+    font-size: 1.05rem;
+  }
+  #gameScreen[data-bar="md"] .game-controls {
+    gap: 7px;
+  }
+}
+
+/* ---------- TABLET: extend the bottom stats bar under the side ad ----------
+   The maze keeps its own responsive width, but the stats/control bar should
+   continue across the empty area below the side ad, exactly like desktop.
+   The JS supplies --tablet-ad-extend equal to the remaining ad width. */
+@media screen and (min-width: 501px) and (max-width: 1024px) and (orientation: landscape) {
+  #gameScreen.active {
+    overflow: visible;
+  }
+
+  #gameScreen.active .header {
+    width: calc(100% + var(--tablet-ad-extend, 0px));
+    max-width: none;
+    flex-shrink: 0;
+  }
+}
+
+/* =======================================================================
+   FINAL GAME BAR + LANDSCAPE FRAME   (authoritative — keep this LAST)
+   -----------------------------------------------------------------------
+   Every earlier block that touched the bottom bar (tier rules, tablet
+   patches, the 100vw + translateX trick, the side dock) is overridden here
+   with a stronger selector, so this is the one place that decides how the
+   bar looks. What it does:
+
+   1. The bar is a 3-column grid:  [ stats | joystick | buttons ]
+        - the two outer columns are EXACTLY equal (1fr each), so the stats
+          block on the left mirrors the button block on the right, and the
+          joystick sits on the true centre of the bar — the gap the two pink
+          lines marked in the desktop screenshot;
+        - the bar runs the full width of the screen (under the ads too), on
+          every device, because the frame around it is full width;
+        - its height is fixed (joystick + padding), so it can never wrap onto
+          a second row or change the board's height after the fact.
+   2. Narrower screens step down in pure-CSS tiers (icon-only buttons, icon
+      instead of the words Score / Lives, then smaller controls) — chosen by
+      screen width, so nothing depends on JS measuring.
+   3. The frame respects the notch / home-indicator safe area, so on an
+      iPhone the game is not hidden behind the camera cut-out.
+   ======================================================================= */
+
+/* ---------- Frame: full width, safe-area aware ---------- */
+html body.in-game .wrapper {
+  max-width: none;
+  overflow: hidden;
+  padding-top: max(4px, env(safe-area-inset-top, 0px));
+  padding-right: max(4px, env(safe-area-inset-right, 0px));
+  padding-bottom: max(4px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(4px, env(safe-area-inset-left, 0px));
+}
+html body.in-game #gameScreen.active {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: calc(4px + var(--ad-band, 0px)) 4px 4px;
+  row-gap: 6px;
+  overflow: visible;
+}
+/* The maze column: JS (layoutLandscapeGame) sets its width and its offset so
+   [ ad | maze | ad ] is laid out as one group across the screen. In portrait
+   the variables are unset and it is simply the full width. */
+html body.in-game #gameScreen.active .game-container {
+  width: var(--maze-w, 100%);
+  max-width: none;
+  margin: 0 0 0 var(--maze-x, 0px);
+}
+
+/* ---------- Design tokens (default: laptop / desktop / large tablet) ---------- */
+html body #gameScreen.active {
+  --joy: 64px;
+  --bar-pad-y: 4px;
+  --bar-pad-x: 12px;
+  --bar-gap: 12px;
+  --btn-h: 30px;
+  --btn-px: 9px;
+  --btn-fs: 0.78rem;
+  --btn-gap: 5px;
+  --chip-h: 32px;
+  --chip-px: 12px;
+  --chip-fs: 1rem;
+  --chip-gap: 8px;
+  --title-fs: 1.32rem;
+  --tag-fs: 0.66rem;
+}
+@media (pointer: fine) {
+  html body #gameScreen.active { --joy: 54px; }
+}
+
+/* ---------- The bar itself ---------- */
+html body #gameScreen.active .header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: var(--bar-gap);
+  box-sizing: border-box;
+  position: relative;
+  left: auto;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  transform: none;
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
+  overflow: visible;
+  z-index: 45;
+  height: calc(var(--joy) + 2 * var(--bar-pad-y));
+  min-height: 0;
+  padding: 0 var(--bar-pad-x);
+}
+
+/* Left block: level + score / lives / coins, hard left. */
+html body #gameScreen.active .bar-left {
+  grid-column: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: calc(var(--chip-gap) * 1.6);
+  min-width: 0;
+}
+html body #gameScreen.active .header-title-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-width: 0;
+  gap: 0;
+}
+html body #gameScreen.active .header .brand-tag-sm {
+  display: block;
+  font-size: var(--tag-fs);
+  line-height: 1.1;
+}
+html body #gameScreen.active .header .title {
+  margin: 0;
+  font-size: var(--title-fs);
+  line-height: 1.1;
+  text-align: left;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+html body #gameScreen.active .scoreboard {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  flex: 0 1 auto;
+  min-width: 0;
+  gap: var(--chip-gap);
+  font-size: var(--chip-fs);
+  font-weight: 600;
+}
+html body #gameScreen.active .score-label,
+html body #gameScreen.active .lives-label,
+html body #gameScreen.active .game-coin-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3em;
+  height: var(--chip-h);
+  padding: 0 var(--chip-px);
+  font-size: var(--chip-fs);
+  line-height: 1;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+html body #gameScreen.active .game-coin-pill .coin-icon,
+html body #gameScreen.active .scoreboard .coin-icon { font-size: 1.05em; }
+
+/* Middle: the joystick, on the exact centre of the bar. */
+html body #gameScreen.active .header > .joystick {
+  grid-column: 2;
+  display: flex;
+  position: relative;
+  left: auto;
+  top: auto;
+  transform: none;
+  margin: 0;
+  flex: none;
+  justify-self: center;
+  align-self: center;
+  width: var(--joy);
+  height: var(--joy);
+  z-index: 1;
+}
+html body #gameScreen.active .header > .joystick .joystick-base {
+  width: 100%;
+  height: 100%;
+}
+html body #gameScreen.active .header > .joystick .joystick-knob {
+  width: 40%;
+  height: 40%;
+  margin-top: -20%;
+  margin-left: -20%;
+}
+
+/* Right block: the buttons, hard right. */
+html body #gameScreen.active .game-controls {
+  grid-column: 3;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--btn-gap);
+  margin: 0;
+  min-width: 0;
+}
+html body #gameScreen.active .game-controls .ctrl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35em;
+  flex: 0 0 auto;
+  height: var(--btn-h);
+  min-width: var(--btn-h);
+  padding: 0 var(--btn-px);
+  font-size: var(--btn-fs);
+  line-height: 1;
+  white-space: nowrap;
+}
+html body #gameScreen.active .game-controls .ctrl-btn.icon-only {
+  padding: 0;
+  font-size: calc(var(--btn-fs) * 1.15);
+}
+html body #gameScreen.active .game-controls .ctrl-btn .ico { font-size: 1.05em; line-height: 1; }
+/* The pseudo-element icons the OLD tier rules injected must never appear. */
+html body #gameScreen.active .game-controls .ctrl-btn::before { content: none !important; }
+
+/* ---------- Tier B: 1000-1199px — level arrows go icon-only ---------- */
+@media (max-width: 1199px) {
+  html body #gameScreen.active #prevLevelBtn .lbl,
+  html body #gameScreen.active #nextLevelBtn .lbl { display: none; }
+  html body #gameScreen.active #prevLevelBtn,
+  html body #gameScreen.active #nextLevelBtn { padding: 0; }
+}
+
+/* ---------- Tier C: up to 999px — every button icon-only, readouts use
+   icons instead of the words Score / Lives ---------- */
+@media (max-width: 999px) {
+  html body #gameScreen.active {
+    --bar-pad-x: 10px;
+    --bar-gap: 10px;
+    --btn-gap: 6px;
+    --chip-gap: 6px;
+    --chip-px: 10px;
+    --chip-fs: 0.95rem;
+    --title-fs: 1.12rem;
+    --tag-fs: 0.6rem;
+  }
+  html body #gameScreen.active .game-controls .ctrl-btn .lbl { display: none; }
+  html body #gameScreen.active .game-controls .ctrl-btn { padding: 0; }
+  html body #gameScreen.active .scoreboard .stat-word { display: none; }
+  html body #gameScreen.active .score-label::before { content:""; /* was "\1F3C6": SVG icon "trophy", see icons.css */ display:inline-block;width:1.25em;height:1.2em;margin-top:-0.15em;margin-bottom:-0.15em;vertical-align:-0.1em;flex:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='3 0 24 24'%3E%3Cpath d='M9.6 5.4H6.6A3.2 3.2 0 0 0 9.8 10.8M20.4 5.4H23.4A3.2 3.2 0 0 1 20.2 10.8' fill='none' stroke='%23e0a020' stroke-width='1.9'/%3E%3Cpath d='M9.2 2.6H20.8V8.6A5.8 5.8 0 0 1 9.2 8.6Z' fill='%23f5b82e'/%3E%3Cpath d='M11 3.8V8.4A4 4 0 0 0 12.6 11.6' fill='none' stroke='%23fbd877' stroke-width='1.2' stroke-linecap='round'/%3E%3Crect x='13.5' y='14.2' width='3' height='3.8' fill='%23e0a020'/%3E%3Crect x='10' y='18' width='10' height='3.8' rx='1' fill='%238d5a2b'/%3E%3C/svg%3E") center/auto 100% no-repeat; }
+  html body #gameScreen.active .lives-label::before { content:""; /* was "\2764\FE0F": SVG icon "heart", see icons.css */ display:inline-block;width:1.25em;height:1.2em;margin-top:-0.15em;margin-bottom:-0.15em;vertical-align:-0.1em;flex:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='3 0 24 24'%3E%3Cpath d='M15 20.8C8.4 16.2 5 12.9 5 9.2A4.6 4.6 0 0 1 15 7.4 4.6 4.6 0 0 1 25 9.2C25 12.9 21.6 16.2 15 20.8Z' fill='%23e53935'/%3E%3Cpath d='M8.6 7.4A2.4 2.4 0 0 1 11 6' fill='none' stroke='%23f28b87' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E") center/auto 100% no-repeat; }
+}
+
+/* ---------- Tier C2: up to 860px — portrait tablets. The left column is
+   only ~1/2 of a 768px bar minus the joystick, so the readouts tighten a
+   little so even a 6-digit score and a 4-digit coin count stay clear of the
+   joystick. ---------- */
+@media (max-width: 860px) {
+  html body #gameScreen.active {
+    --chip-px: 7px;
+    --chip-gap: 4px;
+    --chip-fs: 0.9rem;
+    --title-fs: 1rem;
+  }
+  html body #gameScreen.active .bar-left { gap: 10px; }
+}
+
+/* ---------- Tier D: up to 699px — smaller controls, "L1" title ---------- */
+@media (max-width: 699px) {
+  html body #gameScreen.active {
+    --joy: 56px;
+    --bar-pad-x: 8px;
+    --bar-gap: 8px;
+    --btn-h: 32px;
+    --btn-gap: 5px;
+    --chip-h: 28px;
+    --chip-px: 6px;
+    --chip-gap: 4px;
+    --chip-fs: 0.85rem;
+    --title-fs: 1rem;
+  }
+  html body #gameScreen.active .bar-left { gap: 8px; }
+  html body #gameScreen.active .header .brand-tag-sm { display: none; }
+  html body #gameScreen.active .lvl-word { display: none; }
+  html body #gameScreen.active .lvl-num { margin-left: 0; }
+  html body #gameScreen.active .lvl-num::before { content: "L"; }
+}
+
+/* ---------- Tier E: up to 559px — portrait phones ---------- */
+@media (max-width: 559px) {
+  html body #gameScreen.active {
+    --joy: 46px;
+    --bar-pad-x: 5px;
+    --bar-gap: 6px;
+    --btn-h: 30px;
+    --btn-gap: 4px;
+    --chip-h: 26px;
+    --chip-px: 4px;
+    --chip-gap: 2px;
+    --chip-fs: 0.74rem;
+    --title-fs: 0.85rem;
+  }
+  html body #gameScreen.active .bar-left { gap: 4px; overflow: hidden; padding: 3px 0; }
+  /* The trophy is dropped here: next to a heart and a coin, a bare number is
+     unmistakably the score, and the 18px it frees is what lets a 4-digit score
+     stay clear of the joystick on a 360-390px screen. */
+  html body #gameScreen.active .score-label::before { content: none; }
+  html body #gameScreen.active .scoreboard .coin-icon { font-size: 0.9em; }
+  /* Level arrows are the least-used controls; the four that matter mid-game
+     (pause, sound, restart, exit) are what the narrow column is kept for. */
+  html body #gameScreen.active #prevLevelBtn,
+  html body #gameScreen.active #nextLevelBtn { display: none; }
+}
+
+/* ---------- Phones on their side: height is the scarce thing ----------
+   The joystick sets the bar's thickness, so it scales with the screen height
+   (14vh, between 44px and 60px). On a 390px-tall phone that is a 55px
+   joystick in a 63px bar (it used to be an 82px bar), and every pixel saved
+   comes straight back as maze height — which is also what sets how big the
+   ad beside it can be. */
+@media (orientation: landscape) and (max-height: 520px) {
+  html body #gameScreen.active {
+    --joy: clamp(44px, 14vh, 60px);
+    --bar-pad-y: 3px;
+    --btn-h: clamp(28px, 8.4vh, 34px);
+    --chip-h: clamp(24px, 7vh, 28px);
+  }
+  html body.in-game #gameScreen.active { row-gap: 4px; }
+}
+
+/* ---------- Tier F: up to 339px — the narrowest phones (iPhone SE 1st gen,
+   320px). Four buttons + joystick + the readouts only just fit, so each
+   steps down one more notch. ---------- */
+@media (max-width: 339px) {
+  html body #gameScreen.active {
+    --joy: 44px;
+    --btn-h: 26px;
+    --btn-gap: 3px;
+    --bar-pad-x: 4px;
+    --bar-gap: 4px;
+    --chip-h: 24px;
+    --chip-px: 4px;
+  }
+}
+
+/* ---------- Tier E2: up to 380px — a few more pixels for 4-digit scores on
+   360-375px phones. ---------- */
+@media (max-width: 380px) {
+  html body #gameScreen.active {
+    --chip-fs: 0.68rem;
+    --title-fs: 0.78rem;
+    --chip-px: 3px;
+    --bar-gap: 4px;
+  }
+  html body #gameScreen.active .scoreboard .coin-icon { font-size: 0.8em; }
+}
+@media (max-width: 339px) {
+  html body #gameScreen.active { --chip-fs: 0.64rem; --title-fs: 0.72rem; }
+  html body #gameScreen.active .bar-left { gap: 2px; }
+  html body #gameScreen.active .lives-label::before { content:""; /* was "\2764\FE0F": SVG icon "heart", see icons.css */ display:inline-block;width:1.25em;height:1.2em;margin-top:-0.15em;margin-bottom:-0.15em;vertical-align:-0.1em;flex:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='3 0 24 24'%3E%3Cpath d='M15 20.8C8.4 16.2 5 12.9 5 9.2A4.6 4.6 0 0 1 15 7.4 4.6 4.6 0 0 1 25 9.2C25 12.9 21.6 16.2 15 20.8Z' fill='%23e53935'/%3E%3Cpath d='M8.6 7.4A2.4 2.4 0 0 1 11 6' fill='none' stroke='%23f28b87' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E") center/auto 100% no-repeat; font-size: 0.85em; }
+}
+
+/* =======================================================================
+   TABLET POPUPS — Congratulations and Game Over, sized like the phone's
+   -----------------------------------------------------------------------
+   On a phone these two popups fill ~92% of the screen width, so the title,
+   message, coins pill and buttons are big and easy to read. On a tablet
+   the same popup stayed a 340-360px card: under half the screen width in
+   portrait, with phone-sized text and 36px-tall buttons lost in the middle
+   of a much larger screen.
+
+   This block scales the popup up for touch tablets only — a touch screen
+   at least 600px on BOTH sides (phones never reach that in portrait, and in
+   landscape their height stays under ~450px), and no wider than 1400px, so
+   a laptop or desktop window is not touched.
+
+   Everything is sized off vmin (the shorter screen side) so one set of
+   numbers covers portrait and landscape and 768 -> 1180px alike. The ad
+   stays the standard 300x250 MREC (never stretched); the popup around it
+   grows instead.
+
+   Each rule lists two selectors because the Game Over state is matched with
+   :has(#continueAdBtn:not(.hidden)) further up this file, which outranks a
+   plain `#overlay .modal`. Repeating that selector here, later in the file,
+   wins without resorting to !important.
+   ======================================================================= */
+@media (pointer: coarse) and (min-width: 600px) and (min-height: 600px) and (max-width: 1400px) {
+  /* ---- the card ---- */
+  #overlay .modal,
+  #overlay .modal:has(#continueAdBtn:not(.hidden)) {
+    width: 100%;
+    max-width: min(90vw, 620px);
+    padding: 2.1rem 2.2rem;
+    gap: 0.9rem;
+    border-radius: 24px;
+    max-height: 94dvh;
+  }
+  /* Game Over has no ad, only a message and three stacked buttons, so the
+     same 620px would be a lot of empty width around them. */
+  #overlay .modal:has(#continueAdBtn:not(.hidden)) {
+    max-width: min(88vw, 540px);
+  }
+
+  /* ---- text ---- */
+  #overlay #modalTitle {
+    font-size: clamp(1.7rem, 3.6vmin, 2.3rem);
+    margin-bottom: 0.15rem;
+  }
+  #overlay #modalMessage {
+    font-size: clamp(1.1rem, 2.4vmin, 1.35rem);
+    line-height: 1.4;
+    margin-bottom: 0.2rem;
+  }
+  #overlay .modal-coins {
+    font-size: clamp(1.05rem, 2.3vmin, 1.3rem);
+    padding: 0.45rem 1.3rem;
+  }
+  #overlay .continue-note {
+    font-size: clamp(0.95rem, 2vmin, 1.15rem);
+    line-height: 1.35;
+  }
+
+  /* ---- close button: a real touch target ---- */
+  #overlay .close-x {
+    width: 46px;
+    height: 46px;
+    top: 14px;
+    right: 14px;
+    font-size: 1.15rem;
+  }
+
+  /* ---- the ad: standard 300x250, only shrunk on short landscape screens ---- */
+  html #overlay #modalBannerAd {
+    width: min(300px, 40vh);
+  }
+  #overlay .banner-ad-card {
+    margin: 0.5rem auto 0.7rem;
+  }
+
+  /* ---- buttons ---- */
+  #overlay .modal-buttons {
+    gap: 0.8rem;
+  }
+  #overlay .modal-buttons .menu-btn {
+    min-width: 140px;
+    min-height: 58px;
+    padding: 0.9rem 1.2rem;
+    font-size: clamp(1.05rem, 2.2vmin, 1.25rem);
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  /* Game Over: three stacked, full-width, each a comfortable touch height. */
+  #overlay .modal:has(#continueAdBtn:not(.hidden)) .modal-buttons {
+    gap: 0.8rem;
+  }
+  #overlay .modal:has(#continueAdBtn:not(.hidden)) #continueAdBtn,
+  #overlay .modal:has(#continueAdBtn:not(.hidden)) .modal-buttons .menu-btn {
+    width: 100%;
+    min-height: 58px;
+    padding: 0.9rem 1.2rem;
+    font-size: clamp(1.05rem, 2.2vmin, 1.25rem);
+  }
+}
+
+/* Short tablets (landscape, or 600-700px-tall Android tablets): the popup has
+   a smaller height budget than width, so the padding and gaps give first. */
+@media (pointer: coarse) and (min-width: 600px) and (min-height: 600px) and (max-width: 1400px) and (max-height: 700px) {
+  #overlay .modal,
+  #overlay .modal:has(#continueAdBtn:not(.hidden)) {
+    padding: 1.3rem 1.8rem;
+    gap: 0.55rem;
+  }
+  #overlay #modalTitle { font-size: 1.55rem; }
+  #overlay #modalMessage { font-size: 1.05rem; }
+  #overlay .modal-coins { font-size: 1rem; padding: 0.3rem 1rem; }
+  #overlay .banner-ad-card { margin: 0.25rem auto 0.4rem; }
+  #overlay .modal-buttons .menu-btn,
+  #overlay .modal:has(#continueAdBtn:not(.hidden)) #continueAdBtn,
+  #overlay .modal:has(#continueAdBtn:not(.hidden)) .modal-buttons .menu-btn {
+    min-height: 50px;
+    padding: 0.65rem 1rem;
+    font-size: 1.05rem;
+  }
+}
+
+/* =======================================================================
+   TABLET LEVEL SELECT — same card, bigger tiles that fill it
+   -----------------------------------------------------------------------
+   The Select Level card keeps its usual 500x700 size. What it had on a
+   tablet was thirty 61px tiles in a 420px column, using only ~360px of the
+   card's height, so the lower third of the card was blank.
+
+   The tiles are the thing that grows here. The grid takes the card's whole
+   remaining height (rows are 1fr, so they share it equally) and the full
+   width inside the card padding, in 5 columns x 6 rows, which comes out
+   close to square on the 500x700 card.
+
+   Same gate as the tablet popups above (touch, 600px+ on both sides, up to
+   1400px wide), so phones and desktop windows are untouched.
+   ======================================================================= */
+@media (pointer: coarse) and (min-width: 600px) and (min-height: 600px) and (max-width: 1400px) {
+  /* the 420px shared column is what kept the grid narrow */
+  html body #levelSelectScreen.screen.active > * {
+    max-width: 100%;
+  }
+
+  html body #levelSelectScreen #levelGrid {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-width: 100%;
+    margin: 0.9rem auto 0;
+    padding-bottom: 0;
+    gap: 0.75rem;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(6, minmax(0, 1fr));
+    align-content: stretch;
+    overflow: visible;
+  }
+
+  html body #levelSelectScreen .level-btn {
+    aspect-ratio: auto;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    border-radius: 16px;
+    gap: 0.2rem;
+  }
+
+  html body #levelSelectScreen .level-btn .level-num { font-size: 1.7rem; }
+  html body #levelSelectScreen .level-btn .level-lock { font-size: 1.1rem; }
+  html body #levelSelectScreen .level-btn .level-diff {
+    font-size: 0.66rem;
+    margin-top: 0.1rem;
+  }
+}
+
+/* Short tablets (600-700px tall): the card is shorter too, so the tiles and
+   their type come down a step. */
+@media (pointer: coarse) and (min-width: 600px) and (min-height: 600px) and (max-width: 1400px) and (max-height: 700px) {
+  html body #levelSelectScreen #levelGrid { gap: 0.55rem; margin-top: 0.6rem; }
+  html body #levelSelectScreen .level-btn { border-radius: 14px; }
+  html body #levelSelectScreen .level-btn .level-num { font-size: 1.35rem; }
+  html body #levelSelectScreen .level-btn .level-lock { font-size: 0.95rem; }
+  html body #levelSelectScreen .level-btn .level-diff { font-size: 0.58rem; }
+}
+
+/* =======================================================================
+   REAL-DEVICE CONSISTENCY (Android Chrome / Samsung Internet / iOS Safari)
+   Same block as Sudoku. Desktop browsers and emulators don't show these;
+   real phones do.
+   ======================================================================= */
+
+/* 1. Stop mobile browsers from resizing text on their own (iOS Safari
+      enlarges text in landscape; some Android browsers "boost" text).
+      Pinch-zoom is unaffected. */
+html {
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* 2. Remove the browser's native button rendering (iOS gradient/rounding,
+      inner padding, system font). Every button's own rules still apply. */
+button {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  font-family: inherit;
+}
+
+/* =======================================================================
+   iPHONE LANDSCAPE: use the full screen width   (keep this LAST)
+   -----------------------------------------------------------------------
+   iOS reports the SAME safe-area inset on BOTH the left and right edge in
+   landscape (~47-62px depending on model), even though the camera cut-out
+   is only on one side. The in-game frame padded itself by both insets, so
+   the whole [ ad | maze | ad ] group, and the bar under it, was pushed in
+   ~59px from each edge and two blank strips were left outside the ad
+   cards. Desktop Chromium reports 0 for these insets, which is why it only
+   showed on a real iPhone.
+   The outermost things in that group are the two ad cards, so the frame
+   now runs to the true screen edge sideways (layoutLandscapeGame() already
+   intends the cards to sit "flush against the true screen edges"). Top and
+   bottom keep their insets, so the bar still clears the home indicator.
+   Scoped to landscape with a short side <= 500px: the same "phone" test
+   script.js uses (PHONE_NO_RAIL_MAX_W). Portrait already has zero side
+   insets, and tablets/desktop are not affected.
+   ======================================================================= */
+@media (orientation: landscape) and (max-height: 500px) {
+  html body.in-game .wrapper {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+}

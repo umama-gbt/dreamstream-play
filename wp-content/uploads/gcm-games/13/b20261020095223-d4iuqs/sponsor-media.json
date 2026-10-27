@@ -1,0 +1,158 @@
+{
+  "_comment": "Demo ad catalogue for Sudoku. 'level_gate' plays after Level Complete, when the player presses Next Level, on every 3rd level (3, 6, 9 ...). 'restart' plays when the player taps Restart in the game bar: one rewarded ad per attempt, skippable after 10 seconds (same as Pac-Man's 'restart'). 'continue' plays from the fail screen's Watch Ad & Continue (up to MAX_AD_CONTINUES per attempt). 'recover' plays on Select Level when a player unlocks a locked level after a 24-hour reset: 5 of these back to back, each skippable after 10 seconds (same as Pac-Man's 'recover'). 'banner' is the IAB VERTICAL_BANNER 300x600 shown either side of the board during play. 'leaderboard' is the IAB LEADER_BOARD 970x90 shown as a single wide banner above the board on narrow windows/phones with no side gutter for the 300x600 cards. 'level_complete_banner' is the 300x250 MREC shown inside the Level Complete popup. Every image placement rotates: the card on screen swaps to the next one every 5 seconds wherever a placement holds more than one ad, matching the same rotation used across the portfolio (e.g. Pac-Man). The 'continue', 'restart', 'level_gate' and 'recover' videos are Pac-Man's own ad files and entries (ad-continue-2/3, ad-restart-2/3, ad-levelgate-2, ad-recover-2 .mp4, same durations and skip rules). All creatives are bundled LOCALLY so they never depend on reaching an outside domain \u2014 swap in your own files any time, same names, or update streamUrl/imageUrl.",
+  "ads": [
+    {
+      "id": "ns-continue-1",
+      "adType": "video",
+      "advertiser": "Continue Sponsor",
+      "duration": 67,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-continue-2.mp4",
+      "placements": [
+        "continue"
+      ]
+    },
+    {
+      "id": "ns-continue-2",
+      "adType": "video",
+      "advertiser": "Continue Sponsor",
+      "duration": 16,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-continue-3.mp4",
+      "placements": [
+        "continue"
+      ]
+    },
+    {
+      "id": "ns-restart-1",
+      "adType": "video",
+      "advertiser": "Restart Sponsor",
+      "duration": 30,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-restart-2.mp4",
+      "placements": [
+        "restart"
+      ]
+    },
+    {
+      "id": "ns-restart-2",
+      "adType": "video",
+      "advertiser": "Restart Sponsor",
+      "duration": 36,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-restart-3.mp4",
+      "placements": [
+        "restart"
+      ]
+    },
+    {
+      "id": "ns-levelgate-1",
+      "adType": "video",
+      "advertiser": "Level Sponsor",
+      "duration": 27,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-levelgate-2.mp4",
+      "placements": [
+        "level_gate"
+      ]
+    },
+    {
+      "id": "ns-recover-1",
+      "adType": "video",
+      "advertiser": "Unlock Sponsor",
+      "duration": 25,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-recover-2.mp4",
+      "placements": [
+        "recover"
+      ]
+    },
+    {
+      "id": "ns-banner-1",
+      "adType": "image",
+      "advertiser": "Credit Key",
+      "imageUrl": "ad-creditkey-banner.png",
+      "placements": [
+        "banner"
+      ]
+    },
+    {
+      "id": "ns-banner-2",
+      "adType": "image",
+      "advertiser": "Credit Key",
+      "imageUrl": "ad-creditkey-banner-2.png",
+      "placements": [
+        "banner"
+      ]
+    },
+    {
+      "id": "ns-banner-3",
+      "adType": "image",
+      "advertiser": "Credit Key",
+      "imageUrl": "ad-creditkey-banner-3.png",
+      "placements": [
+        "banner"
+      ]
+    },
+    {
+      "id": "ns-leaderboard-1",
+      "adType": "image",
+      "advertiser": "Credit Key",
+      "imageUrl": "ad-creditkey-leaderboard.png",
+      "placements": [
+        "leaderboard"
+      ]
+    },
+    {
+      "id": "ns-leaderboard-2",
+      "adType": "image",
+      "advertiser": "Credit Key",
+      "imageUrl": "ad-creditkey-leaderboard-2.png",
+      "placements": [
+        "leaderboard"
+      ]
+    },
+    {
+      "id": "ns-leaderboard-3",
+      "adType": "image",
+      "advertiser": "Credit Key",
+      "imageUrl": "ad-creditkey-leaderboard-3.png",
+      "placements": [
+        "leaderboard"
+      ]
+    },
+    {
+      "id": "ns-mrec-1",
+      "adType": "image",
+      "advertiser": "Credit Key",
+      "imageUrl": "ad-creditkey-mrec.png",
+      "placements": [
+        "level_complete_banner"
+      ]
+    },
+    {
+      "id": "ns-mrec-2",
+      "adType": "image",
+      "advertiser": "Credit Key",
+      "imageUrl": "ad-creditkey-mrec-2.png",
+      "placements": [
+        "level_complete_banner"
+      ]
+    },
+    {
+      "id": "ns-mrec-3",
+      "adType": "image",
+      "advertiser": "Credit Key",
+      "imageUrl": "ad-creditkey-mrec-3.png",
+      "placements": [
+        "level_complete_banner"
+      ]
+    }
+  ]
+}

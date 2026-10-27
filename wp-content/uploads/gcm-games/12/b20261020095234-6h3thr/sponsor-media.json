@@ -1,0 +1,307 @@
+{
+  "_comment": "Demo ad catalogue for Tetris — same structure and behaviour as Pac-Man's sponsor-media.json, so both games run the identical rotating-carousel ad system. 'continue' plays on Game Over's Watch Ad & Continue (once per attempt). 'restart' plays on the in-game Restart button (once per attempt). 'level_gate' plays after Congratulations, when the player presses Next Level, on every 3rd level (3, 6, 9 ...). 'level_complete_banner' is a compact horizontal image card shown INSIDE the Congratulations popup, below the coins-earned line. All creatives are bundled LOCALLY so they never depend on reaching an outside domain - swap in your own files any time, same names or update streamUrl. 'banner' is the IAB VERTICAL_BANNER 300x600 (half-page / skyscraper) shown in the space either side of the maze during play; those cards are rendered at that exact size and scaled as a whole when the window is smaller, so the 1:2 shape never changes. 'leaderboard' is the IAB LEADER_BOARD 970x90, shown as a single wide banner ABOVE the maze on windows with no side gutter for the 300x600 cards (portrait tablets, phones, narrow windows) - same scale-as-a-whole rule, so the 970:90 shape never changes either. Every image placement here now rotates: wherever a placement holds more than one ad, the card on screen swaps to the next one every 5 seconds rather than sitting on a single creative - that applies to 'leaderboard', to 'banner' (the 300x600 cards beside the maze) and to 'level_complete_banner' (the 300x250 inside the Congratulations popup). Adding another ad to any of those placements below extends that placement's rotation with no code change. 'pm-rail-3' carries no imageUrl on purpose: only two 300x600 rasters are bundled, so it is drawn as an assembled card at the same 300x600 size, the same way 'pm-banner-3' is for the popup. 'level_recover' plays on Select Level when a player taps a level from their PREVIOUS 24-hour session: the game asks them to watch 5 of these ads in a row (each skippable after 10 seconds) and then restores that level. 'level_complete_new_game' plays on the Congratulations popup's Watch Ad for a New Game button. All video ads are the ad-video-1..6.mp4 files; duration is the real length of each file so the countdown is accurate.",
+  "ads": [
+    {
+      "id": "tt-continue-1",
+      "adType": "video",
+      "advertiser": "Continue Sponsor",
+      "duration": 30,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-video-3.mp4",
+      "placements": [
+        "continue"
+      ]
+    },
+    {
+      "id": "tt-continue-2",
+      "adType": "video",
+      "advertiser": "Continue Sponsor",
+      "duration": 25,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-video-6.mp4",
+      "placements": [
+        "continue"
+      ]
+    },
+    {
+      "id": "tt-restart-1",
+      "adType": "video",
+      "advertiser": "Restart Sponsor",
+      "duration": 36,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-video-4.mp4",
+      "placements": [
+        "restart"
+      ]
+    },
+    {
+      "id": "tt-restart-2",
+      "adType": "video",
+      "advertiser": "Restart Sponsor",
+      "duration": 27,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-video-5.mp4",
+      "placements": [
+        "restart"
+      ]
+    },
+    {
+      "id": "tt-levelgate-1",
+      "adType": "video",
+      "advertiser": "Level Sponsor",
+      "duration": 16,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-video-2.mp4",
+      "placements": [
+        "level_complete",
+        "interstitial"
+      ]
+    },
+    {
+      "id": "tt-levelgate-2",
+      "adType": "video",
+      "advertiser": "Level Sponsor",
+      "duration": 27,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-video-5.mp4",
+      "placements": [
+        "level_complete",
+        "interstitial"
+      ]
+    },
+    {
+      "id": "tt-recover-1",
+      "adType": "video",
+      "advertiser": "Progress Sponsor",
+      "duration": 16,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-video-2.mp4",
+      "placements": [
+        "level_recover"
+      ]
+    },
+    {
+      "id": "tt-recover-2",
+      "adType": "video",
+      "advertiser": "Progress Sponsor",
+      "duration": 30,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-video-3.mp4",
+      "placements": [
+        "level_recover"
+      ]
+    },
+    {
+      "id": "tt-recover-3",
+      "adType": "video",
+      "advertiser": "Progress Sponsor",
+      "duration": 36,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-video-4.mp4",
+      "placements": [
+        "level_recover"
+      ]
+    },
+    {
+      "id": "tt-recover-4",
+      "adType": "video",
+      "advertiser": "Progress Sponsor",
+      "duration": 27,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-video-5.mp4",
+      "placements": [
+        "level_recover"
+      ]
+    },
+    {
+      "id": "tt-recover-5",
+      "adType": "video",
+      "advertiser": "Progress Sponsor",
+      "duration": 25,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-video-6.mp4",
+      "placements": [
+        "level_recover"
+      ]
+    },
+    {
+      "id": "tt-recover-6",
+      "adType": "video",
+      "advertiser": "Progress Sponsor",
+      "duration": 67,
+      "isSkippable": true,
+      "nonSkippableSeconds": 10,
+      "streamUrl": "ad-video-1.mp4",
+      "placements": [
+        "level_recover"
+      ]
+    },
+    {
+      "id": "tt-banner-creditkey",
+      "adType": "image",
+      "advertiser": "Credit Key",
+      "title": "Credit Key",
+      "subtitle": "Buy Now, Pay On Your Terms",
+      "ctaText": "Learn more",
+      "bgFrom": "#0b1450",
+      "bgTo": "#1e3a8a",
+      "streamUrl": "ad-creditkey-mrec.png",
+      "clickUrl": "",
+      "placements": [
+        "level_complete_banner"
+      ],
+      "adSize": "MREC",
+      "imageUrl": "ad-creditkey-mrec.png"
+    },
+    {
+      "id": "tt-rail-creditkey",
+      "adType": "image",
+      "adSize": "VERTICAL_BANNER",
+      "advertiser": "Credit Key",
+      "title": "Credit Key",
+      "subtitle": "Buy Now, Pay On Your Terms",
+      "rating": 4.5,
+      "ctaText": "Learn more",
+      "bgFrom": "#0b1450",
+      "bgTo": "#1e3a8a",
+      "streamUrl": "ad-creditkey-banner.png",
+      "clickUrl": "",
+      "placements": [
+        "banner"
+      ],
+      "imageUrl": "ad-creditkey-banner.png"
+    },
+    {
+      "id": "tt-leader-creditkey",
+      "adType": "image",
+      "adSize": "LEADER_BOARD",
+      "advertiser": "Credit Key",
+      "title": "Credit Key",
+      "subtitle": "Buy Now, Pay On Your Terms",
+      "ctaText": "Learn more",
+      "bgFrom": "#0b1450",
+      "bgTo": "#1e3a8a",
+      "streamUrl": "ad-creditkey-leaderboard.png",
+      "clickUrl": "",
+      "placements": [
+        "leaderboard"
+      ],
+      "imageUrl": "ad-creditkey-leaderboard.png"
+    },
+    {
+      "id": "tt-rail-creditkey-2",
+      "adType": "image",
+      "adSize": "VERTICAL_BANNER",
+      "advertiser": "Credit Key",
+      "title": "Credit Key",
+      "subtitle": "Buy Now, Pay On Your Terms",
+      "rating": 4.5,
+      "ctaText": "Learn more",
+      "bgFrom": "#0b1450",
+      "bgTo": "#1e3a8a",
+      "streamUrl": "ad-creditkey-banner-2.png",
+      "clickUrl": "",
+      "placements": [
+        "banner"
+      ],
+      "imageUrl": "ad-creditkey-banner-2.png"
+    },
+    {
+      "id": "tt-rail-creditkey-3",
+      "adType": "image",
+      "adSize": "VERTICAL_BANNER",
+      "advertiser": "Credit Key",
+      "title": "Credit Key",
+      "subtitle": "Buy Now, Pay On Your Terms",
+      "rating": 4.5,
+      "ctaText": "Learn more",
+      "bgFrom": "#0b1450",
+      "bgTo": "#1e3a8a",
+      "streamUrl": "ad-creditkey-banner-3.png",
+      "clickUrl": "",
+      "placements": [
+        "banner"
+      ],
+      "imageUrl": "ad-creditkey-banner-3.png"
+    },
+    {
+      "id": "tt-leader-creditkey-2",
+      "adType": "image",
+      "adSize": "LEADER_BOARD",
+      "advertiser": "Credit Key",
+      "title": "Credit Key",
+      "subtitle": "Buy Now, Pay On Your Terms",
+      "ctaText": "Learn more",
+      "bgFrom": "#0b1450",
+      "bgTo": "#1e3a8a",
+      "streamUrl": "ad-creditkey-leaderboard-2.png",
+      "clickUrl": "",
+      "placements": [
+        "leaderboard"
+      ],
+      "imageUrl": "ad-creditkey-leaderboard-2.png"
+    },
+    {
+      "id": "tt-leader-creditkey-3",
+      "adType": "image",
+      "adSize": "LEADER_BOARD",
+      "advertiser": "Credit Key",
+      "title": "Credit Key",
+      "subtitle": "Buy Now, Pay On Your Terms",
+      "ctaText": "Learn more",
+      "bgFrom": "#0b1450",
+      "bgTo": "#1e3a8a",
+      "streamUrl": "ad-creditkey-leaderboard-3.png",
+      "clickUrl": "",
+      "placements": [
+        "leaderboard"
+      ],
+      "imageUrl": "ad-creditkey-leaderboard-3.png"
+    },
+    {
+      "id": "tt-banner-creditkey-2",
+      "adType": "image",
+      "advertiser": "Credit Key",
+      "title": "Credit Key",
+      "subtitle": "Buy Now, Pay On Your Terms",
+      "ctaText": "Learn more",
+      "bgFrom": "#0b1450",
+      "bgTo": "#1e3a8a",
+      "streamUrl": "ad-creditkey-mrec-2.png",
+      "clickUrl": "",
+      "placements": [
+        "level_complete_banner"
+      ],
+      "adSize": "MREC",
+      "imageUrl": "ad-creditkey-mrec-2.png"
+    },
+    {
+      "id": "tt-banner-creditkey-3",
+      "adType": "image",
+      "advertiser": "Credit Key",
+      "title": "Credit Key",
+      "subtitle": "Buy Now, Pay On Your Terms",
+      "ctaText": "Learn more",
+      "bgFrom": "#0b1450",
+      "bgTo": "#1e3a8a",
+      "streamUrl": "ad-creditkey-mrec-3.png",
+      "clickUrl": "",
+      "placements": [
+        "level_complete_banner"
+      ],
+      "adSize": "MREC",
+      "imageUrl": "ad-creditkey-mrec-3.png"
+    }
+  ]
+}

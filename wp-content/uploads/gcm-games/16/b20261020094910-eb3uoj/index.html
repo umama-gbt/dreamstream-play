@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head><meta charset="UTF-8">
+    
+    <!-- Same viewport declaration as Pac-Man: full screen on notched
+         handsets, and no double-tap zoom on the control buttons. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Doodle Jump</title>
+
+    <link rel="icon" type="image/png" href="/wp-content/uploads/gcm-games/16/b20261020094910-eb3uoj/logo.png">
+    <!-- One family for the whole game (Inter, bundled locally), the same
+         stylesheet stack Pac-Man uses: fonts -> style -> SVG icons. -->
+    <link rel="stylesheet" href="/wp-content/uploads/gcm-games/16/b20261020094910-eb3uoj/fonts.css">
+    <link rel="stylesheet" href="/wp-content/uploads/gcm-games/16/b20261020094910-eb3uoj/style.css">
+    <link rel="stylesheet" href="/wp-content/uploads/gcm-games/16/b20261020094910-eb3uoj/icons.css">
+  </head>
+  <body>
+    <!-- ===== SIDE AD CARDS (IAB VERTICAL_BANNER 300x600) =====
+         Shown only while a level is being played; sized and placed by
+         fitSideRails() in script.js, exactly as in Pac-Man. -->
+    <aside class="ad-rail" id="adRailLeft" aria-hidden="true"></aside>
+    <aside class="ad-rail" id="adRailRight" aria-hidden="true"></aside>
+
+    <!-- ===== LEADER_BOARD 970x90 =====
+         Portrait (and cramped landscape) fallback: one wide banner at the top
+         of the screen, placed by placeLeaderboardTop(). -->
+    <aside class="ad-leaderboard" id="adLeaderboard" aria-hidden="true"></aside>
+
+    <div class="wrapper">
+
+      <!-- ===================== MAIN MENU ===================== -->
+      <section id="menuScreen" class="screen active">
+        <div class="menu-top-bar">
+          <div class="coin-pill" title="Your coins"><span class="coin-icon">🪙</span><span id="coinCountMenu">0</span></div>
+          <button id="menuMuteBtn" class="ctrl-btn mute-btn menu-mute-btn" aria-pressed="false">🔊 Sound</button>
+        </div>
+        <img class="logo" src="/wp-content/uploads/gcm-games/16/b20261020094910-eb3uoj/logo-mark.png" alt="Doodle Jump Logo">
+        <h1 class="title">Doodle Jump</h1>
+        <p class="subtitle">35 Levels • Jump • Climb • Win</p>
+        <div class="menu-buttons">
+          <button id="playBtn" class="menu-btn primary">▶ Play</button>
+          <button id="levelSelectBtn" class="menu-btn">
+            <span class="menu-btn-icon"><svg viewbox="0 0 24 24" width="1em" height="1em" style="width:1em;height:1em;display:block" fill="none" aria-hidden="true"><path d="M7.5 10.2V7.6a4.5 4.5 0 0 1 9 0v2.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path><rect x="4.5" y="10.2" width="15" height="11" rx="3" fill="currentColor"></rect><circle cx="12" cy="14.9" r="1.6" fill="#fff"></circle><rect x="11.15" y="14.9" width="1.7" height="3.2" rx="0.6" fill="#fff"></rect></svg></span><span class="menu-btn-label">Select Level</span>
+          </button>
+          <button id="shopBtn" class="menu-btn">
+            <span class="menu-btn-icon"><svg viewbox="0 0 24 24" width="1em" height="1em" style="width:1em;height:1em;display:block" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8h12l-1.2 12.4a2 2 0 0 1-2 1.6H9.2a2 2 0 0 1-2-1.6L6 8Z"></path><path d="M9 8V6a3 3 0 0 1 6 0v2"></path></svg></span><span class="menu-btn-label">Shop</span>
+          </button>
+          <button id="howToPlayBtn" class="menu-btn">
+            <span class="menu-btn-icon">❓</span><span class="menu-btn-label">How to Play</span>
+          </button>
+        </div>
+        <p class="start-caption">35 levels · unlock the next as you clear each one</p>
+      </section>
+
+      <!-- ===================== HOW TO PLAY ===================== -->
+      <section id="howToPlayScreen" class="screen">
+        <div class="screen-top-bar">
+          <h2 class="section-title">How to Play</h2>
+          <button class="close-btn back-btn" data-target="menu" title="Close">✖</button>
+        </div>
+        <div class="howto-content">
+          <ul class="howto-list">
+            <li><strong>Goal:</strong> climb until your score reaches the level's target to clear it.</li>
+            <li><strong>Move:</strong> arrow keys or A / D — or the on-screen arrows if you are on a phone or tablet. Your doodler jumps by itself every time it lands.</li>
+            <li><strong>Platforms:</strong> <strong>green</strong> are solid, <strong>brown</strong> crumble the moment you jump off, <strong>blue</strong> slide side to side.</li>
+            <li><strong>Points:</strong> every new highest platform you land on is worth <strong>+5</strong>.</li>
+            <li><strong>Coins:</strong> grab the coins floating above platforms — they are yours when you clear the level.</li>
+            <li>There are <strong>35 levels</strong>. Clearing one unlocks the next, which climbs higher and gets trickier.</li>
+            <li>You can make <strong>3 mistakes</strong> (shown as lives). Falling off the bottom costs one and puts you back on the platform you fell from, with your score kept. After the 3rd, watch an ad all the way through to get all 3 back — <strong>as many times as you like</strong>.</li>
+            <li><strong>Shop:</strong> spend coins on doodler skins; milestone skins unlock when you clear levels 10, 20, 30 and 35.</li>
+          </ul>
+        </div>
+        <button class="menu-btn primary back-btn" data-target="menu">✔ Got it</button>
+      </section>
+
+      <!-- ===================== LEVEL SELECT ===================== -->
+      <section id="levelSelectScreen" class="screen">
+        <div class="screen-top-bar">
+          <button class="close-btn back-btn" data-target="menu" title="Back to Menu">‹</button>
+          <h2 class="section-title">Select Level</h2>
+          <button type="button" id="levelHelpBtn" class="close-btn" title="How to play">?</button>
+        </div>
+        <p id="levelProgressLine" class="level-progress-line"></p>
+        <div id="levelGrid" class="level-grid"></div>
+      </section>
+
+      <!-- ===================== SHOP ===================== -->
+      <section id="shopScreen" class="screen">
+        <div class="screen-top-bar">
+          <button class="close-btn back-btn" data-target="menu" title="Back to Menu">‹</button>
+          <h2 class="section-title">Shop</h2>
+          <div class="coin-pill shop-coin-pill" title="Your coins"><span class="coin-icon">🪙</span><span id="coinCountShop">0</span></div>
+        </div>
+        <div class="shop-tabs" id="shopTabs">
+          <button type="button" class="shop-tab active" data-cat="skins">Skins</button>
+          <button type="button" class="shop-tab" data-cat="milestones">Milestones</button>
+        </div>
+        <div id="shopGrid" class="shop-grid"></div>
+      </section>
+
+      <!-- ===================== GAME SCREEN ===================== -->
+      <section id="gameScreen" class="screen" data-bar="xl">
+        <!-- ===== BOTTOM GAME BAR — [ stats | ← → | buttons ] =====
+             Same bar as Pac-Man. Doodle Jump's left / right move buttons sit
+             as a centred pair in the middle; in portrait they get their own
+             centred row at the bottom. -->
+        <header class="header">
+          <div class="bar-left">
+            <div class="header-title-group">
+              <span class="brand-tag-sm">Doodle Jump</span>
+              <h1 class="title" id="levelTitle"><span class="lvl-word">Level</span><span class="lvl-num">1</span></h1>
+            </div>
+            <div class="scoreboard">
+              <div class="score-label" title="Score">
+                <span class="stat-word">Score:</span>
+                <span id="scoreEl">0</span>
+              </div>
+              <div class="target-label" title="Target score">
+                <span class="stat-word">Target:</span>
+                <span id="targetEl">30</span>
+              </div>
+              <div class="lives-label" title="Lives">
+                <span class="stat-word">Lives:</span>
+                <span id="livesEl">3</span>
+              </div>
+              <div class="best-label" title="Best score">
+                <span class="stat-word">Best:</span>
+                <span id="highScoreEl">0</span>
+              </div>
+              <div class="coin-pill game-coin-pill" title="Your coins">
+                <span class="coin-icon">🪙</span><span id="coinCountGame">0</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="move-pad" id="mobileControls" role="group" aria-label="Move the doodler">
+            <button type="button" class="move-btn" id="btnLeft" aria-label="Move left">←</button>
+            <button type="button" class="move-btn" id="btnRight" aria-label="Move right">→</button>
+          </div>
+
+          <div class="game-controls">
+            <button id="pauseBtn" class="ctrl-btn pause-btn" aria-pressed="false" title="Pause"><span class="ico">⏸</span><span class="lbl">Pause</span></button>
+            <button id="muteBtn" class="ctrl-btn mute-btn icon-only" aria-pressed="false" title="Sound on/off" aria-label="Sound on/off">🔊</button>
+            <button id="prevLevelBtn" class="ctrl-btn" title="Previous level"><span class="ico">⬅</span><span class="lbl">Prev</span></button>
+            <button id="restartBtn" class="ctrl-btn" title="Restart"><span class="lbl">Restart</span><span class="ico">🔁</span></button>
+            <button id="nextLevelBtn" class="ctrl-btn" title="Next level"><span class="lbl">Next</span><span class="ico">➡</span></button>
+            <button id="exitBtn" class="ctrl-btn exit-btn" title="Exit"><span class="lbl">Exit</span><span class="ico">✖</span></button>
+          </div>
+        </header>
+
+        <main class="game-container">
+          <canvas id="gameCanvas" width="480" height="600"></canvas>
+          <p class="hint">Use arrow keys or A / D to move. Land on platforms and climb to the target!</p>
+        </main>
+      </section>
+
+      <!-- ===================== OVERLAYS / MODALS =====================
+           One popup, reused for Game Over and Congratulations — the same
+           rows, in the same order, as Pac-Man's #overlay. Stars and any
+           milestone bonus ride on the one coins line (#modalCoins). -->
+      <div id="overlay" class="overlay hidden">
+        <div class="modal">
+          <button class="close-x" id="modalCloseX" title="Close">✕</button>
+          <h2 id="modalTitle">Level Complete!</h2>
+          <p id="modalMessage">Great job!</p>
+          <p id="modalCoins" class="modal-coins hidden"></p>
+          <!-- IAB MREC 300x250, Congratulations popup only. -->
+          <div id="modalBannerAd" class="banner-ad-card hidden"></div>
+          <div class="modal-buttons">
+            <button id="continueAdBtn" class="menu-btn continue-btn hidden">▶ Watch Ad &amp; Continue</button>
+            <button id="modalPrimaryBtn" class="menu-btn primary">Next Level ➡</button>
+            <button id="modalPrevBtn" class="menu-btn hidden">⬅ Previous Level</button>
+            <button id="modalSecondaryBtn" class="menu-btn">🗺 Level Select</button>
+          </div>
+          <p id="continueNote" class="continue-note hidden"></p>
+        </div>
+      </div>
+
+      <!-- ===================== CONFIRMATION DIALOG (5-ads unlock) ===================== -->
+      <div id="confirmOverlay" class="overlay confirm-overlay hidden">
+        <div class="modal confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+          <h2 id="confirmTitle" class="confirm-title">📺 Unlock Level</h2>
+          <p id="confirmMessage" class="confirm-message"></p>
+          <p id="confirmSubMessage" class="confirm-submessage hidden"></p>
+          <div class="modal-buttons confirm-buttons">
+            <button type="button" id="confirmOkBtn" class="menu-btn primary confirm-ok-btn">✔ OK</button>
+            <button type="button" id="confirmCancelBtn" class="menu-btn confirm-cancel-btn">✖ Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== VIDEO AD OVERLAY ===================== -->
+      <div id="adOverlay" class="ad-overlay hidden">
+        <div class="ad-stage">
+          <div class="ad-topbar">
+            <span class="ad-badge">● Ad Playing</span>
+            <span class="ad-advertiser" id="adAdvertiser"></span>
+            <span class="ad-countdown" id="adCountdown"></span>
+          </div>
+          <div class="ad-video-wrap">
+            <video id="adVideo" playsinline preload="auto"></video>
+            <p class="ad-status" id="adStatus">Loading ad…</p>
+          </div>
+          <div class="ad-actions">
+            <button type="button" id="adUnmuteBtn" class="menu-btn ad-hidden">🔇 Tap for sound</button>
+            <button type="button" id="adSkipBtn" class="menu-btn ad-hidden">Skip ▶</button>
+          </div>
+          <p class="ad-reward-note" id="adRewardNote"></p>
+        </div>
+      </div>
+
+    </div>
+
+    <script src="/wp-content/uploads/gcm-games/16/b20261020094910-eb3uoj/icons.js"></script>
+    <script src="/wp-content/uploads/gcm-games/16/b20261020094910-eb3uoj/script.js"></script>
+  </body>
+</html>
